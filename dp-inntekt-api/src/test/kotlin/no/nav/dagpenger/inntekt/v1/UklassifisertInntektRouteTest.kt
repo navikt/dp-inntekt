@@ -183,7 +183,7 @@ internal class UklassifisertInntektApiTest {
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=${anotherIssuer.createTokenFor("user")}")
         }.apply {
-            assertTrue(requestHandled)
+
             Assertions.assertEquals(HttpStatusCode.Unauthorized, response.status())
         }
     }
