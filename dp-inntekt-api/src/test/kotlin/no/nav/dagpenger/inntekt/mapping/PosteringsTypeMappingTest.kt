@@ -420,6 +420,19 @@ internal class PosteringsTypeMappingTest {
     }
 
     @Test
+    fun `test posteringstype-mapping for Lønn til verge fra Statsforvalteren`() {
+        val posteringsType = PosteringsType.L_LØNN_TIL_VERGE_FRA_STATSFORVALTEREN
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(
+            InntektType.LOENNSINNTEKT,
+            InntektBeskrivelse.LOENN_TIL_VERGE_FRA_STATSFORVALTEREN,
+            null
+        )
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
     fun `test posteringstype-mapping for Lønn til verge fra Fylkesmannen`() {
         val posteringsType = PosteringsType.L_LØNN_TIL_VERGE_FRA_FYLKESMANNEN
         val posteringsTypeInfo = PosteringsTypeGrunnlag(

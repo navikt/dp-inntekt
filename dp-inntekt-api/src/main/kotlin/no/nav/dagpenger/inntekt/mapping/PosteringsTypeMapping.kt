@@ -64,6 +64,7 @@ private val posteringsTypeMapping = biMapOf(
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.LOENN_TIL_PRIVATPERSONER_FOR_ARBEID_I_HJEMMET, null) to PosteringsType.L_LØNN_TIL_PRIVATPERSONER_FOR_ARBEID_I_HJEMMET,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.LOENN_UTBETALT_AV_VELDEDIG_ELLER_ALLMENNYTTIG_INSTITUSJON_ELLER_ORGANISASJON, null) to PosteringsType.L_LØNN_UTBETALT_AV_VELDEDIG_ELLER_ALLMENNYTTIG_INSTITUSJON_ELLER_ORGANISASJON,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.LOENN_TIL_VERGE_FRA_FYLKESMANNEN, null) to PosteringsType.L_LØNN_TIL_VERGE_FRA_FYLKESMANNEN,
+    PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.LOENN_TIL_VERGE_FRA_STATSFORVALTEREN, null) to PosteringsType.L_LØNN_TIL_VERGE_FRA_STATSFORVALTEREN,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.OPSJONER, null) to PosteringsType.L_OPSJONER,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.OVERTIDSGODTGJOERELSE, null) to PosteringsType.L_OVERTIDSGODTGJØRELSE,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.REISE_ANNET, null) to PosteringsType.L_REISE_ANNET,

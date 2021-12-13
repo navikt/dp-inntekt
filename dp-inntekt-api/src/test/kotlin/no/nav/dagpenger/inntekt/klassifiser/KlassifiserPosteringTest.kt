@@ -48,6 +48,7 @@ internal class KlassifiserPosteringTest {
             PosteringsType.L_LØNN_TIL_PRIVATPERSONER_FOR_ARBEID_I_HJEMMET,
             PosteringsType.L_LØNN_UTBETALT_AV_VELDEDIG_ELLER_ALLMENNYTTIG_INSTITUSJON_ELLER_ORGANISASJON,
             PosteringsType.L_LØNN_TIL_VERGE_FRA_FYLKESMANNEN,
+            PosteringsType.L_LØNN_TIL_VERGE_FRA_STATSFORVALTEREN,
             PosteringsType.L_OPSJONER,
             PosteringsType.L_OVERTIDSGODTGJØRELSE,
             PosteringsType.L_REISE_ANNET,

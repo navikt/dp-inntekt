@@ -187,6 +187,8 @@ enum class InntektBeskrivelse {
     LOENN_UTBETALT_AV_VELDEDIG_ELLER_ALLMENNYTTIG_INSTITUSJON_ELLER_ORGANISASJON,
     @Json(name = "loennTilVergeFraFylkesmannen")
     LOENN_TIL_VERGE_FRA_FYLKESMANNEN,
+    @Json(name = "loennTilVergeFraStatsforvalteren")
+    LOENN_TIL_VERGE_FRA_STATSFORVALTEREN,
     @Json(name = "opsjoner")
     OPSJONER,
     @Json(name = "overtidsgodtgjoerelse")

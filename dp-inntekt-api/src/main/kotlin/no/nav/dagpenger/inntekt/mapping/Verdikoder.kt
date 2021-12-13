@@ -60,6 +60,7 @@ val dataGrunnlagKlassifiseringToVerdikode = biMapOf(
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.LOENN_TIL_PRIVATPERSONER_FOR_ARBEID_I_HJEMMET, null) to "Lønn og godtgjørelse til privatpersoner for arbeidsoppdrag i oppdragsgivers hjem",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.LOENN_UTBETALT_AV_VELDEDIG_ELLER_ALLMENNYTTIG_INSTITUSJON_ELLER_ORGANISASJON, null) to "Lønn og godtgjørelse utbetalt av veldedig eller allmennyttig institusjon eller organisasjon",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.LOENN_TIL_VERGE_FRA_FYLKESMANNEN, null) to "Lønn til verge fra Fylkesmannen",
+    DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.LOENN_TIL_VERGE_FRA_STATSFORVALTEREN, null) to "Lønn til verge fra Statsforvalteren",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.OPSJONER, null) to "Opsjoner",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.OVERTIDSGODTGJOERELSE, null) to "Overtidsgodtgjørelse",
     DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.REISE_ANNET, null) to "Reise annet",
