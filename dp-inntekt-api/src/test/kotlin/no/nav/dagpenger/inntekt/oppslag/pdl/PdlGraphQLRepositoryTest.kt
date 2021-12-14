@@ -69,9 +69,8 @@ internal class PdlGraphQLRepositoryTest {
           "mellomnavn": "Pres",
           "etternavn": "Struts"
         }
-      ]}}}"""
-
-            .trimIndent()
+      ]}}}
+        """.trimIndent()
 
     @Language("JSON")
     private val error =
