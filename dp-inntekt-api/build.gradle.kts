@@ -130,8 +130,8 @@ val schema = "schema.graphql"
 
 val graphqlGenerateClient by tasks.getting(com.expediagroup.graphql.plugin.gradle.tasks.GraphQLGenerateClientTask::class) {
     packageName.set("no.nav.pdl")
-    schemaFileName.set("$buildDir/$schema")
-    queryFileDirectory.set("$projectDir/src/main/resources")
+    schemaFile.set(File("$buildDir/$schema"))
+    queryFileDirectory.set(File("$projectDir/src/main/resources"))
 }
 
 val downloadPdlSDL by tasks.register<de.undercouch.gradle.tasks.download.Download>("downloadPdlSDL") {
