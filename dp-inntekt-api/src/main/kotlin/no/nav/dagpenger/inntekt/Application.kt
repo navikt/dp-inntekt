@@ -129,15 +129,15 @@ fun main() {
         }
 
         Uttrekksjobb(dataSource, inntektskomponentHttpClient).also {
-            launch {
-                try {
-                    LOGGER.info { "Starter Uttrekksjobb " }
-                    it.hentInntekterOgSjekk()
-                    LOGGER.info { "Uttrekksjobb ferdig" }
-                } catch (e: Exception) {
-                    LOGGER.error(e) { "Kunne ikke gjøre Uttrekksjobb" }
-                }
+
+            try {
+                LOGGER.info { "Starter Uttrekksjobb " }
+                it.hentInntekterOgSjekk()
+                LOGGER.info { "Uttrekksjobb ferdig" }
+            } catch (e: Exception) {
+                LOGGER.error(e) { "Kunne ikke gjøre Uttrekksjobb" }
             }
+
         }
     }
 }
