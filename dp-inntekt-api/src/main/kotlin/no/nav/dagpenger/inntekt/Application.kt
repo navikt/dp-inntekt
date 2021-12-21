@@ -4,6 +4,7 @@ import com.auth0.jwk.JwkProviderBuilder
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
+import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -28,6 +29,7 @@ import kotlin.concurrent.fixedRateTimer
 private val LOGGER = KotlinLogging.logger {}
 private val config = Configuration()
 
+@KtorExperimentalAPI
 fun main() {
     runBlocking {
         migrate(config)
@@ -126,18 +128,6 @@ fun main() {
                     LOGGER.info { "Vaktmesteren er ferdig.. for denne gang" }
                 }
             )
-        }
-
-        Uttrekksjobb(dataSource, inntektskomponentHttpClient).also {
-            launch {
-                try {
-                    LOGGER.info { "Starter Uttrekksjobb " }
-                    it.hentInntekterOgSjekk()
-                    LOGGER.info { "Uttrekksjobb ferdig" }
-                } catch (e: Exception) {
-                    LOGGER.error(e) { "Kunne ikke gjøre Uttrekksjobb" }
-                }
-            }
         }
     }
 }
