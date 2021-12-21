@@ -192,7 +192,7 @@ fun Application.inntektApi(
 
     install(CallLogging) {
         level = Level.INFO
-
+        disableDefaultColors()
         callIdMdc("x-call-id")
 
         filter { call ->
