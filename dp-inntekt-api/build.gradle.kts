@@ -1,3 +1,6 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
+
 plugins {
     application
     id(Shadow.shadow) version Shadow.version
@@ -18,7 +21,7 @@ repositories {
 
 application {
     applicationName = "dp-inntekt-api"
-    mainClassName = "no.nav.dagpenger.inntekt.ApplicationKt"
+    mainClass.set("no.nav.dagpenger.inntekt.ApplicationKt")
 }
 
 val grpcVersion = "1.38.1"
@@ -164,4 +167,8 @@ configurations.all {
     resolutionStrategy.activateDependencyLocking()
     resolutionStrategy.preferProjectModules()
     resolutionStrategy.eachDependency { DependencyResolver.execute(this) }
+}
+
+tasks.withType<ShadowJar> {
+    transform(Log4j2PluginsCacheFileTransformer::class.java)
 }
