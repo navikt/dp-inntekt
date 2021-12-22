@@ -29,52 +29,58 @@ internal class Uttrekksjobb(private val dataSource: DataSource, private val clie
     }
 
     internal suspend fun hentInntekterOgSjekk() {
-        delay(TimeUnit.SECONDS.toMillis(10))
-        val stringBuilder = StringBuilder().append(System.lineSeparator()).append("***********************************************")
-        inntekter.forEach { inntektId ->
-            val result = using(sessionOf(dataSource)) { session ->
-                session.run(
-                    queryOf(
-                        "SELECT kontekstid, beregningsdato, aktørId FROM inntekt_v1_person_mapping WHERE inntektid = :id ",
-                        mapOf(
-                            "id" to inntektId
-                        )
-                    ).map {
-                        Result(
-                            inntektsId = inntektId,
-                            beregningsdato = it.localDate("beregningsdato"),
-                            vedtakId = it.int("kontekstid"),
-                            aktørId = it.string("aktørId"),
-                        )
-                    }.asSingle
-                ) ?: throw IllegalStateException("Kunne ikke hendte id")
-            }
-            val inntekt: InntektkomponentResponse = client.getInntekt(
-                InntektkomponentRequest(
-                    aktørId = result.aktørId,
-                    månedFom = result.opptjeningsperiode.sisteAvsluttendeKalenderMåned,
-                    månedTom = result.opptjeningsperiode.førsteMåned
+        try {
+            delay(TimeUnit.SECONDS.toMillis(10))
+            logger.info { "Starter Uttrekksjobb " }
+            val stringBuilder = StringBuilder().append(System.lineSeparator()).append("***********************************************")
+            inntekter.forEach { inntektId ->
+                val result = using(sessionOf(dataSource)) { session ->
+                    session.run(
+                        queryOf(
+                            "SELECT kontekstid, beregningsdato, aktørId FROM inntekt_v1_person_mapping WHERE inntektid = :id ",
+                            mapOf(
+                                "id" to inntektId
+                            )
+                        ).map {
+                            Result(
+                                inntektsId = inntektId,
+                                beregningsdato = it.localDate("beregningsdato"),
+                                vedtakId = it.int("kontekstid"),
+                                aktørId = it.string("aktørId"),
+                            )
+                        }.asSingle
+                    ) ?: throw IllegalStateException("Kunne ikke hendte id")
+                }
+                val inntekt: InntektkomponentResponse = client.getInntekt(
+                    InntektkomponentRequest(
+                        aktørId = result.aktørId,
+                        månedFom = result.opptjeningsperiode.førsteMåned,
+                        månedTom = result.opptjeningsperiode.sisteAvsluttendeKalenderMåned
+                    )
                 )
-            )
-            val sisteMnd: ArbeidsInntektMaaned? =
-                inntekt.arbeidsInntektMaaned?.maxByOrNull { it.aarMaaned }
+                val sisteMnd: ArbeidsInntektMaaned? =
+                    inntekt.arbeidsInntektMaaned?.maxByOrNull { it.aarMaaned }
 
-            stringBuilder.append(System.lineSeparator()).append("Inntekt").append("\t")
+                stringBuilder.append(System.lineSeparator()).append("Inntekt").append("\t")
 
-            if (sisteMnd == null) {
+                if (sisteMnd == null) {
 
-                stringBuilder.append("Tom arbeids inntekt maaned $inntektId")
-            } else if (sisteMnd.arbeidsInntektInformasjon == null) {
-                stringBuilder.append("Tom arbeidsInntektInformasjon $inntektId")
-            } else if (sisteMnd.arbeidsInntektInformasjon.inntektListe?.isEmpty() == true) {
-                stringBuilder.append("Tom inntektList $inntektId")
-            } else if (sisteMnd.arbeidsInntektInformasjon.inntektListe?.isEmpty() == false) {
-                stringBuilder.append("Ikke tom inntektList $inntektId")
+                    stringBuilder.append("Tom arbeids inntekt maaned $inntektId")
+                } else if (sisteMnd.arbeidsInntektInformasjon == null) {
+                    stringBuilder.append("Tom arbeidsInntektInformasjon $inntektId")
+                } else if (sisteMnd.arbeidsInntektInformasjon.inntektListe?.isEmpty() == true) {
+                    stringBuilder.append("Tom inntektList $inntektId")
+                } else if (sisteMnd.arbeidsInntektInformasjon.inntektListe?.isEmpty() == false) {
+                    stringBuilder.append("Ikke tom inntektList $inntektId")
+                }
             }
-        }
-        stringBuilder.append(System.lineSeparator()).append("***********************************************")
-        logger.info {
-            stringBuilder.toString()
+            stringBuilder.append(System.lineSeparator()).append("***********************************************")
+            logger.info {
+                stringBuilder.toString()
+            }
+            logger.info { "Uttrekksjobb ferdig" }
+        } catch (e: Exception) {
+            logger.error(e) { "Uttrekksjobb feilet" }
         }
     }
 
