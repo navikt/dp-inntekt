@@ -4,6 +4,8 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
@@ -24,12 +26,12 @@ internal class Uttrekksjobb(private val dataSource: DataSource, private val clie
 
     companion object {
         private val logger = KotlinLogging.logger { }
+        private val sikkerLogg = KotlinLogging.logger("tjenestekall")
     }
 
     internal suspend fun hentInntekterOgSjekk() {
         try {
             logger.info { "Starter Uttrekksjobb " }
-            val stringBuilder = StringBuilder().append(System.lineSeparator()).append("***********************************************")
             inntekter.forEach { inntektId ->
                 val result = using(sessionOf(dataSource)) { session ->
                     session.run(
@@ -48,6 +50,8 @@ internal class Uttrekksjobb(private val dataSource: DataSource, private val clie
                         }.asSingle
                     ) ?: throw IllegalStateException("Kunne ikke hendte id")
                 }
+                logger.info { "Sjekker $inntektId " }
+
                 val inntekt: InntektkomponentResponse = client.getInntekt(
                     InntektkomponentRequest(
                         aktørId = result.aktørId,
@@ -55,26 +59,21 @@ internal class Uttrekksjobb(private val dataSource: DataSource, private val clie
                         månedTom = result.opptjeningsperiode.sisteAvsluttendeKalenderMåned
                     )
                 )
+                sikkerLogg.info { "Hentet inntekt for $inntektId, er ${inntekt.copy(ident = Aktoer(AktoerType.AKTOER_ID, "<reducted>"))}" }
                 val sisteMnd: ArbeidsInntektMaaned? =
                     inntekt.arbeidsInntektMaaned?.maxByOrNull { it.aarMaaned }
 
-                stringBuilder.append(System.lineSeparator()).append("Inntekt").append("\t")
-
                 if (sisteMnd == null) {
-
-                    stringBuilder.append("Tom arbeids inntekt maaned $inntektId")
+                    logger.info { "Tom arbeids inntekt maaned $inntektId" }
                 } else if (sisteMnd.arbeidsInntektInformasjon == null) {
-                    stringBuilder.append("Tom arbeidsInntektInformasjon $inntektId")
+                    logger.info { "Tom arbeidsInntektInformasjon $inntektId" }
                 } else if (sisteMnd.arbeidsInntektInformasjon.inntektListe?.isEmpty() == true) {
-                    stringBuilder.append("Tom inntektList $inntektId")
+                    logger.info { "Tom inntektList $inntektId" }
                 } else if (sisteMnd.arbeidsInntektInformasjon.inntektListe?.isEmpty() == false) {
-                    stringBuilder.append("Ikke tom inntektList $inntektId")
+                    logger.info { "Ikke tom inntektList $inntektId" }
                 }
             }
-            stringBuilder.append(System.lineSeparator()).append("***********************************************")
-            logger.info {
-                stringBuilder.toString()
-            }
+
             logger.info { "Uttrekksjobb ferdig" }
         } catch (e: Exception) {
             logger.error(e) { "Uttrekksjobb feilet" }
