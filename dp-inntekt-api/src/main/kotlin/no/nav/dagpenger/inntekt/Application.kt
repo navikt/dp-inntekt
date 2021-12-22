@@ -5,7 +5,6 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
 import io.prometheus.client.hotspot.DefaultExports
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -128,19 +127,5 @@ fun main() {
                 }
             )
         }
-
-        Uttrekksjobb(dataSource, inntektskomponentHttpClient).also {
-            fixedRateTimer(
-                name = "uttrekk",
-                initialDelay = TimeUnit.MINUTES.toMillis(1),
-                period = TimeUnit.HOURS.toMillis(1),
-                action = {
-                    LOGGER.info { "UTTREKK" }
-                    runBlocking {  it.hentInntekterOgSjekk() }
-                    LOGGER.info { "UTTREKK" }
-                }
-            )
-        }
-
     }
 }
