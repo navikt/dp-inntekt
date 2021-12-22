@@ -1,6 +1,5 @@
 package no.nav.dagpenger.inntekt
 
-import kotlinx.coroutines.delay
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -11,7 +10,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
-import java.util.concurrent.TimeUnit
 import javax.sql.DataSource
 
 internal class Uttrekksjobb(private val dataSource: DataSource, private val client: InntektskomponentClient) {
@@ -30,7 +28,6 @@ internal class Uttrekksjobb(private val dataSource: DataSource, private val clie
 
     internal suspend fun hentInntekterOgSjekk() {
         try {
-            delay(TimeUnit.SECONDS.toMillis(10))
             logger.info { "Starter Uttrekksjobb " }
             val stringBuilder = StringBuilder().append(System.lineSeparator()).append("***********************************************")
             inntekter.forEach { inntektId ->
