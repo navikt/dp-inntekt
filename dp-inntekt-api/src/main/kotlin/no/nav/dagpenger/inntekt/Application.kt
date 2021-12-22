@@ -129,10 +129,18 @@ fun main() {
             )
         }
 
-        val uttrekksjobb = Uttrekksjobb(dataSource, inntektskomponentHttpClient)
-        launch {
-            delay(10000L)
-            uttrekksjobb.hentInntekterOgSjekk()
+        Uttrekksjobb(dataSource, inntektskomponentHttpClient).also {
+            fixedRateTimer(
+                name = "uttrekk",
+                initialDelay = TimeUnit.MINUTES.toMillis(1),
+                period = TimeUnit.HOURS.toMillis(1),
+                action = {
+                    LOGGER.info { "UTTREKK" }
+                    runBlocking {  it.hentInntekterOgSjekk() }
+                    LOGGER.info { "UTTREKK" }
+                }
+            )
         }
+
     }
 }
