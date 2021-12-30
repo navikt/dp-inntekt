@@ -1,0 +1,1 @@
+ALTER TABLE inntekt_v1_person_mapping ALTER COLUMN kontekstid TYPE VARCHAR(40);
