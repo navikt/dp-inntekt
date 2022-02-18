@@ -94,10 +94,14 @@ vault read postgresql/prod-fss/creds/dp-inntekt-db-admin
 
 ```
 
-Bruker/passord kombinasjonen kan brukes til å koble seg til de aktuelle databasene(Fra utvikler image...)
+Bruker/passord kombinasjonen kan brukes til å koble seg til de aktuelle databasene
 F.eks
 
 ```
+-- dev
+export DATABASE_NAME=dev-pg.intern.nav.no/dp-inntekt-db-preprod
+-- prod
+export DATABASE_NAME=prod-pg.intern.nav.no/dp-inntekt-db
 
 psql -d $DATABASE_NAME -h $DATABASE_HOST -U $GENERERT_BRUKER_NAVN
 
