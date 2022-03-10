@@ -1,4 +1,4 @@
-FROM navikt/java:13
+FROM navikt/java:17
 
 EXPOSE 50051
 

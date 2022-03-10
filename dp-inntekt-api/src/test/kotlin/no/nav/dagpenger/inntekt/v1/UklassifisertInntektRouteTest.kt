@@ -41,6 +41,7 @@ import no.nav.dagpenger.inntekt.mapping.InntektMedVerdikode
 import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
+import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal

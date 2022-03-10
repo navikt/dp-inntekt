@@ -8,6 +8,7 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
+import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
 import org.junit.Test
 
 internal class EnhetsregistrerRouteTest {
@@ -23,7 +24,6 @@ internal class EnhetsregistrerRouteTest {
         ) {
             handleRequest(HttpMethod.Get, "v1/enhetsregisteret/enhet/123456789") {
             }.apply {
-                requestHandled shouldBe true
                 response.status() shouldBe HttpStatusCode.OK
                 response.headers["Cache-Control"] shouldBe "max-age=86400"
             }

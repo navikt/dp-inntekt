@@ -2,12 +2,12 @@ package no.nav.dagpenger.inntekt.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import no.nav.dagpenger.inntekt.Configuration
+import no.nav.dagpenger.inntekt.InntektApiConfig
 import no.nav.dagpenger.inntekt.Profile
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
 
-fun migrate(config: Configuration): Int {
+fun migrate(config: InntektApiConfig): Int {
     return when (config.application.profile) {
         Profile.LOCAL -> HikariDataSource(hikariConfigFrom(config)).use {
             migrate(
@@ -25,19 +25,19 @@ fun migrate(config: Configuration): Int {
     }
 }
 
-private fun hikariDataSourceWithVaultIntegration(config: Configuration, role: Role = Role.USER) =
+private fun hikariDataSourceWithVaultIntegration(config: InntektApiConfig, role: Role = Role.USER) =
     HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration(
         hikariConfigFrom(config),
         config.vault.mountPath,
         "${config.database.name}-$role"
     )
 
-fun dataSourceFrom(config: Configuration): HikariDataSource = when (config.application.profile) {
+fun dataSourceFrom(config: InntektApiConfig): HikariDataSource = when (config.application.profile) {
     Profile.LOCAL -> HikariDataSource(hikariConfigFrom(config))
     else -> hikariDataSourceWithVaultIntegration(config)
 }
 
-fun hikariConfigFrom(config: Configuration) =
+fun hikariConfigFrom(config: InntektApiConfig) =
     HikariConfig().apply {
         jdbcUrl = "jdbc:postgresql://${config.database.host}:${config.database.port}/${config.database.name}"
         maximumPoolSize = 2

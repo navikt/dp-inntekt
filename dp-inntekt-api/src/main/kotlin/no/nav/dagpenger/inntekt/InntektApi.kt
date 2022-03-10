@@ -1,6 +1,7 @@
 package no.nav.dagpenger.inntekt
 
 import com.auth0.jwk.JwkProvider
+import com.natpryce.konfig.Configuration
 import com.ryanharter.ktor.moshi.moshi
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonEncodingException
@@ -8,6 +9,7 @@ import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
+import io.ktor.auth.authenticate
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.features.CallId
@@ -30,6 +32,7 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import mu.KotlinLogging
+import no.nav.dagpenger.inntekt.Config.application
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -51,9 +54,9 @@ import java.util.concurrent.atomic.AtomicLong
 
 private val LOGGER = KotlinLogging.logger {}
 private val sikkerLogg = KotlinLogging.logger("tjenestekall")
-private val config = Configuration()
 
 fun Application.inntektApi(
+    config: Configuration = Config.config,
     inntektskomponentHttpClient: InntektskomponentClient,
     inntektStore: InntektStore,
     behandlingsInntektsGetter: BehandlingsInntektsGetter,
@@ -71,7 +74,7 @@ fun Application.inntektApi(
     }
 
     install(Authentication) {
-        apiKeyAuth {
+        apiKeyAuth("apikey") {
             apiKeyName = "X-API-KEY"
             validate { apikeyCredential: ApiKeyCredential ->
                 when {
@@ -95,6 +98,10 @@ fun Application.inntektApi(
             validate { credentials ->
                 return@validate JWTPrincipal(credentials.payload)
             }
+        }
+
+        jwt("azure") {
+            azureAdJWT(config)
         }
     }
 
@@ -209,11 +216,20 @@ fun Application.inntektApi(
     routing {
         route("/v1") {
             route("/inntekt") {
-                inntekt(behandlingsInntektsGetter)
+                authenticate("apikey") {
+                    inntekt(behandlingsInntektsGetter)
+                }
                 uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, personOppslag)
             }
             opptjeningsperiodeApi(inntektStore)
             enhetsregisteret(enhetsregisterClient)
+        }
+        route("v2") {
+            route("/inntekt") {
+                authenticate("azure") {
+                    inntekt(behandlingsInntektsGetter)
+                }
+            }
         }
         naischecks(healthChecks)
     }

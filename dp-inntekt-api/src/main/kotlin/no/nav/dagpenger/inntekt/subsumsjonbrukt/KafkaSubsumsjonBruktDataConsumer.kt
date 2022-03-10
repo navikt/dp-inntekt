@@ -7,9 +7,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.inntekt.Configuration
 import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.HealthStatus
+import no.nav.dagpenger.inntekt.InntektApiConfig
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.plain.consumerConfig
@@ -23,7 +23,7 @@ import java.time.ZonedDateTime
 import kotlin.coroutines.CoroutineContext
 
 internal class KafkaSubsumsjonBruktDataConsumer(
-    private val config: Configuration,
+    private val config: InntektApiConfig,
     private val inntektStore: InntektStore,
     private val graceDuration: Duration = Duration.ofHours(3)
 ) : CoroutineScope, HealthCheck {

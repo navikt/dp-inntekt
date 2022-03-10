@@ -8,7 +8,8 @@ import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.events.moshiInstance
-import no.nav.dagpenger.inntekt.Configuration
+import no.nav.dagpenger.inntekt.Config
+import no.nav.dagpenger.inntekt.Config.inntektApiConfig
 import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -70,7 +71,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
         runBlocking {
             val storeMock = mockk<InntektStore>(relaxed = false)
             coEvery { storeMock.markerInntektBrukt(inntektId) } returns 1
-            val config = Configuration().run {
+            val config = Config.config.inntektApiConfig.run {
                 copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
             }
 
@@ -96,7 +97,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
     fun `Cannot mark inntekt id as used if not present in faktum`() {
         runBlocking {
             val storeMock = mockk<InntektStore>(relaxed = false)
-            val config = Configuration().run {
+            val config = Config.config.inntektApiConfig.run {
                 copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
             }
 
@@ -127,7 +128,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
             val inntektId = InntektId(ULID().nextULID())
             val storeMock = mockk<InntektStore>(relaxed = false)
             coEvery { storeMock.markerInntektBrukt(inntektId) } throws SQLTransientConnectionException("BLÆ")
-            val config = Configuration().run {
+            val config = Config.config.inntektApiConfig.run {
                 copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
             }
 
