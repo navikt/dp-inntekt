@@ -16,7 +16,6 @@ import io.prometheus.client.CollectorRegistry
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.Config
-import no.nav.dagpenger.inntekt.Config.config
 import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektApi
