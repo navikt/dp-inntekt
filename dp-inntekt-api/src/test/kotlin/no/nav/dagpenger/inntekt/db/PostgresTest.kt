@@ -10,7 +10,8 @@ import io.kotest.property.arbitrary.localDateTime
 import io.kotest.property.arbitrary.next
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
-import no.nav.dagpenger.inntekt.Configuration
+import no.nav.dagpenger.inntekt.Config
+import no.nav.dagpenger.inntekt.Config.inntektApiConfig
 import no.nav.dagpenger.inntekt.DataSource
 import no.nav.dagpenger.inntekt.dummyConfigs
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
@@ -59,7 +60,7 @@ internal class PostgresTest {
     @Test
     fun `JDBC url is set correctly from  config values `() {
         withProps(dummyConfigs) {
-            with(hikariConfigFrom(Configuration())) {
+            with(hikariConfigFrom(Config.config.inntektApiConfig)) {
                 assertEquals("jdbc:postgresql://localhost:5432/dp-inntekt-db", jdbcUrl)
             }
         }

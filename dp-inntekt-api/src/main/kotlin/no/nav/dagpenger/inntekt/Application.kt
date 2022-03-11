@@ -8,6 +8,7 @@ import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import no.nav.dagpenger.inntekt.Config.inntektApiConfig
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
 import no.nav.dagpenger.inntekt.db.dataSourceFrom
 import no.nav.dagpenger.inntekt.db.migrate
@@ -26,10 +27,11 @@ import java.util.concurrent.TimeUnit
 import kotlin.concurrent.fixedRateTimer
 
 private val LOGGER = KotlinLogging.logger {}
-private val config = Configuration()
+private val configuration = Config.config
 
 fun main() {
     runBlocking {
+        val config = configuration.inntektApiConfig
         migrate(config)
         DefaultExports.initialize()
 
@@ -94,6 +96,7 @@ fun main() {
         // Provides a HTTP API for getting inntekt
         embeddedServer(Netty, port = config.application.httpPort) {
             inntektApi(
+                configuration,
                 inntektskomponentHttpClient,
                 postgresInntektStore,
                 cachedInntektsGetter,

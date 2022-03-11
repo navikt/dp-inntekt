@@ -10,7 +10,7 @@ import io.mockk.mockk
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
-import no.nav.dagpenger.inntekt.v1.mockInntektApi
+import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals

@@ -10,7 +10,7 @@ plugins {
 
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
 }
 
@@ -98,6 +98,8 @@ dependencies {
         // https://youtrack.jetbrains.com/issue/KT-46090
         exclude("org.jetbrains.kotlin", "kotlin-test-junit")
     }
+
+    testImplementation("no.nav.security:mock-oauth2-server:0.4.3")
     testImplementation(Ktor.library("client-mock"))
     testImplementation(Junit5.api)
     testImplementation(Junit5.params)
