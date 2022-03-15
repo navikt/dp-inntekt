@@ -30,6 +30,10 @@ spec:
   azure:
     application:
       enabled: true
+  accessPolicy:
+    inbound:
+      rules:
+        - application: dp-oppslag-inntekt
   kafka:
     pool: nav-dev
   vault:
