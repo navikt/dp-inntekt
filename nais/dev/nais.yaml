@@ -34,6 +34,7 @@ spec:
     inbound:
       rules:
         - application: dp-oppslag-inntekt
+        - application: dp-inntekt-klassifiserer
   kafka:
     pool: nav-dev
   vault:
