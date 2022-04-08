@@ -36,6 +36,7 @@ import no.nav.dagpenger.inntekt.Config.application
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.db.KronetilleggUttrekk
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
@@ -44,6 +45,7 @@ import no.nav.dagpenger.inntekt.v1.enhetsregisteret
 import no.nav.dagpenger.inntekt.v1.inntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
 import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
+import no.nav.dagpenger.inntekt.v1.uttrekk
 import no.nav.dagpenger.ktor.auth.ApiKeyCredential
 import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import no.nav.dagpenger.ktor.auth.ApiPrincipal
@@ -55,7 +57,7 @@ import java.util.concurrent.atomic.AtomicLong
 private val LOGGER = KotlinLogging.logger {}
 private val sikkerLogg = KotlinLogging.logger("tjenestekall")
 
-fun Application.inntektApi(
+internal fun Application.inntektApi(
     config: Configuration = Config.config,
     inntektskomponentHttpClient: InntektskomponentClient,
     inntektStore: InntektStore,
@@ -64,6 +66,7 @@ fun Application.inntektApi(
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     jwkProvider: JwkProvider,
     enhetsregisterClient: EnhetsregisterClient,
+    kronetilleggUttrekk: KronetilleggUttrekk,
     healthChecks: List<HealthCheck>,
     collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
 ) {
@@ -228,6 +231,7 @@ fun Application.inntektApi(
             route("/inntekt") {
                 authenticate("azure") {
                     inntekt(behandlingsInntektsGetter)
+                    uttrekk(kronetilleggUttrekk)
                 }
             }
         }

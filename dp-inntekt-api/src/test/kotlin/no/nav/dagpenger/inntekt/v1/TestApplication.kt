@@ -18,6 +18,7 @@ import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.Config
 import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.db.KronetilleggUttrekk
 import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
@@ -58,6 +59,7 @@ internal object TestApplication {
         apiAuthApiKeyVerifier: AuthApiKeyVerifier = mockk(relaxed = true),
         jwkProvider: JwkProvider = mockk(relaxed = true),
         enhetsregisterClient: EnhetsregisterClient = mockk(relaxed = true),
+        kronetilleggUttrekk: KronetilleggUttrekk = mockk(relaxed = true),
         healthChecks: List<HealthCheck> = emptyList()
     ): Application.() -> Unit {
         return fun Application.() {
@@ -71,6 +73,7 @@ internal object TestApplication {
                 jwkProvider = jwkProvider,
                 enhetsregisterClient = enhetsregisterClient,
                 healthChecks = healthChecks,
+                kronetilleggUttrekk = kronetilleggUttrekk,
                 collectorRegistry = CollectorRegistry(true)
             )
         }
