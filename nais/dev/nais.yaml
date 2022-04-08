@@ -45,4 +45,5 @@ spec:
   secureLogs:
     enabled: true
   ingresses:
-    - "https://dp-inntekt-api.nais.preprod.local"
+    - https://dp-inntekt-api.nais.preprod.local
+    - https://dp-inntekt-api.dev-fss-pub.nais.io
