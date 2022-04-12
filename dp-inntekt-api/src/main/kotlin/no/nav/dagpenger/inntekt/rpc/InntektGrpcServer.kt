@@ -11,6 +11,7 @@ import io.grpc.Status
 import io.grpc.StatusException
 import io.grpc.StatusRuntimeException
 import mu.KotlinLogging
+import mu.withLoggingContext
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
@@ -57,7 +58,6 @@ internal class InntektGrpcServer(
 }
 
 internal class ApiKeyServerInterceptor(private val apiKeyVerifier: AuthApiKeyVerifier) : ServerInterceptor {
-
     companion object {
         private val API_KEY_HEADER: Metadata.Key<String> =
             Metadata.Key.of("x-api-key", Metadata.ASCII_STRING_MARSHALLER)
@@ -68,10 +68,12 @@ internal class ApiKeyServerInterceptor(private val apiKeyVerifier: AuthApiKeyVer
         headers: Metadata,
         next: ServerCallHandler<ReqT, RespT>
     ): ServerCall.Listener<ReqT> {
-        val authenticated = headers.get(API_KEY_HEADER)?.let { apiKeyVerifier.verify(it) } ?: false
-        if (!authenticated) {
-            logger.warn { "gRpc call not authenticated" }
-            throw StatusRuntimeException(Status.UNAUTHENTICATED)
+        withLoggingContext("request_type" to "gRPC") {
+            val authenticated = headers.get(API_KEY_HEADER)?.let { apiKeyVerifier.verify(it) } ?: false
+            if (!authenticated) {
+                logger.warn { "gRpc call not authenticated" }
+                throw StatusRuntimeException(Status.UNAUTHENTICATED)
+            }
         }
         return next.startCall(call, headers)
     }
@@ -86,7 +88,6 @@ internal class InntektGrpcApi(private val inntektStore: InntektStore) :
     }
 
     override suspend fun hentSpesifisertInntektAsJson(request: InntektId): SpesifisertInntektAsJson {
-
         val inntekt = getSpesifisertInntekt(request)
         return SpesifisertInntektAsJson.newBuilder()
             .setInntektId(inntekt.inntektId.let { InntektId.newBuilder().setId(it.id).build() })
@@ -94,7 +95,6 @@ internal class InntektGrpcApi(private val inntektStore: InntektStore) :
     }
 
     override suspend fun hentKlassifisertInntektAsJson(request: InntektId): KlassifisertInntektAsJson {
-
         val inntekt = getSpesifisertInntekt(request)
         val klassifisert = klassifiserOgMapInntekt(inntekt)
         return KlassifisertInntektAsJson.newBuilder()

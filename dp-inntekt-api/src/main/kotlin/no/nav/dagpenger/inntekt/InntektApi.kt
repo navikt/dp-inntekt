@@ -32,6 +32,7 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import mu.KotlinLogging
+import mu.withLoggingContext
 import no.nav.dagpenger.inntekt.Config.application
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
@@ -80,9 +81,11 @@ internal fun Application.inntektApi(
         apiKeyAuth("apikey") {
             apiKeyName = "X-API-KEY"
             validate { apikeyCredential: ApiKeyCredential ->
-                when {
-                    apiAuthApiKeyVerifier.verify(apikeyCredential.value) -> ApiPrincipal(apikeyCredential)
-                    else -> null
+                withLoggingContext("request_type" to "API") {
+                    when {
+                        apiAuthApiKeyVerifier.verify(apikeyCredential.value) -> ApiPrincipal(apikeyCredential)
+                        else -> null
+                    }
                 }
             }
         }
@@ -241,6 +244,7 @@ internal fun Application.inntektApi(
 
 data class AuthApiKeyVerifier(private val apiKeyVerifier: ApiKeyVerifier, private val clients: List<String>) {
     fun verify(payload: String): Boolean {
+        sikkerLogg.info { "Verifiserer ApiKey" }
         return clients.map { apiKeyVerifier.verify(payload, it) }.firstOrNull { it } ?: false
     }
 }
