@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariDataSource
 import no.nav.dagpenger.inntekt.db.clean
 import no.nav.dagpenger.inntekt.db.migrate
 import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
 
 fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.run { test() }
 
@@ -13,6 +14,7 @@ fun withMigratedDb(test: () -> Unit) =
 object PostgresContainer {
     val instance by lazy {
         PostgreSQLContainer<Nothing>("postgres:11.2").apply {
+            this.waitingFor(HostPortWaitStrategy())
             start()
         }
     }
