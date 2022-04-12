@@ -15,6 +15,7 @@ private val logger = KotlinLogging.logger {}
 internal fun Route.uttrekk(kronetilleggUttrekk: KronetilleggUttrekk) {
     route("{inntektID}") {
         get("harDagpenger") {
+            logger.info { "Requesten har disse dataene: host=${call.request.local.host}, remoteHost=${call.request.local.remoteHost}" }
             val inntektId = InntektId(
                 this.call.parameters["inntektID"] ?: throw IllegalArgumentException("inntektID mangler i parameter")
             )
