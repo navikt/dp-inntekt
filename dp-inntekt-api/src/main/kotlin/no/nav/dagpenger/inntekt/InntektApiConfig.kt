@@ -46,9 +46,9 @@ internal object Config {
     )
     private val devProperties = ConfigurationMap(
         mapOf(
-            "database.host" to "b27dbvl007.preprod.local",
+            "database.host" to "b27dbvl013.preprod.local",
             "database.port" to "5432",
-            "database.name" to "dp-inntekt-db-preprod",
+            "database.name" to "dp-inntekt-db-q0",
             "flyway.locations" to "db/migration,db/testdata",
             "vault.mountpath" to "postgresql/preprod-fss/",
             "hentinntektliste.url" to "https://app-q1.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
