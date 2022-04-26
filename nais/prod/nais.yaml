@@ -47,3 +47,5 @@ spec:
     paths:
       - kvPath: serviceuser/data/prod/{{service_user}}
         mountPath: /var/run/secrets/nais.io/service_user
+  ingresses:
+    - https://dp-inntekt-api.prod-fss-pub.nais.io
