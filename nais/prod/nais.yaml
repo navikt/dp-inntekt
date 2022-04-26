@@ -37,6 +37,9 @@ spec:
       rules:
         - application: dp-oppslag-inntekt
         - application: dp-inntekt-klassifiserer
+        - application: dp-kronetillegg
+          namespace: teamdagpenger
+          cluster: prod-gcp
   kafka:
     pool: nav-prod
   vault:
