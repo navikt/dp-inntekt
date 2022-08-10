@@ -40,6 +40,9 @@ spec:
         - application: dp-kronetillegg
           namespace: teamdagpenger
           cluster: prod-gcp
+        - application: dagpenger-regel-ui
+          namespace: teamdagpenger
+          cluster: prod-gcp
   kafka:
     pool: nav-prod
   vault:

@@ -38,6 +38,9 @@ spec:
         - application: dp-kronetillegg
           namespace: teamdagpenger
           cluster: dev-gcp
+        - application: dagpenger-regel-ui
+          namespace: teamdagpenger
+          cluster: dev-gcp
   kafka:
     pool: nav-dev
   vault:
