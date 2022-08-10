@@ -102,7 +102,10 @@ internal fun Application.inntektApi(
                     ?: throw CookieNotSetException("Cookie with name ID_token not found")
                 HttpAuthHeader.Single("Bearer", cookie)
             }
-            skipWhen { it.request.authorization() != null }
+            skipWhen {
+                sikkerLogg.info { "Request har auth header: ${it.request.authorization()}" }
+                it.request.authorization() != null
+            }
             validate { credentials ->
                 return@validate JWTPrincipal(credentials.payload)
             }
