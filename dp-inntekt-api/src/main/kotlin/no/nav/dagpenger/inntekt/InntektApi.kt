@@ -21,10 +21,8 @@ import io.ktor.features.callIdMdc
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.auth.HttpAuthHeader
-import io.ktor.http.auth.parseAuthorizationHeader
 import io.ktor.http.isSuccess
 import io.ktor.metrics.micrometer.MicrometerMetrics
-import io.ktor.request.authorization
 import io.ktor.request.path
 import io.ktor.response.respond
 import io.ktor.routing.route
@@ -99,11 +97,8 @@ internal fun Application.inntektApi(
                 acceptIssuedAt(10)
             }
             authHeader { call ->
-                val header = call.request.authorization()?.let { parseAuthorizationHeader(it) }
-                if (header !== null) return@authHeader header
                 val cookie = call.request.cookies["ID_token"]
                     ?: throw CookieNotSetException("Cookie with name ID_token not found")
-                LOGGER.info { "Auther login som bruker ID_token" }
                 HttpAuthHeader.Single("Bearer", cookie)
             }
             validate { credentials ->

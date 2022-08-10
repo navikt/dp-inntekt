@@ -64,7 +64,7 @@ fun Route.uklassifisertInntekt(
     inntektStore: InntektStore,
     personOppslag: PersonOppslag
 ) {
-    authenticate("jwt") {
+    authenticate("jwt", "azure") {
         route("/uklassifisert/{aktørId}/{kontekstType}/{kontekstId}/{beregningsDato}") {
             get {
                 withContext(Dispatchers.IO) {
