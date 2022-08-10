@@ -23,6 +23,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.http.isSuccess
 import io.ktor.metrics.micrometer.MicrometerMetrics
+import io.ktor.request.authorization
 import io.ktor.request.path
 import io.ktor.response.respond
 import io.ktor.routing.route
@@ -101,6 +102,7 @@ internal fun Application.inntektApi(
                     ?: throw CookieNotSetException("Cookie with name ID_token not found")
                 HttpAuthHeader.Single("Bearer", cookie)
             }
+            skipWhen { it.request.authorization() != null }
             validate { credentials ->
                 return@validate JWTPrincipal(credentials.payload)
             }
