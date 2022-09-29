@@ -211,7 +211,7 @@ internal fun Application.inntektApi(
     install(CallLogging) {
         level = Level.INFO
         disableDefaultColors()
-        callIdMdc("x-call-id")
+        callIdMdc("callId")
 
         filter { call ->
             !call.request.path().startsWith("/isAlive") &&
