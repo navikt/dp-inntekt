@@ -19,7 +19,6 @@ private val jsonResponseAdapter = moshiInstance.adapter(InntektkomponentResponse
 private val jsonRequestRequestAdapter = moshiInstance.adapter(HentInntektListeRequest::class.java)
 private val jsonMapAdapter = moshiInstance.adapter(Map::class.java)
 private val ulid = ULID()
-
 const val INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME = "inntektskomponent_client_seconds"
 private val clientLatencyStats: Summary = Summary.build()
     .name(INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME)
@@ -28,13 +27,11 @@ private val clientLatencyStats: Summary = Summary.build()
     .quantile(0.99, 0.001) // Add 99th percentile with 0.1% tolerated error
     .help("Latency arena-adapter regel client, in seconds")
     .register()
-
 const val INNTEKTSKOMPONENT_FETCH_ERROR = "inntektskomponent_fetch_error"
 private val clientFetchErrors = Counter.build()
     .name(INNTEKTSKOMPONENT_FETCH_ERROR)
     .help("Number of times fetching form inntektskomponenten has failed")
     .register()
-
 const val INNTEKTSKOMPONENT_STATUS_CODES = "inntektskomponent_status_codes"
 private val inntektskomponentStatusCodesCounter = Counter.build()
     .name(INNTEKTSKOMPONENT_STATUS_CODES)
@@ -46,10 +43,10 @@ class InntektskomponentHttpClient(
     private val hentInntektlisteUrl: String,
     private val oidcClient: OidcClient
 ) : InntektskomponentClient {
-
     override suspend fun getInntekt(
         request: InntektkomponentRequest,
-        timeouts: InntektskomponentClient.ConnectionTimeout
+        timeouts: InntektskomponentClient.ConnectionTimeout,
+        callId: String?
     ): InntektkomponentResponse {
         val requestBody = HentInntektListeRequest(
             "DagpengerGrunnlagA-Inntekt",
@@ -58,13 +55,12 @@ class InntektskomponentHttpClient(
             request.månedFom,
             request.månedTom
         )
-
         val jsonBody = jsonRequestRequestAdapter.toJson(requestBody)
         val timer = clientLatencyStats.startTimer()
 
-        val callId = ulid.nextULID()
+        val externalCallId = callId ?: ulid.nextULID()
         withLoggingContext(
-            "callId" to callId
+            "callId" to externalCallId
         ) {
             logg.info("Fetching new inntekt for $request")
 
@@ -75,7 +71,7 @@ class InntektskomponentHttpClient(
 
                     authentication().bearer(oidcClient.oidcToken().access_token)
                     header("Nav-Consumer-Id" to "dp-inntekt-api")
-                    header("Nav-Call-Id" to callId)
+                    header("Nav-Call-Id" to externalCallId)
                     body(jsonBody)
                     awaitResponseResult(moshiDeserializerOf(jsonResponseAdapter))
                 }
@@ -89,7 +85,6 @@ class InntektskomponentHttpClient(
                     { error ->
                         val resp = error.response.body().asString("application/json")
                         val detail = runCatching {
-
                             jsonMapAdapter.fromJson(resp)
                         }.let {
                             it.getOrNull()?.get("message")?.toString() ?: error.message

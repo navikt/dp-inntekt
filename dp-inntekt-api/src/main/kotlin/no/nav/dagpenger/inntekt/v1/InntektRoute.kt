@@ -1,6 +1,7 @@
 package no.nav.dagpenger.inntekt.v1
 
 import io.ktor.application.call
+import io.ktor.features.callId
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
@@ -27,7 +28,8 @@ fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
                             regelkontekst = request.regelkontekst,
                             beregningsdato = request.beregningsDato,
                             fødselnummer = request.fødselsnummer
-                        )
+                        ),
+                        call.callId
                     )
 
                 call.respond(HttpStatusCode.OK, spesifisertInntekt)
@@ -45,7 +47,8 @@ fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter) {
                             regelkontekst = request.regelkontekst,
                             beregningsdato = request.beregningsDato,
                             fødselnummer = request.fødselsnummer
-                        )
+                        ),
+                        call.callId
                     )
                 call.respond(HttpStatusCode.OK, klassifisertInntekt)
             }

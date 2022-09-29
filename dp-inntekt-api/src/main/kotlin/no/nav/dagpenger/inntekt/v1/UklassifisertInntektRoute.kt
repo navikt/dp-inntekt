@@ -6,6 +6,7 @@ import io.ktor.application.call
 import io.ktor.auth.authenticate
 import io.ktor.auth.authentication
 import io.ktor.auth.jwt.JWTPrincipal
+import io.ktor.features.callId
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
@@ -40,19 +41,16 @@ import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
-
 const val INNTEKT_KORRIGERING = "inntekt_korrigering"
 private val inntektKorrigeringCounter = Counter.build()
     .name(INNTEKT_KORRIGERING)
     .help("Antall ganger saksbehandler har korrigert inntekter")
     .register()
-
 const val INNTEKT_OPPFRISKING = "inntekt_oppfrisking"
 private val inntektOppfriskingCounter = Counter.build()
     .name(INNTEKT_OPPFRISKING)
     .help("Antall ganger saksbehandler har oppdatert inntekter")
     .register()
-
 const val INNTEKT_OPPFRISKING_BRUKT = "inntekt_oppfrisking_brukt"
 private val inntektOppfriskingBruktCounter = Counter.build()
     .name(INNTEKT_OPPFRISKING_BRUKT)
@@ -94,7 +92,6 @@ fun Route.uklassifisertInntekt(
                         val guiInntekt = call.receive<GUIInntekt>()
                         mapToStoredInntekt(guiInntekt)
                             .let {
-
                                 inntektStore.storeInntekt(
                                     StoreInntektCommand(
                                         inntektparametre = Inntektparametre(
@@ -108,7 +105,6 @@ fun Route.uklassifisertInntekt(
                                             getSubject()
                                         )
                                     )
-
                                 )
                             }
                             .let {
@@ -130,12 +126,13 @@ fun Route.uklassifisertInntekt(
 
         route("/uklassifisert/uncached/{aktørId}/{kontekstType}/{kontekstId}/{beregningsDato}") {
             get {
+                val callId = call.callId
                 withContext(Dispatchers.IO) {
                     parseUrlPathParameters().run {
                         val opptjeningsperiode = Opptjeningsperiode(this.beregningsDato)
                         toInntektskomponentRequest(this, opptjeningsperiode)
                             .let {
-                                inntektskomponentClient.getInntekt(it)
+                                inntektskomponentClient.getInntekt(it, callId = callId)
                             }
                             .let {
                                 val person = personOppslag.hentPerson(this.aktørId)

@@ -5,7 +5,8 @@ import java.time.Duration
 interface InntektskomponentClient {
     suspend fun getInntekt(
         request: InntektkomponentRequest,
-        timeouts: ConnectionTimeout = ConnectionTimeout()
+        timeouts: ConnectionTimeout = ConnectionTimeout(),
+        callId: String? = null
     ): InntektkomponentResponse
 
     data class ConnectionTimeout(

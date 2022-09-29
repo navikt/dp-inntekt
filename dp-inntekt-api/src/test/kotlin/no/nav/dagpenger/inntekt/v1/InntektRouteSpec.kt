@@ -107,6 +107,7 @@ internal class InntektRouteSpec {
     private val authApiKeyVerifier = AuthApiKeyVerifier(apiKeyVerifier, listOf("test-client"))
     private val apiKey = apiKeyVerifier.generate("test-client")
 
+    private val callId = "string-ulid"
     private val inntektId = InntektId(ULID().nextULID())
     private val emptyInntekt = InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234"))
 
@@ -118,7 +119,7 @@ internal class InntektRouteSpec {
 
     init {
         coEvery {
-            behandlingsInntektsGetterMock.getBehandlingsInntekt(any())
+            behandlingsInntektsGetterMock.getBehandlingsInntekt(any(), any())
         } returns storedInntekt
     }
 
@@ -149,11 +150,12 @@ internal class InntektRouteSpec {
         handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader("X-API-KEY", apiKey)
+            addHeader("X-Request-Id", callId)
             setBody(validJson)
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(inntektParametre) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(inntektParametre) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(inntektParametre, callId) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(inntektParametre, callId) }
         }
     }
 
@@ -162,11 +164,12 @@ internal class InntektRouteSpec {
         handleRequest(HttpMethod.Post, klassifisertInntektPathV1) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader("X-API-KEY", apiKey)
+            addHeader("X-Request-Id", callId)
             setBody(validJson)
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(inntektParametre) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(inntektParametre) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(inntektParametre, callId) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(inntektParametre, callId) }
         }
     }
 
@@ -175,11 +178,12 @@ internal class InntektRouteSpec {
         handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader("X-API-KEY", apiKey)
+            addHeader("X-Request-Id", callId)
             setBody(validJsonWithVedtakIdAsUlid)
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(vedtakIdUlidParametre) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(vedtakIdUlidParametre) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(vedtakIdUlidParametre, callId) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(vedtakIdUlidParametre, callId) }
         }
     }
 
@@ -188,12 +192,13 @@ internal class InntektRouteSpec {
         handleRequest(HttpMethod.Post, klassifisertInntektPathV1) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader("X-API-KEY", apiKey)
+            addHeader("X-Request-Id", callId)
             setBody(validJsonWithFnr)
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(fnrParametre) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(fnrParametre) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(fnrParametre) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(fnrParametre, callId) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(fnrParametre, callId) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(fnrParametre, callId) }
         }
     }
 
@@ -202,12 +207,13 @@ internal class InntektRouteSpec {
         handleRequest(HttpMethod.Post, klassifisertInntektPathV1) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader("X-API-KEY", apiKey)
+            addHeader("X-Request-Id", callId)
             setBody(validJsonWithVedtakIdAsUlid)
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(vedtakIdUlidParametre) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(vedtakIdUlidParametre) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(vedtakIdUlidParametre) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(vedtakIdUlidParametre, callId) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(vedtakIdUlidParametre, callId) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(vedtakIdUlidParametre, callId) }
         }
     }
 
@@ -216,11 +222,12 @@ internal class InntektRouteSpec {
         handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader("X-API-KEY", apiKey)
+            addHeader("X-Request-Id", callId)
             setBody(validJsonWithFnr)
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(fnrParametre) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(fnrParametre) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(fnrParametre, callId) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(fnrParametre, callId) }
         }
     }
 

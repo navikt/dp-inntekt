@@ -55,20 +55,20 @@ internal class UklassifisertInntektApiTest {
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
     private val inntektStoreMock: InntektStore = mockk()
     private val inntektId = InntektId(ULID().nextULID())
-
     private val jwtStub = JwtStub("https://localhost")
     private val token = jwtStub.createTokenFor("user")
-
     private val notFoundQuery =
         Inntektparametre(
             aktørId = "1234",
             regelkontekst = RegelKontekst("1", "VEDTAK"),
             beregningsdato = LocalDate.of(2019, 1, 8)
         )
-
     private val foundQuery =
-        Inntektparametre(aktørId = "1234", regelkontekst = RegelKontekst("1234", "VEDTAK"), beregningsdato = LocalDate.of(2019, 1, 8))
-
+        Inntektparametre(
+            aktørId = "1234",
+            regelkontekst = RegelKontekst("1234", "VEDTAK"),
+            beregningsdato = LocalDate.of(2019, 1, 8)
+        )
     private val inntektkomponentenFoundRequest = InntektkomponentRequest(
         "1234",
         YearMonth.of(2016, 1),
@@ -76,13 +76,11 @@ internal class UklassifisertInntektApiTest {
     )
     private val personOppslagMock: PersonOppslag = mockk()
     private val emptyInntekt = InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234"))
-
     private val storedInntekt = StoredInntekt(
         inntektId = inntektId,
         inntekt = emptyInntekt,
         manueltRedigert = false
     )
-
     private val uklassifisertInntekt = "/v1/inntekt/uklassifisert"
 
     init {
@@ -123,11 +121,10 @@ internal class UklassifisertInntektApiTest {
             InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234")),
             false,
             LocalDateTime.now()
-
         )
 
         every {
-            runBlocking { inntektskomponentClientMock.getInntekt(inntektkomponentenFoundRequest) }
+            runBlocking { inntektskomponentClientMock.getInntekt(inntektkomponentenFoundRequest, callId = any()) }
         } returns emptyInntekt
 
         every {
@@ -176,7 +173,6 @@ internal class UklassifisertInntektApiTest {
 
     @Test
     fun `GET uklassifisert without inncorrect auth cookie should return  `() = testApp {
-
         val anotherIssuer = JwtStub("https://anotherissuer")
         handleRequest(
             HttpMethod.Get,
@@ -184,7 +180,6 @@ internal class UklassifisertInntektApiTest {
         ) {
             addHeader(HttpHeaders.Cookie, "ID_token=${anotherIssuer.createTokenFor("user")}")
         }.apply {
-
             Assertions.assertEquals(HttpStatusCode.Unauthorized, response.status())
         }
     }
@@ -332,7 +327,6 @@ internal class UklassifisertInntektApiTest {
 
     @Test
     fun `Post uklassifisert uncached inntekt should return 200 ok`() = testApp {
-
         val guiInntekt = GUIInntekt(
             inntektId = null,
             timestamp = null,
@@ -359,7 +353,6 @@ internal class UklassifisertInntektApiTest {
 
     @Test
     fun `Post uklassifisert uncached inntekt redigert should return 200 ok`() = testApp {
-
         val guiInntekt = GUIInntekt(
             inntektId = null,
             timestamp = null,

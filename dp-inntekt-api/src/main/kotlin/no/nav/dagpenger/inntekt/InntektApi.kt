@@ -5,6 +5,7 @@ import com.natpryce.konfig.Configuration
 import com.ryanharter.ktor.moshi.moshi
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonEncodingException
+import de.huxhorn.sulky.ulid.ULID
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -54,7 +55,6 @@ import no.nav.dagpenger.ktor.auth.ApiPrincipal
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import org.slf4j.event.Level
 import java.net.URI
-import java.util.concurrent.atomic.AtomicLong
 
 private val LOGGER = KotlinLogging.logger {}
 private val sikkerLogg = KotlinLogging.logger("tjenestekall")
@@ -254,5 +254,5 @@ data class AuthApiKeyVerifier(private val apiKeyVerifier: ApiKeyVerifier, privat
     }
 }
 
-private val lastIncrement = AtomicLong()
-private fun newRequestId(): String = "dp-inntekt-api-${lastIncrement.incrementAndGet()}"
+private val ulid = ULID()
+private fun newRequestId(): String = "dp-inntekt-api-${ulid.nextULID()}"
