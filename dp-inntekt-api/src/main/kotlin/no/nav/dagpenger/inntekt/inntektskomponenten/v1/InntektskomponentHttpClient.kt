@@ -57,7 +57,6 @@ class InntektskomponentHttpClient(
         )
         val jsonBody = jsonRequestRequestAdapter.toJson(requestBody)
         val timer = clientLatencyStats.startTimer()
-
         val externalCallId = callId ?: ulid.nextULID()
         withLoggingContext(
             "callId" to externalCallId
@@ -80,7 +79,9 @@ class InntektskomponentHttpClient(
 
                 return result.fold(
                     {
-                        it
+                        it.also {
+                            logg.info("Successfully fetched")
+                        }
                     },
                     { error ->
                         val resp = error.response.body().asString("application/json")
@@ -97,6 +98,7 @@ class InntektskomponentHttpClient(
                             "Failed to fetch inntekt. Status code ${response.statusCode}. Response message: ${response.responseMessage}. Problem message: $detail",
                             detail
                         ).also {
+                            logg.error { it }
                             sikkerLogg.error { it }
                         }
                     }
