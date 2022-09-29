@@ -79,9 +79,7 @@ class InntektskomponentHttpClient(
 
                 return result.fold(
                     {
-                        it.also {
-                            logg.info("Successfully fetched")
-                        }
+                        it
                     },
                     { error ->
                         val resp = error.response.body().asString("application/json")
