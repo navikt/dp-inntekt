@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.mapping
 
+import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
@@ -8,7 +9,9 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
-import java.lang.IllegalArgumentException
+
+private val logg = KotlinLogging.logger {}
+private val sikkerlogg = KotlinLogging.logger("tjenestekall.MapFromGUIInntekt")
 
 fun mapToStoredInntekt(guiInntekt: GUIInntekt): StoredInntekt = guiInntekt.inntektId?.let {
     StoredInntekt(
@@ -20,7 +23,10 @@ fun mapToStoredInntekt(guiInntekt: GUIInntekt): StoredInntekt = guiInntekt.innte
         ),
         guiInntekt.manueltRedigert
     )
-} ?: throw IllegalArgumentException("missing innktektId")
+} ?: throw IllegalArgumentException("missing innktektId").also {
+    logg.error(it) { "Mangler inntektId" }
+    sikkerlogg.error(it) { "Mangler inntektId. guiInntekt=$guiInntekt" }
+}
 
 fun mapToDetachedInntekt(guiInntekt: GUIInntekt): DetachedInntekt =
     DetachedInntekt(
@@ -60,7 +66,15 @@ private fun mapToArbeidsInntektMaaneder(arbeidsMaaneder: List<GUIArbeidsInntektM
                         inntekt.utloeserArbeidsgiveravgift,
                         inntekt.informasjonsstatus,
                         datagrunnlagForVerdikode.type,
-                        datagrunnlagForVerdikode.forhold?.let { TilleggInformasjon(inntekt.tilleggsinformasjon?.kategori, TilleggInformasjonsDetaljer(inntekt.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.detaljerType, it)) }
+                        datagrunnlagForVerdikode.forhold?.let {
+                            TilleggInformasjon(
+                                inntekt.tilleggsinformasjon?.kategori,
+                                TilleggInformasjonsDetaljer(
+                                    inntekt.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.detaljerType,
+                                    it
+                                )
+                            )
+                        }
                     )
                 } ?: emptyList()
             )

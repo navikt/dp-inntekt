@@ -62,7 +62,7 @@ fun Route.uklassifisertInntekt(
         route("/uklassifisert/{aktørId}/{kontekstType}/{kontekstId}/{beregningsDato}") {
             get {
                 withContext(Dispatchers.IO) {
-                    parseUrlPathParameters().run {
+                    withInntektRequest {
                         inntektStore.getInntektId(
                             Inntektparametre(
                                 aktørId = this.aktørId,
@@ -83,7 +83,7 @@ fun Route.uklassifisertInntekt(
             }
             post {
                 withContext(Dispatchers.IO) {
-                    parseUrlPathParameters().run {
+                    withInntektRequest {
                         val guiInntekt = call.receive<GUIInntekt>()
                         mapToStoredInntekt(guiInntekt).let {
                             inntektStore.storeInntekt(
@@ -121,7 +121,7 @@ fun Route.uklassifisertInntekt(
             get {
                 val callId = call.callId
                 withContext(Dispatchers.IO) {
-                    parseUrlPathParameters().run {
+                    withInntektRequest {
                         withLoggingContext(
                             "route" to "/uklassifisert/uncached",
                             "aktørId" to aktørId,
@@ -151,7 +151,7 @@ fun Route.uklassifisertInntekt(
 
             post {
                 withContext(Dispatchers.IO) {
-                    parseUrlPathParameters().run {
+                    withInntektRequest {
                         val guiInntekt = call.receive<GUIInntekt>()
                         mapToDetachedInntekt(guiInntekt).let {
                             inntektStore.storeInntekt(
@@ -209,14 +209,23 @@ private fun PipelineContext<Unit, ApplicationCall>.getSubject(): String {
     }
 }
 
-private fun PipelineContext<Unit, ApplicationCall>.parseUrlPathParameters(): InntektRequest = runCatching {
-    InntektRequest(
-        aktørId = call.parameters["aktørId"]!!,
-        kontekstId = call.parameters["kontekstId"]!!,
-        kontekstType = call.parameters["kontekstType"]!!,
-        beregningsDato = LocalDate.parse(call.parameters["beregningsDato"]!!)
-    )
-}.getOrElse { t -> throw IllegalArgumentException("Failed to parse parameters", t) }
+private inline fun PipelineContext<Unit, ApplicationCall>.withInntektRequest(block: InntektRequest.() -> Unit) {
+    val inntektRequest = runCatching {
+        InntektRequest(
+            aktørId = call.parameters["aktørId"]!!,
+            kontekstId = call.parameters["kontekstId"]!!,
+            kontekstType = call.parameters["kontekstType"]!!,
+            beregningsDato = LocalDate.parse(call.parameters["beregningsDato"]!!)
+        )
+    }.getOrElse { t -> throw IllegalArgumentException("Failed to parse parameters", t) }
+
+    withLoggingContext(
+        "kontekstId" to inntektRequest.kontekstId,
+        "kontekstType" to inntektRequest.kontekstType
+    ) {
+        block(inntektRequest)
+    }
+}
 
 data class InntektRequest(
     val aktørId: String,
