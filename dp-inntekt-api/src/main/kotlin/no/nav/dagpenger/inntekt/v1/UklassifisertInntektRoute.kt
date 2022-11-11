@@ -62,7 +62,7 @@ fun Route.uklassifisertInntekt(
         route("/uklassifisert/{aktørId}/{kontekstType}/{kontekstId}/{beregningsDato}") {
             get {
                 withContext(Dispatchers.IO) {
-                    withInntektRequest {
+                    withInntektRequest("GET /uklassifisert/") {
                         inntektStore.getInntektId(
                             Inntektparametre(
                                 aktørId = this.aktørId,
@@ -83,7 +83,7 @@ fun Route.uklassifisertInntekt(
             }
             post {
                 withContext(Dispatchers.IO) {
-                    withInntektRequest {
+                    withInntektRequest("POST /uklassifisert/") {
                         val guiInntekt = call.receive<GUIInntekt>()
                         mapToStoredInntekt(guiInntekt).let {
                             inntektStore.storeInntekt(
@@ -121,29 +121,21 @@ fun Route.uklassifisertInntekt(
             get {
                 val callId = call.callId
                 withContext(Dispatchers.IO) {
-                    withInntektRequest {
-                        withLoggingContext(
-                            "route" to "/uklassifisert/uncached",
-                            "aktørId" to aktørId,
-                            "kontekstType" to kontekstType,
-                            "kontekstId" to kontekstId,
-                            "beregningsDato" to beregningsDato.toString()
-                        ) {
-                            val opptjeningsperiode = Opptjeningsperiode(this.beregningsDato)
-                            toInntektskomponentRequest(this, opptjeningsperiode).let {
-                                logger.info { "Henter nye inntekter fra inntektskomponenten" }
-                                inntektskomponentClient.getInntekt(it, callId = callId)
-                            }.let {
-                                logger.info { "Fikk nye inntekter fra inntektskomponenten" }
-                                val person = personOppslag.hentPerson(this.aktørId)
-                                val inntektsmottaker =
-                                    Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
-                                mapToGUIInntekt(it, opptjeningsperiode, inntektsmottaker)
-                            }.let {
-                                call.respond(HttpStatusCode.OK, it)
-                            }.also {
-                                inntektOppfriskingCounter.inc()
-                            }
+                    withInntektRequest("GET /uklassifisert/uncached/") {
+                        val opptjeningsperiode = Opptjeningsperiode(this.beregningsDato)
+                        toInntektskomponentRequest(this, opptjeningsperiode).let {
+                            logger.info { "Henter nye inntekter fra inntektskomponenten" }
+                            inntektskomponentClient.getInntekt(it, callId = callId)
+                        }.let {
+                            logger.info { "Fikk nye inntekter fra inntektskomponenten" }
+                            val person = personOppslag.hentPerson(this.aktørId)
+                            val inntektsmottaker =
+                                Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
+                            mapToGUIInntekt(it, opptjeningsperiode, inntektsmottaker)
+                        }.let {
+                            call.respond(HttpStatusCode.OK, it)
+                        }.also {
+                            inntektOppfriskingCounter.inc()
                         }
                     }
                 }
@@ -151,7 +143,7 @@ fun Route.uklassifisertInntekt(
 
             post {
                 withContext(Dispatchers.IO) {
-                    withInntektRequest {
+                    withInntektRequest("POST /uklassifisert/uncached/") {
                         val guiInntekt = call.receive<GUIInntekt>()
                         mapToDetachedInntekt(guiInntekt).let {
                             inntektStore.storeInntekt(
@@ -209,7 +201,10 @@ private fun PipelineContext<Unit, ApplicationCall>.getSubject(): String {
     }
 }
 
-private inline fun PipelineContext<Unit, ApplicationCall>.withInntektRequest(block: InntektRequest.() -> Unit) {
+private inline fun PipelineContext<Unit, ApplicationCall>.withInntektRequest(
+    route: String,
+    block: InntektRequest.() -> Unit
+) {
     val inntektRequest = runCatching {
         InntektRequest(
             aktørId = call.parameters["aktørId"]!!,
@@ -220,6 +215,7 @@ private inline fun PipelineContext<Unit, ApplicationCall>.withInntektRequest(blo
     }.getOrElse { t -> throw IllegalArgumentException("Failed to parse parameters", t) }
 
     withLoggingContext(
+        "route" to route,
         "kontekstId" to inntektRequest.kontekstId,
         "kontekstType" to inntektRequest.kontekstType
     ) {
