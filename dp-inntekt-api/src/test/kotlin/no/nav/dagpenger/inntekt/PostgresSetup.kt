@@ -3,13 +3,25 @@ package no.nav.dagpenger.inntekt
 import com.zaxxer.hikari.HikariDataSource
 import no.nav.dagpenger.inntekt.db.clean
 import no.nav.dagpenger.inntekt.db.migrate
+import org.flywaydb.core.internal.configuration.ConfigUtils
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
 
-fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.run { test() }
+fun withMigratedDb(block: () -> Unit) {
+    withCleanDb {
+        migrate(DataSource.instance)
+        block()
+    }
+}
 
-fun withMigratedDb(test: () -> Unit) =
-    DataSource.instance.also { clean(it) }.also { migrate(it) }.run { test() }
+fun withCleanDb(block: () -> Unit) {
+    setup()
+    clean(DataSource.instance).run {
+        block()
+    }.also {
+        tearDown()
+    }
+}
 
 object PostgresContainer {
     val instance by lazy {
@@ -18,6 +30,14 @@ object PostgresContainer {
             start()
         }
     }
+}
+
+fun setup() {
+    System.setProperty(ConfigUtils.CLEAN_DISABLED, "false")
+}
+
+fun tearDown() {
+    System.clearProperty(ConfigUtils.CLEAN_DISABLED)
 }
 
 object DataSource {
