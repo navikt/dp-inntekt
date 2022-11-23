@@ -5,7 +5,7 @@ plugins {
     application
     id(Shadow.shadow) version Shadow.version
     id(Graphql.graphql) version Graphql.version
-    id("de.undercouch.download")
+    id("de.undercouch.download") version "5.3.0"
 }
 
 buildscript {
