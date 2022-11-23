@@ -6,6 +6,7 @@ import no.nav.dagpenger.inntekt.InntektApiConfig
 import no.nav.dagpenger.inntekt.Profile
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
+import org.flywaydb.core.internal.configuration.ConfigUtils
 
 fun migrate(config: InntektApiConfig): Int {
     return when (config.application.profile) {
@@ -52,7 +53,9 @@ fun hikariConfigFrom(config: InntektApiConfig) =
 fun migrate(dataSource: HikariDataSource, initSql: String = "", locations: List<String> = listOf("db/migration")): Int =
     Flyway.configure().locations(*locations.toTypedArray()).dataSource(dataSource).initSql(initSql).load().migrate().migrations.size
 
-fun clean(dataSource: HikariDataSource) = Flyway.configure().dataSource(dataSource).load().clean()
+fun clean(dataSource: HikariDataSource) = Flyway.configure().cleanDisabled(
+    System.getProperty(ConfigUtils.CLEAN_DISABLED)?.toBooleanStrict() ?: true
+).dataSource(dataSource).load().clean()
 
 private enum class Role {
     ADMIN, USER;
