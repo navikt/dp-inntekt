@@ -96,8 +96,8 @@ class InntektskomponentHttpClient(
                             "Failed to fetch inntekt. Status code ${response.statusCode}. Response message: ${response.responseMessage}. Problem message: $detail",
                             detail
                         ).also {
-                            logg.error { it }
-                            sikkerLogg.error { it }
+                            logg.error(it) { it }
+                            sikkerLogg.error(it) { "Oppslag mot inntektskomponenten feilet. Request=$requestBody" }
                         }
                     }
                 )
