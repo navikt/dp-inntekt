@@ -24,7 +24,7 @@ object Cucumber {
 object Dagpenger {
 
     object Biblioteker {
-        const val version = "2022.11.24-14.34.528555d5f3df"
+        const val version = "2022.12.07-09.10.209e073691b5"
         const val stsKlient = "com.github.navikt.dp-biblioteker:sts-klient:$version"
         const val ktorUtils = "com.github.navikt.dp-biblioteker:ktor-utils:$version"
 
@@ -200,7 +200,7 @@ object Moshi {
     const val moshiAdapters = "com.squareup.moshi:moshi-adapters:$version"
 
     // waiting for https://github.com/rharter/ktor-moshi/pull/8
-    const val moshiKtor = "com.github.cs125-illinois:ktor-moshi:7252ca49ed"
+    const val moshiKtor = "com.github.cs125-illinois:ktor-moshi:2b13e43520"
     fun library(name: String) = "com.squareup.moshi:moshi-$name:$version"
 }
 
@@ -270,7 +270,7 @@ object Wiremock {
 }
 
 object Graphql {
-    const val version = "5.2.0"
+    const val version = "6.3.3"
     const val graphql = "com.expediagroup.graphql"
     val client = library("client")
     fun library(name: String) = "com.expediagroup:graphql-kotlin-$name:$version"

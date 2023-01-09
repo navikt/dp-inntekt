@@ -6,29 +6,28 @@ import com.ryanharter.ktor.moshi.moshi
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonEncodingException
 import de.huxhorn.sulky.ulid.ULID
-import io.ktor.application.Application
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.auth.Authentication
-import io.ktor.auth.authenticate
-import io.ktor.auth.jwt.JWTPrincipal
-import io.ktor.auth.jwt.jwt
-import io.ktor.features.CallId
-import io.ktor.features.CallLogging
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.DefaultHeaders
-import io.ktor.features.StatusPages
-import io.ktor.features.callIdMdc
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.http.isSuccess
-import io.ktor.metrics.micrometer.MicrometerMetrics
-import io.ktor.request.authorization
-import io.ktor.request.path
-import io.ktor.response.respond
-import io.ktor.routing.route
-import io.ktor.routing.routing
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.auth.Authentication
+import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.jwt.jwt
+import io.ktor.server.metrics.micrometer.MicrometerMetrics
+import io.ktor.server.plugins.callid.CallId
+import io.ktor.server.plugins.callid.callIdMdc
+import io.ktor.server.plugins.callloging.CallLogging
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.defaultheaders.DefaultHeaders
+import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.request.authorization
+import io.ktor.server.request.path
+import io.ktor.server.response.respond
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
@@ -49,10 +48,6 @@ import no.nav.dagpenger.inntekt.v1.inntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
 import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.uttrekk
-import no.nav.dagpenger.ktor.auth.ApiKeyCredential
-import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
-import no.nav.dagpenger.ktor.auth.ApiPrincipal
-import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import org.slf4j.event.Level
 import java.net.URI
 
@@ -70,15 +65,15 @@ internal fun Application.inntektApi(
     enhetsregisterClient: EnhetsregisterClient,
     kronetilleggUttrekk: KronetilleggUttrekk,
     healthChecks: List<HealthCheck>,
-    collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
+    collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry,
 ) {
     install(DefaultHeaders)
-
     install(MicrometerMetrics) {
         registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, collectorRegistry, Clock.SYSTEM)
     }
 
     install(Authentication) {
+
         apiKeyAuth("apikey") {
             apiKeyName = "X-API-KEY"
             validate { apikeyCredential: ApiKeyCredential ->
@@ -117,7 +112,8 @@ internal fun Application.inntektApi(
     }
 
     install(StatusPages) {
-        exception<Throwable> { cause ->
+
+        exception<Throwable> { call, cause ->
             LOGGER.error("Request failed!", cause)
             val error = Problem(
                 type = URI("urn:dp:error:inntekt"),
@@ -125,7 +121,7 @@ internal fun Application.inntektApi(
             )
             call.respond(HttpStatusCode.InternalServerError, error)
         }
-        exception<InntektNotFoundException> { cause ->
+        exception<InntektNotFoundException> { call, cause ->
             LOGGER.warn("Request failed!", cause)
             val problem = Problem(
                 type = URI("urn:dp:error:inntekt"),
@@ -135,7 +131,7 @@ internal fun Application.inntektApi(
             )
             call.respond(HttpStatusCode.NotFound, problem)
         }
-        exception<IllegalInntektIdException> { cause ->
+        exception<IllegalInntektIdException> { call, cause ->
             LOGGER.warn("Request failed!", cause)
             val problem = Problem(
                 type = URI("urn:dp:error:inntekt"),
@@ -145,7 +141,7 @@ internal fun Application.inntektApi(
             )
             call.respond(HttpStatusCode.BadRequest, problem)
         }
-        exception<InntektskomponentenHttpClientException> { cause ->
+        exception<InntektskomponentenHttpClientException> { call, cause ->
             val statusCode =
                 if (HttpStatusCode.fromValue(cause.status)
                     .isSuccess()
@@ -162,7 +158,7 @@ internal fun Application.inntektApi(
             )
             call.respond(statusCode, error)
         }
-        exception<JsonEncodingException> { cause ->
+        exception<JsonEncodingException> { call, cause ->
             LOGGER.warn("Request was malformed", cause)
             val error = Problem(
                 type = URI("urn:dp:error:inntekt:parameter"),
@@ -171,7 +167,7 @@ internal fun Application.inntektApi(
             )
             call.respond(HttpStatusCode.BadRequest, error)
         }
-        exception<JsonDataException> { cause ->
+        exception<JsonDataException> { call, cause ->
             LOGGER.warn("Request does not match expected json", cause)
             val error = Problem(
                 type = URI("urn:dp:error:inntekt:parameter"),
@@ -180,7 +176,7 @@ internal fun Application.inntektApi(
             )
             call.respond(HttpStatusCode.BadRequest, error)
         }
-        exception<IllegalArgumentException> { cause ->
+        exception<IllegalArgumentException> { call, cause ->
             LOGGER.warn("Request does not match expected json", cause)
             val error = Problem(
                 type = URI("urn:dp:error:inntekt:parameter"),
@@ -189,7 +185,7 @@ internal fun Application.inntektApi(
             )
             call.respond(HttpStatusCode.BadRequest, error)
         }
-        exception<CookieNotSetException> { cause ->
+        exception<CookieNotSetException> { call, cause ->
             LOGGER.warn("Unauthorized call", cause)
             val statusCode = HttpStatusCode.Unauthorized
             val error = Problem(
@@ -247,7 +243,7 @@ internal fun Application.inntektApi(
     }
 }
 
-data class AuthApiKeyVerifier(private val apiKeyVerifier: ApiKeyVerifier, private val clients: List<String>) {
+internal data class AuthApiKeyVerifier(private val apiKeyVerifier: ApiKeyVerifier, private val clients: List<String>) {
     fun verify(payload: String): Boolean {
         sikkerLogg.info { "Verifiserer ApiKey" }
         return clients.map { apiKeyVerifier.verify(payload, it) }.firstOrNull { it } ?: false

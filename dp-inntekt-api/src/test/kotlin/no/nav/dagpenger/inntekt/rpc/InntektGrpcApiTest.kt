@@ -19,12 +19,12 @@ import no.nav.dagpenger.events.inntekt.v1.Aktør
 import no.nav.dagpenger.events.inntekt.v1.AktørType
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
+import no.nav.dagpenger.inntekt.ApiKeyVerifier
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.klassifiserer.klassifiserOgMapInntekt
 import no.nav.dagpenger.inntekt.moshiInstance
-import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDateTime
