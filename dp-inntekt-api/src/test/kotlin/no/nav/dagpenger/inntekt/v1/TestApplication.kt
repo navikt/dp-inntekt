@@ -4,8 +4,8 @@ import com.auth0.jwk.JwkProvider
 import com.natpryce.konfig.Configuration
 import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.overriding
-import io.ktor.application.Application
 import io.ktor.http.HttpMethod
+import io.ktor.server.application.Application
 import io.ktor.server.testing.TestApplicationCall
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.TestApplicationRequest

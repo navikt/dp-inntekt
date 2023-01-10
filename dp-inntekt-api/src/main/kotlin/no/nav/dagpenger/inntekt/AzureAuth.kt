@@ -5,16 +5,16 @@ import com.auth0.jwk.JwkProviderBuilder
 import com.natpryce.konfig.Configuration
 import com.natpryce.konfig.Key
 import com.natpryce.konfig.stringType
-import io.ktor.auth.jwt.JWTAuthenticationProvider
-import io.ktor.auth.jwt.JWTCredential
-import io.ktor.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.jwt.JWTAuthenticationProvider
+import io.ktor.server.auth.jwt.JWTCredential
+import io.ktor.server.auth.jwt.JWTPrincipal
 import mu.KotlinLogging
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
 private val LOGGER = KotlinLogging.logger {}
 
-internal fun JWTAuthenticationProvider.Configuration.azureAdJWT(config: Configuration) {
+internal fun JWTAuthenticationProvider.Config.azureAdJWT(config: Configuration) {
     val jwksUri = config[Key("AZURE_OPENID_CONFIG_JWKS_URI", stringType)]
     val issuer = config[Key("AZURE_OPENID_CONFIG_ISSUER", stringType)]
     val clientId = config[Key("AZURE_APP_CLIENT_ID", stringType)]

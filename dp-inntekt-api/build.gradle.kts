@@ -31,19 +31,25 @@ dependencies {
 
     implementation(Dagpenger.Events)
 
-    implementation(Ktor.server)
-    implementation(Ktor.serverNetty)
-    implementation(Ktor.auth)
-    implementation(Ktor.authJwt)
-    implementation(Ktor.micrometerMetrics)
-    implementation(Dagpenger.Biblioteker.ktorUtils)
+    implementation(Ktor2.Server.library("netty"))
+    implementation(Ktor2.Server.library("auth"))
+    implementation(Ktor2.Server.library("auth-jwt"))
+    implementation(Ktor2.Server.library("status-pages"))
+    implementation(Ktor2.Server.library("call-id"))
+    implementation(Ktor2.Server.library("call-logging"))
+    implementation(Ktor2.Server.library("default-headers"))
+    implementation(Ktor2.Server.library("content-negotiation"))
+    implementation(Ktor2.Server.library("metrics-micrometer"))
+    implementation(Ktor2.Server.library("metrics-micrometer"))
+
+    // implementation(Dagpenger.Biblioteker.ktorUtils)
     implementation(Micrometer.prometheusRegistry)
 
     implementation(Graphql.client)
     implementation(Graphql.library("ktor-client"))
     implementation(Graphql.library("client-jackson"))
-    implementation(Ktor.library("client-logging-jvm"))
-    implementation(Ktor.library("client-apache"))
+    implementation(Ktor2.Client.library("logging-jvm"))
+    implementation(Ktor2.Client.library("apache"))
 
     // unleash
     implementation("no.finn.unleash:unleash-client-java:3.3.1")
@@ -51,7 +57,7 @@ dependencies {
     implementation(Moshi.moshi)
     implementation(Moshi.moshiAdapters)
     implementation(Moshi.moshiKotlin)
-    implementation(Moshi.moshiKtor)
+    implementation("com.github.cs125-illinois:ktor-moshi:2b13e43520")
 
     implementation(Dagpenger.Streams)
     implementation(Kafka.clients)
@@ -94,13 +100,13 @@ dependencies {
     runtimeOnly("io.grpc:grpc-netty-shaded:$grpcVersion")
 
     testImplementation(kotlin("test"))
-    testImplementation(Ktor.ktorTest) {
+    testImplementation(Ktor2.Server.library("test-host")) {
         // https://youtrack.jetbrains.com/issue/KT-46090
         exclude("org.jetbrains.kotlin", "kotlin-test-junit")
     }
 
-    testImplementation("no.nav.security:mock-oauth2-server:0.4.3")
-    testImplementation(Ktor.library("client-mock"))
+    testImplementation("no.nav.security:mock-oauth2-server:0.5.7")
+    testImplementation(Ktor2.Client.library("mock"))
     testImplementation(Junit5.api)
     testImplementation(Junit5.params)
     testRuntimeOnly(Junit5.engine)
@@ -158,17 +164,6 @@ java {
     val mainJavaSourceSet: SourceDirectorySet = sourceSets.getByName("main").java
     val graphqlDir = "$buildDir/generated/source/graphql/main"
     mainJavaSourceSet.srcDirs(graphqlDir)
-}
-
-dependencyLocking {
-    lockAllConfigurations()
-}
-
-configurations.all {
-    resolutionStrategy.failOnVersionConflict()
-    resolutionStrategy.activateDependencyLocking()
-    resolutionStrategy.preferProjectModules()
-    resolutionStrategy.eachDependency { DependencyResolver.execute(this) }
 }
 
 tasks.withType<ShadowJar> {

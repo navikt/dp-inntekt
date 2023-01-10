@@ -1,13 +1,13 @@
 package no.nav.dagpenger.inntekt.v1
 
-import io.ktor.application.call
-import io.ktor.features.callId
 import io.ktor.http.HttpStatusCode
-import io.ktor.request.receive
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.routing.post
-import io.ktor.routing.route
+import io.ktor.server.application.call
+import io.ktor.server.plugins.callid.callId
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter

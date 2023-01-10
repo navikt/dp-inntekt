@@ -21,7 +21,6 @@ import no.nav.dagpenger.inntekt.oppslag.pdl.PdlGraphQLRepository
 import no.nav.dagpenger.inntekt.rpc.InntektGrpcServer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.Vaktmester
-import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
 import no.nav.dagpenger.oidc.StsOidcClient
 import java.net.URL
 import java.util.concurrent.TimeUnit

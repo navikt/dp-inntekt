@@ -3,10 +3,10 @@ package no.nav.dagpenger.inntekt.v1
 import de.huxhorn.sulky.ulid.ULID
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.shouldNotBe
-import io.ktor.application.Application
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.Application
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
