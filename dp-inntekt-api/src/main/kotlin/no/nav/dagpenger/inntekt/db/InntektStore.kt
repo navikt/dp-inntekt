@@ -14,7 +14,11 @@ interface InntektStore {
     fun getSpesifisertInntekt(inntektId: InntektId): SpesifisertInntekt
     fun getInntektId(inntektparametre: Inntektparametre): InntektId?
     fun getBeregningsdato(inntektId: InntektId): LocalDate
-    fun storeInntekt(command: StoreInntektCommand, created: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)): StoredInntekt
+    fun storeInntekt(
+        command: StoreInntektCommand,
+        created: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
+    ): StoredInntekt
+
     fun getManueltRedigert(inntektId: InntektId): ManueltRedigert?
     fun markerInntektBrukt(inntektId: InntektId): Int
 }
@@ -26,6 +30,9 @@ data class Inntektparametre(
     val fødselnummer: String? = null
 ) {
     val opptjeningsperiode: Opptjeningsperiode = Opptjeningsperiode(beregningsdato)
+    fun toDebugString(): String {
+        return "Inntektparametre(aktørId='$aktørId', beregningsdato=$beregningsdato, regelkontekst=$regelkontekst)"
+    }
 }
 
 data class RegelKontekst(val id: String, val type: String)
@@ -68,4 +75,5 @@ class InntektNotFoundException(override val message: String) : RuntimeException(
 
 class StoreException(override val message: String) : RuntimeException(message)
 
-class IllegalInntektIdException(override val message: String, override val cause: Throwable?) : java.lang.RuntimeException(message, cause)
+class IllegalInntektIdException(override val message: String, override val cause: Throwable?) :
+    java.lang.RuntimeException(message, cause)

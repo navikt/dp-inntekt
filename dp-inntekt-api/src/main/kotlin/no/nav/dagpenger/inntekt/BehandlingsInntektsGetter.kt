@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt
 
+import mu.KotlinLogging
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -10,6 +11,8 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.klassifiserer.klassifiserOgMapInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToSpesifisertInntekt
+
+private val LOGGER = KotlinLogging.logger {}
 
 class BehandlingsInntektsGetter(
     private val inntektskomponentClient: InntektskomponentClient,
@@ -30,7 +33,10 @@ class BehandlingsInntektsGetter(
         inntektparametre: Inntektparametre,
         callId: String? = null
     ): StoredInntekt {
-        return isInntektStored(inntektparametre)?.let { inntektStore.getInntekt(it) }
+        return isInntektStored(inntektparametre)?.let {
+            LOGGER.info { "Henter stored inntekt: ${inntektparametre.toDebugString()}" }
+            inntektStore.getInntekt(it)
+        }
             ?: fetchAndStoreInntekt(inntektparametre, callId)
     }
 
