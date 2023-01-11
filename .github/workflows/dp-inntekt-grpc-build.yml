@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'dp-inntekt-grpc/**'
+      - '.github/workflows/dp-inntekt-grpc-build.yml'
+      - jitpack.yml
 
 jobs:
   build:
