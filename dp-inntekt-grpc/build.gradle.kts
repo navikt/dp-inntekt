@@ -1,13 +1,13 @@
 import com.google.protobuf.gradle.* // ktlint-disable no-wildcard-imports
 
-val grpcVersion = "1.43.0"
-val grpcKotlinVersion = "1.1.0"
-val protbufVersion = "3.17.3"
-val protobufGradleVersion = "0.8.16"
+val grpcVersion = "1.51.1"
+val grpcKotlinVersion = "1.3.0"
+val protbufVersion = "3.21.12"
+val protobufGradleVersion = "0.9.2"
 
 plugins {
     kotlin("jvm")
-    id("com.google.protobuf") version "0.8.16"
+    id("com.google.protobuf") version "0.9.2"
 }
 
 apply(plugin = "com.google.protobuf")
@@ -68,7 +68,7 @@ protobuf {
             artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
         }
         id("grpckotlin") {
-            artifact = "io.grpc:protoc-gen-grpc-kotlin:$grpcKotlinVersion:jdk7@jar"
+            artifact = "io.grpc:protoc-gen-grpc-kotlin:$grpcKotlinVersion:jdk8@jar"
         }
     }
 

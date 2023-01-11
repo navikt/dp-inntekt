@@ -33,7 +33,7 @@ private val LOGGER = KotlinLogging.logger { }
 internal class KafkaSubsumsjonBruktDataConsumerTest {
     private object Kafka {
         val instance by lazy {
-            KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka").withTag("5.3.1")).apply {
+            KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka").withTag("6.1.9")).apply {
                 this.waitingFor(HostPortWaitStrategy())
                 this.start()
             }

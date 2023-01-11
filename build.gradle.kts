@@ -39,7 +39,7 @@ allprojects {
     }
 
     tasks.withType<Wrapper> {
-        gradleVersion = "6.5.1"
+        gradleVersion = "7.5.1"
     }
 
     spotless {

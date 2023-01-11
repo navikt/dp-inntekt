@@ -42,7 +42,6 @@ dependencies {
     implementation(Ktor2.Server.library("metrics-micrometer"))
     implementation(Ktor2.Server.library("metrics-micrometer"))
 
-    // implementation(Dagpenger.Biblioteker.ktorUtils)
     implementation(Micrometer.prometheusRegistry)
 
     implementation(Graphql.client)
