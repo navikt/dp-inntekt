@@ -60,7 +60,7 @@ internal object Config {
             "application.httpPort" to "8099",
             "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
             "unleash.url" to "https://unleash.nais.io/api/",
-            "pdl.url" to "http://pdl-api.pdl.svc.nais.local /graphql",
+            "pdl.url" to "http://pdl-api.pdl.svc.nais.local/graphql",
             "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret"
         )
     )
