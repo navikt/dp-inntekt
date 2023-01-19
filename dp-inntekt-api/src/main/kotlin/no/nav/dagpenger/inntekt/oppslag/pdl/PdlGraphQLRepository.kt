@@ -36,7 +36,10 @@ class PdlGraphQLRepository(
             log.error { "Feil i GraphQL-responsen: ${result.errors}" }
             throw PersonNotFoundException(ident = ident)
         } else {
-            result.toPerson() ?: throw PersonNotFoundException(ident = ident, msg = "Feil ved parsing av Person json")
+            result.toPerson()?.also {
+                log.debug { "Fikk hentet PDL person" }
+
+            } ?: throw PersonNotFoundException(ident = ident, msg = "Feil ved parsing av Person json")
         }
     }
 
