@@ -7,8 +7,10 @@ import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.ContentPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import no.nav.dagpenger.inntekt.oppslag.PersonNotFoundException
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -44,7 +46,7 @@ internal class PdlGraphQLRepositoryTest {
     }
 
     @Test
-    fun `Feil i respons skal føre til tomt svar `() = runBlocking {
+    fun `Feil i respons skal føre til exception `() = runBlocking {
         wireMockServer.addPdlResponse(
             matchingJsonPath("$.variables.ident", EqualToPattern("queryFeilet")),
             WireMock.okJson(error)
@@ -56,20 +58,39 @@ internal class PdlGraphQLRepositoryTest {
                 oidcProvider = { TOKEN }
             )
         )
-
-        pdl.hentPerson("queryFeilet") shouldBe null
+        shouldThrow<PersonNotFoundException> {
+            pdl.hentPerson("queryFeilet")
+        }
     }
 
     @Language("JSON")
     private val okResponse =
         """
-        {"data":{"hentIdenter":{"identer": [{"ident": "fødselsnummer", "gruppe": "FOLKEREGISTERIDENT"}]}, "hentPerson": {"navn": [
-        {
-          "fornavn": "Donald",
-          "mellomnavn": "Pres",
-          "etternavn": "Struts"
+      {
+        "data": {
+          "hentIdenter": {
+            "identer": [
+              {
+                "ident": "fødselsnummer",
+                "gruppe": "FOLKEREGISTERIDENT"
+              },
+              {
+                "ident": "aktorid",
+                "gruppe": "AKTORID"
+              }
+            ]
+          },
+          "hentPerson": {
+            "navn": [
+              {
+                "fornavn": "Donald",
+                "mellomnavn": "Pres",
+                "etternavn": "Struts"
+              }
+            ]
+          }
         }
-      ]}}}
+      }
         """.trimIndent()
 
     @Language("JSON")

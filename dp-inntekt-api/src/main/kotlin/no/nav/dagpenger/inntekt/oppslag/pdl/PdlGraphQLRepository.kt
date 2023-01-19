@@ -13,8 +13,10 @@ import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.oppslag.Person
+import no.nav.dagpenger.inntekt.oppslag.PersonNotFoundException
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.pdl.HentPerson
+import no.nav.pdl.enums.IdentGruppe
 import no.nav.pdl.hentperson.Navn
 import java.net.URL
 import java.util.UUID
@@ -26,29 +28,36 @@ class PdlGraphQLRepository(
     private val client: GraphQLKtorClient
 ) : PersonOppslag {
 
-    override suspend fun hentPerson(aktørId: String): Person? {
-        val query = HentPerson(HentPerson.Variables(ident = aktørId))
+    override suspend fun hentPerson(ident: String): Person {
+        val query = HentPerson(HentPerson.Variables(ident = ident))
         val result = client.execute(query)
 
         return if (result.errors?.isNotEmpty() == true) {
             log.error { "Feil i GraphQL-responsen: ${result.errors}" }
-            null
+            throw PersonNotFoundException(ident = ident)
         } else {
-            result.toPerson()
+            result.toPerson()?.also {
+                log.debug { "Fikk hentet PDL person" }
+            } ?: throw PersonNotFoundException(ident = ident, msg = "Feil ved parsing av Person json")
         }
     }
 
     private fun GraphQLClientResponse<HentPerson.Result>.toPerson(): Person? {
         val navn: Navn? = data?.hentPerson?.navn?.firstOrNull()
-        val fødselsnummer = data?.hentIdenter?.identer?.firstOrNull()?.ident
-        return fødselsnummer?.let { fnr ->
-            navn?.let { navn ->
-                Person(
-                    fødselsnummer = fnr,
-                    etternavn = navn.etternavn,
-                    mellomnavn = navn.mellomnavn,
-                    fornavn = navn.fornavn
-                )
+        val fødselsnummer =
+            data?.hentIdenter?.identer?.firstOrNull { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }?.ident
+        val aktørId = data?.hentIdenter?.identer?.firstOrNull { it.gruppe == IdentGruppe.AKTORID }?.ident
+        return fødselsnummer?.let {
+            navn?.let {
+                aktørId?.let {
+                    Person(
+                        fødselsnummer = fødselsnummer,
+                        aktørId = aktørId,
+                        etternavn = navn.etternavn,
+                        mellomnavn = navn.mellomnavn,
+                        fornavn = navn.fornavn
+                    )
+                }
             }
         }
     }

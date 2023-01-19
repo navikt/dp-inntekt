@@ -25,9 +25,9 @@ interface InntektStore {
 
 data class Inntektparametre(
     val aktørId: String,
+    val fødselsnummer: String,
     val beregningsdato: LocalDate,
     val regelkontekst: RegelKontekst,
-    val fødselnummer: String? = null
 ) {
     val opptjeningsperiode: Opptjeningsperiode = Opptjeningsperiode(beregningsdato)
     fun toDebugString(): String {

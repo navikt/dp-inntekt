@@ -87,7 +87,7 @@ internal class KronetilleggUttrekkTest {
     )
 
     private fun storeInntektCommand(inntekt: Inntekt) = StoreInntektCommand(
-        inntektparametre = Inntektparametre("1234", LocalDate.now(), RegelKontekst("1234", "vedtak")),
+        inntektparametre = Inntektparametre("1234", "1234", LocalDate.now(), RegelKontekst("1234", "vedtak")),
         inntekt = InntektkomponentResponse(
             ident = Aktoer(AktoerType.AKTOER_ID, "1235"),
             arbeidsInntektMaaned = listOf(

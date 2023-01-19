@@ -41,6 +41,7 @@ import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.KronetilleggUttrekk
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
+import no.nav.dagpenger.inntekt.oppslag.PersonNotFoundException
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.v1.enhetsregisteret
@@ -52,7 +53,7 @@ import org.slf4j.event.Level
 import java.net.URI
 
 private val LOGGER = KotlinLogging.logger {}
-private val sikkerLogg = KotlinLogging.logger("tjenestekall")
+private val sikkerLogg = KotlinLogging.logger("tjenestekall.inntektApi")
 
 internal fun Application.inntektApi(
     config: Configuration = Config.config,
@@ -185,6 +186,17 @@ internal fun Application.inntektApi(
             )
             call.respond(HttpStatusCode.BadRequest, error)
         }
+
+        exception<PersonNotFoundException> { call, cause ->
+            LOGGER.error("Could not find person", cause)
+            sikkerLogg.error("Could not find person ${cause.ident}", cause)
+            val error = Problem(
+                type = URI("urn:dp:error:inntekt:person"),
+                title = "Kunne ikke finne inntekt for ukjent person",
+                status = 400
+            )
+            call.respond(HttpStatusCode.BadRequest, error)
+        }
         exception<CookieNotSetException> { call, cause ->
             LOGGER.warn("Unauthorized call", cause)
             val statusCode = HttpStatusCode.Unauthorized
@@ -224,7 +236,7 @@ internal fun Application.inntektApi(
         route("/v1") {
             route("/inntekt") {
                 authenticate("apikey") {
-                    inntekt(behandlingsInntektsGetter)
+                    inntekt(behandlingsInntektsGetter, personOppslag)
                 }
                 uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, personOppslag)
             }
@@ -234,7 +246,7 @@ internal fun Application.inntektApi(
         route("v2") {
             route("/inntekt") {
                 authenticate("azure") {
-                    inntekt(behandlingsInntektsGetter)
+                    inntekt(behandlingsInntektsGetter, personOppslag)
                     uttrekk(kronetilleggUttrekk)
                 }
             }

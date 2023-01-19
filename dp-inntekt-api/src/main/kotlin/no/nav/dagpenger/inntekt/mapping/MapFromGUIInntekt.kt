@@ -1,7 +1,9 @@
 package no.nav.dagpenger.inntekt.mapping
 
+import de.huxhorn.sulky.ulid.ULID
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
+import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
@@ -13,20 +15,15 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetalj
 private val logg = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall.MapFromGUIInntekt")
 
-fun mapToStoredInntekt(guiInntekt: GUIInntekt): StoredInntekt = guiInntekt.inntektId?.let {
-    StoredInntekt(
-        guiInntekt.inntektId,
-        InntektkomponentResponse(
-            mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)
-                ?: emptyList(),
-            guiInntekt.inntekt.ident
-        ),
-        guiInntekt.manueltRedigert
-    )
-} ?: throw IllegalArgumentException("missing innktektId").also {
-    logg.error(it) { "Mangler inntektId" }
-    sikkerlogg.error(it) { "Mangler inntektId. guiInntekt=$guiInntekt" }
-}
+fun mapToStoredInntekt(guiInntekt: GUIInntekt): StoredInntekt = StoredInntekt(
+    guiInntekt.inntektId ?: InntektId(ULID().nextULID()),
+    InntektkomponentResponse(
+        mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)
+            ?: emptyList(),
+        guiInntekt.inntekt.ident
+    ),
+    guiInntekt.manueltRedigert
+)
 
 fun mapToDetachedInntekt(guiInntekt: GUIInntekt): DetachedInntekt =
     DetachedInntekt(
