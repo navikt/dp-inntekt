@@ -37,6 +37,7 @@ import no.nav.dagpenger.inntekt.mapping.dataGrunnlagKlassifiseringToVerdikode
 import no.nav.dagpenger.inntekt.mapping.mapToDetachedInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToGUIInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToStoredInntekt
+import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
@@ -63,17 +64,18 @@ fun Route.uklassifisertInntekt(
             get {
                 withContext(Dispatchers.IO) {
                     withInntektRequest("GET /uklassifisert/") {
+                        val person = personOppslag.hentPerson(this.aktørId)
                         inntektStore.getInntektId(
                             Inntektparametre(
-                                aktørId = this.aktørId,
+                                aktørId = person.aktørId,
+                                fødselsnummer = person.fødselsnummer,
                                 regelkontekst = RegelKontekst(this.kontekstId, this.kontekstType),
                                 beregningsdato = this.beregningsDato
                             )
                         )?.let {
                             inntektStore.getInntekt(it)
                         }?.let {
-                            val person = personOppslag.hentPerson(this.aktørId)
-                            val inntektsmottaker = Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
+                            val inntektsmottaker = Inntektsmottaker(person.fødselsnummer, person.sammensattNavn())
                             mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), inntektsmottaker)
                         }?.let {
                             call.respond(HttpStatusCode.OK, it)
@@ -84,12 +86,14 @@ fun Route.uklassifisertInntekt(
             post {
                 withContext(Dispatchers.IO) {
                     withInntektRequest("POST /uklassifisert/") {
+                        val person = personOppslag.hentPerson(this.aktørId)
                         val guiInntekt = call.receive<GUIInntekt>()
                         mapToStoredInntekt(guiInntekt).let {
                             inntektStore.storeInntekt(
                                 StoreInntektCommand(
                                     inntektparametre = Inntektparametre(
-                                        aktørId = this.aktørId,
+                                        aktørId = person.aktørId,
+                                        fødselsnummer = person.fødselsnummer,
                                         regelkontekst = RegelKontekst(this.kontekstId, this.kontekstType),
                                         beregningsdato = this.beregningsDato
                                     ),
@@ -122,15 +126,15 @@ fun Route.uklassifisertInntekt(
                 val callId = call.callId
                 withContext(Dispatchers.IO) {
                     withInntektRequest("GET /uklassifisert/uncached/") {
+                        val person = personOppslag.hentPerson(this.aktørId)
                         val opptjeningsperiode = Opptjeningsperiode(this.beregningsDato)
-                        toInntektskomponentRequest(this, opptjeningsperiode).let {
+                        toInntektskomponentRequest(person, opptjeningsperiode).let {
                             logger.info { "Henter nye inntekter fra inntektskomponenten" }
                             inntektskomponentClient.getInntekt(it, callId = callId)
                         }.let {
                             logger.info { "Fikk nye inntekter fra inntektskomponenten" }
-                            val person = personOppslag.hentPerson(this.aktørId)
                             val inntektsmottaker =
-                                Inntektsmottaker(person?.fødselsnummer, person?.sammensattNavn())
+                                Inntektsmottaker(person.fødselsnummer, person.sammensattNavn())
                             mapToGUIInntekt(it, opptjeningsperiode, inntektsmottaker)
                         }.let {
                             call.respond(HttpStatusCode.OK, it)
@@ -145,11 +149,13 @@ fun Route.uklassifisertInntekt(
                 withContext(Dispatchers.IO) {
                     withInntektRequest("POST /uklassifisert/uncached/") {
                         val guiInntekt = call.receive<GUIInntekt>()
+                        val person = personOppslag.hentPerson(this.aktørId)
                         mapToDetachedInntekt(guiInntekt).let {
                             inntektStore.storeInntekt(
                                 StoreInntektCommand(
                                     inntektparametre = Inntektparametre(
-                                        aktørId = this.aktørId,
+                                        aktørId = person.aktørId,
+                                        fødselsnummer = person.fødselsnummer,
                                         regelkontekst = RegelKontekst(this.kontekstId, this.kontekstType),
                                         beregningsdato = this.beregningsDato
                                     ),
@@ -230,14 +236,9 @@ data class InntektRequest(
     val beregningsDato: LocalDate
 )
 
-data class InntektByIdRequest(
-    val aktørId: String,
-    val beregningsDato: LocalDate
-)
-
-val toInntektskomponentRequest: (InntektRequest, Opptjeningsperiode) -> InntektkomponentRequest =
-    { inntektRequest: InntektRequest, opptjeningsperiode: Opptjeningsperiode ->
+val toInntektskomponentRequest: (Person, Opptjeningsperiode) -> InntektkomponentRequest =
+    { person: Person, opptjeningsperiode: Opptjeningsperiode ->
         val sisteAvsluttendeKalendermåned = opptjeningsperiode.sisteAvsluttendeKalenderMåned
         val førsteMåned = opptjeningsperiode.førsteMåned
-        InntektkomponentRequest(inntektRequest.aktørId, førsteMåned, sisteAvsluttendeKalendermåned)
+        InntektkomponentRequest(person.aktørId, person.fødselsnummer, førsteMåned, sisteAvsluttendeKalendermåned)
     }

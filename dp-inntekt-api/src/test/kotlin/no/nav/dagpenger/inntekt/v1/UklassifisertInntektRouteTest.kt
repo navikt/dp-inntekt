@@ -52,6 +52,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 internal class UklassifisertInntektApiTest {
+    private val aktørId = "12345678912"
+    private val fødselsnummer = "fnr"
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
     private val inntektStoreMock: InntektStore = mockk()
     private val inntektId = InntektId(ULID().nextULID())
@@ -59,23 +61,26 @@ internal class UklassifisertInntektApiTest {
     private val token = jwtStub.createTokenFor("user")
     private val notFoundQuery =
         Inntektparametre(
-            aktørId = "1234",
+            aktørId = aktørId,
+            fødselsnummer = fødselsnummer,
             regelkontekst = RegelKontekst("1", "VEDTAK"),
             beregningsdato = LocalDate.of(2019, 1, 8)
         )
     private val foundQuery =
         Inntektparametre(
-            aktørId = "1234",
-            regelkontekst = RegelKontekst("1234", "VEDTAK"),
+            aktørId = aktørId,
+            fødselsnummer = fødselsnummer,
+            regelkontekst = RegelKontekst(aktørId, "VEDTAK"),
             beregningsdato = LocalDate.of(2019, 1, 8)
         )
     private val inntektkomponentenFoundRequest = InntektkomponentRequest(
-        "1234",
-        YearMonth.of(2016, 1),
-        YearMonth.of(2018, 12)
+        aktørId = aktørId,
+        fødselsnummer = fødselsnummer,
+        månedFom = YearMonth.of(2016, 1),
+        månedTom = YearMonth.of(2018, 12)
     )
     private val personOppslagMock: PersonOppslag = mockk()
-    private val emptyInntekt = InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234"))
+    private val emptyInntekt = InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, aktørId))
     private val storedInntekt = StoredInntekt(
         inntektId = inntektId,
         inntekt = emptyInntekt,
@@ -118,7 +123,7 @@ internal class UklassifisertInntektApiTest {
             inntektStoreMock.getInntekt(inntektId)
         } returns StoredInntekt(
             inntektId,
-            InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234")),
+            InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
             false,
             LocalDateTime.now()
         )
@@ -129,7 +134,13 @@ internal class UklassifisertInntektApiTest {
 
         every {
             runBlocking { personOppslagMock.hentPerson(any()) }
-        } returns Person(fødselsnummer = "12345678912", fornavn = "Navn", etternavn = "Navnesen")
+        } returns Person(
+            aktørId = aktørId,
+            fødselsnummer = fødselsnummer,
+            fornavn = "Navn",
+            etternavn = "Navnesen",
+            mellomnavn = null
+        )
     }
 
     @Test
@@ -146,7 +157,7 @@ internal class UklassifisertInntektApiTest {
             assertEquals("urn:dp:error:inntekt", problem?.type.toString())
             assertEquals(404, problem?.status)
             assertEquals(
-                "Inntekt with for InntektRequest(aktørId=1234, kontekstId=1, kontekstType=VEDTAK, beregningsDato=2019-01-08) not found.",
+                "Inntekt with for InntektRequest(aktørId=$aktørId, kontekstId=1, kontekstType=VEDTAK, beregningsDato=2019-01-08) not found.",
                 problem?.detail
             )
         }
@@ -231,7 +242,7 @@ internal class UklassifisertInntektApiTest {
         val guiInntekt = GUIInntekt(
             inntektId = inntektId,
             timestamp = null,
-            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, "1234")),
+            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
             manueltRedigert = false,
             redigertAvSaksbehandler = false
         )
@@ -256,7 +267,7 @@ internal class UklassifisertInntektApiTest {
         val guiInntekt = GUIInntekt(
             inntektId = inntektId,
             timestamp = null,
-            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, "1234")),
+            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
             manueltRedigert = false,
             redigertAvSaksbehandler = true
         )
@@ -306,7 +317,7 @@ internal class UklassifisertInntektApiTest {
                         )
                     )
                 ),
-                ident = Aktoer(AktoerType.AKTOER_ID, "1234")
+                ident = Aktoer(AktoerType.AKTOER_ID, aktørId)
             ),
             manueltRedigert = false,
             redigertAvSaksbehandler = true
@@ -330,7 +341,7 @@ internal class UklassifisertInntektApiTest {
         val guiInntekt = GUIInntekt(
             inntektId = null,
             timestamp = null,
-            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, "1234")),
+            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
             manueltRedigert = false,
             redigertAvSaksbehandler = true
         )
@@ -356,7 +367,7 @@ internal class UklassifisertInntektApiTest {
         val guiInntekt = GUIInntekt(
             inntektId = null,
             timestamp = null,
-            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, "1234")),
+            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
             manueltRedigert = false,
             redigertAvSaksbehandler = false
         )

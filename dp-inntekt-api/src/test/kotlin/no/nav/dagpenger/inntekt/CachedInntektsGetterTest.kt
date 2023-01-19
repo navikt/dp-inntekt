@@ -34,6 +34,7 @@ internal class CachedInntektsGetterTest {
     fun `Get cached inntekt for known behandlingsKey`() {
         val parameters = Inntektparametre(
             aktørId = "1234",
+            fødselsnummer = "1234",
             regelkontekst = RegelKontekst("112233", "vedtak"),
             beregningsdato = LocalDate.of(2019, 5, 6)
         )
@@ -63,6 +64,7 @@ internal class CachedInntektsGetterTest {
     fun `Get new inntekt for uknown behandlingsKey`() {
         val parameters = Inntektparametre(
             aktørId = "5678",
+            fødselsnummer = "5678",
             regelkontekst = RegelKontekst("546787", "vedtak"),
             beregningsdato = LocalDate.of(2019, 4, 26)
         )
@@ -71,9 +73,10 @@ internal class CachedInntektsGetterTest {
             runBlocking {
                 inntektskomponentClientMock.getInntekt(
                     InntektkomponentRequest(
-                        "5678",
-                        YearMonth.of(2016, 4),
-                        YearMonth.of(2019, 3)
+                        aktørId = "5678",
+                        fødselsnummer = "5678",
+                        månedFom = YearMonth.of(2016, 4),
+                        månedTom = YearMonth.of(2019, 3)
                     )
                 )
             }

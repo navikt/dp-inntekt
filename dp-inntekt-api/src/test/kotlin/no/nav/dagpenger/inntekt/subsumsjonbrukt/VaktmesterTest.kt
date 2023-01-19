@@ -27,12 +27,13 @@ internal class VaktmesterTest {
 
     private val parameters = Inntektparametre(
         aktørId = "1234",
+        fødselsnummer = "1234",
         regelkontekst = RegelKontekst("1234", "vedtak"),
         beregningsdato = LocalDate.now()
     )
 
     private val inntekter = InntektkomponentResponse(
-        ident = Aktoer(AktoerType.AKTOER_ID, parameters.aktørId),
+        ident = Aktoer(AktoerType.AKTOER_ID, parameters.aktørId!!),
         arbeidsInntektMaaned = emptyList()
     )
 

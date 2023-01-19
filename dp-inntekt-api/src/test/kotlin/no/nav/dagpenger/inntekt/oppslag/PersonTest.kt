@@ -7,13 +7,26 @@ internal class PersonTest {
 
     @Test
     fun `sammensatt navn uten mellomnavn`() {
-        val person = Person(fødselsnummer = "ikke-relevant", fornavn = "Fornøyd", etternavn = "Hund")
+        val person = Person(
+            fødselsnummer = "ikke-relevant",
+            fornavn = "Fornøyd",
+            etternavn = "Hund",
+            aktørId = "ikke-relevant",
+            mellomnavn = null
+        )
         person.sammensattNavn() shouldBe "Hund, Fornøyd"
     }
 
     @Test
     fun `sammensatt navn med mellomnavn`() {
-        val person = Person(fødselsnummer = "ikke-relevant", fornavn = "Fornøyd", etternavn = "Hund", mellomnavn = "Katt")
+        val person =
+            Person(
+                aktørId = "ikke-relevant",
+                fødselsnummer = "ikke-relevant",
+                fornavn = "Fornøyd",
+                etternavn = "Hund",
+                mellomnavn = "Katt",
+            )
         person.sammensattNavn() shouldBe "Hund, Fornøyd Katt"
     }
 }

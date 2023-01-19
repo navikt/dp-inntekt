@@ -81,9 +81,10 @@ internal class InntektskomponentHttpClientTest {
             runBlocking {
                 inntektskomponentClient.getInntekt(
                     InntektkomponentRequest(
-                        "",
-                        YearMonth.of(2017, 3),
-                        YearMonth.of(2019, 1)
+                        aktørId = "",
+                        fødselsnummer = "",
+                        månedFom = YearMonth.of(2017, 3),
+                        månedTom = YearMonth.of(2019, 1)
                     )
                 )
             }
@@ -116,9 +117,10 @@ internal class InntektskomponentHttpClientTest {
             runBlocking {
                 inntektskomponentClient.getInntekt(
                     InntektkomponentRequest(
-                        "",
-                        YearMonth.of(2017, 3),
-                        YearMonth.of(2019, 1)
+                        aktørId = "",
+                        fødselsnummer = "",
+                        månedFom = YearMonth.of(2017, 3),
+                        månedTom = YearMonth.of(2019, 1)
                     )
                 )
             }
@@ -152,9 +154,10 @@ internal class InntektskomponentHttpClientTest {
             runBlocking {
                 inntektskomponentClient.getInntekt(
                     InntektkomponentRequest(
-                        "",
-                        YearMonth.of(2017, 3),
-                        YearMonth.of(2019, 1)
+                        aktørId = "",
+                        fødselsnummer = "",
+                        månedFom = YearMonth.of(2017, 3),
+                        månedTom = YearMonth.of(2019, 1)
                     )
                 )
             }
@@ -187,9 +190,10 @@ internal class InntektskomponentHttpClientTest {
             runBlocking {
                 inntektskomponentClient.getInntekt(
                     InntektkomponentRequest(
-                        "",
-                        YearMonth.of(2017, 3),
-                        YearMonth.of(2019, 1)
+                        aktørId = "",
+                        fødselsnummer = "",
+                        månedFom = YearMonth.of(2017, 3),
+                        månedTom = YearMonth.of(2019, 1)
                     ),
                     InntektskomponentClient.ConnectionTimeout(readTimeout = Duration.ofMillis(5))
                 )
@@ -227,9 +231,10 @@ internal class InntektskomponentHttpClientTest {
             runBlocking {
                 inntektskomponentClient.getInntekt(
                     InntektkomponentRequest(
-                        "",
-                        YearMonth.of(2017, 3),
-                        YearMonth.of(2019, 1)
+                        aktørId = "",
+                        fødselsnummer = "",
+                        månedFom = YearMonth.of(2017, 3),
+                        månedTom = YearMonth.of(2019, 1)
                     )
                 )
             }

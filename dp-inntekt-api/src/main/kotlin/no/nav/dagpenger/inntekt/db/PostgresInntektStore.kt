@@ -76,7 +76,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                     queryOf(
                         statement,
                         inntektparametre.aktørId,
-                        inntektparametre.fødselnummer,
+                        inntektparametre.fødselsnummer,
                         inntektparametre.regelkontekst.id,
                         inntektparametre.regelkontekst.type,
                         inntektparametre.beregningsdato
@@ -194,7 +194,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                             mapOf(
                                 "inntektId" to inntektId.id,
                                 "aktorId" to command.inntektparametre.aktørId,
-                                "fnr" to command.inntektparametre.fødselnummer,
+                                "fnr" to command.inntektparametre.fødselsnummer,
                                 "kontekstId" to command.inntektparametre.regelkontekst.id,
                                 "kontekstType" to command.inntektparametre.regelkontekst.type,
                                 "beregningsdato" to command.inntektparametre.beregningsdato

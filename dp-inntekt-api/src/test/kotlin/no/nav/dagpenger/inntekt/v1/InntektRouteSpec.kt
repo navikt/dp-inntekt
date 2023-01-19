@@ -23,6 +23,9 @@ import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
+import no.nav.dagpenger.inntekt.oppslag.Person
+import no.nav.dagpenger.inntekt.oppslag.PersonNotFoundException
+import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.v1.TestApplication.handleAuthenticatedAzureAdRequest
 import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
 import org.junit.jupiter.api.Test
@@ -35,7 +38,11 @@ import kotlin.test.assertEquals
 
 internal class InntektRouteSpec {
 
-    private val fnr = getFodselsnummerForDate(Date.from(LocalDate.now().minusYears(20).atStartOfDay(ZoneId.systemDefault()).toInstant())).personnummer
+    private val fnr = getFodselsnummerForDate(
+        Date.from(
+            LocalDate.now().minusYears(20).atStartOfDay(ZoneId.systemDefault()).toInstant()
+        )
+    ).personnummer
     private val ulid = ULID().nextULID()
     private val aktørId = "1234"
     private val beregningsdato = LocalDate.of(2019, 1, 8)
@@ -60,7 +67,6 @@ internal class InntektRouteSpec {
     private val validJsonWithFnr =
         """
         {
-            "aktørId": "$aktørId",
             "regelkontekst": { "id" : "$ulid", "type" : "vedtak" },
             "fødselsnummer": "$fnr",
             "beregningsDato": "$beregningsdato"
@@ -69,6 +75,7 @@ internal class InntektRouteSpec {
 
     private val inntektParametre = Inntektparametre(
         aktørId = "$aktørId",
+        fødselsnummer = "$fnr",
         regelkontekst = RegelKontekst("1", "vedtak"),
         beregningsdato = beregningsdato
 
@@ -76,6 +83,7 @@ internal class InntektRouteSpec {
 
     private val vedtakIdUlidParametre = Inntektparametre(
         aktørId = aktørId,
+        fødselsnummer = fnr,
         regelkontekst = RegelKontekst(ulid, "vedtak"),
         beregningsdato = beregningsdato
     )
@@ -83,7 +91,7 @@ internal class InntektRouteSpec {
     private val fnrParametre = Inntektparametre(
         aktørId = aktørId,
         regelkontekst = RegelKontekst(ulid, "vedtak"),
-        fødselnummer = fnr,
+        fødselsnummer = fnr,
         beregningsdato = beregningsdato
     )
 
@@ -94,14 +102,36 @@ internal class InntektRouteSpec {
         }
         """.trimIndent()
 
-    private val behandlingsInntektsGetterMock: BehandlingsInntektsGetter = spyk(BehandlingsInntektsGetter(mockk(relaxed = true), mockk(relaxed = true)))
+    private val jsonUkjentPerson =
+        """
+        {
+            "regelkontekst": { "id" : "$ulid", "type" : "vedtak" },
+            "fødselsnummer": "ukjent",
+            "beregningsDato": "$beregningsdato"
+        }
+        """.trimIndent()
+
+    private val behandlingsInntektsGetterMock: BehandlingsInntektsGetter =
+        spyk(BehandlingsInntektsGetter(mockk(relaxed = true), mockk(relaxed = true)))
+
+    private val personOppslagMock = mockk<PersonOppslag>().also {
+        val person = Person(
+            fødselsnummer = fnr,
+            aktørId = aktørId,
+            fornavn = "fornavn",
+            mellomnavn = null,
+            etternavn = "etternav"
+
+        )
+        coEvery { it.hentPerson(fnr) } returns person
+        coEvery { it.hentPerson(aktørId) } returns person
+        coEvery { it.hentPerson("ukjent") } throws PersonNotFoundException("ukjent")
+    }
 
     private val spesifisertPath = "/inntekt/spesifisert"
     private val klassifisertPath = "/inntekt/klassifisert"
     private val spesifisertInntektPathV1 = "/v1/$spesifisertPath"
-    private val spesifisertInntektPathV2 = "/v2/$spesifisertPath"
     private val klassifisertInntektPathV1 = "/v1/$klassifisertPath"
-    private val klassifisertInntektPathV2 = "/v2/$klassifisertPath"
 
     private val apiKeyVerifier = ApiKeyVerifier("secret")
     private val authApiKeyVerifier = AuthApiKeyVerifier(apiKeyVerifier, listOf("test-client"))
@@ -182,8 +212,18 @@ internal class InntektRouteSpec {
             setBody(validJsonWithVedtakIdAsUlid)
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(vedtakIdUlidParametre, callId) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(vedtakIdUlidParametre, callId) }
+            coVerify(exactly = 1) {
+                behandlingsInntektsGetterMock.getBehandlingsInntekt(
+                    vedtakIdUlidParametre,
+                    callId
+                )
+            }
+            coVerify(exactly = 1) {
+                behandlingsInntektsGetterMock.getSpesifisertInntekt(
+                    vedtakIdUlidParametre,
+                    callId
+                )
+            }
         }
     }
 
@@ -211,9 +251,24 @@ internal class InntektRouteSpec {
             setBody(validJsonWithVedtakIdAsUlid)
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(vedtakIdUlidParametre, callId) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(vedtakIdUlidParametre, callId) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(vedtakIdUlidParametre, callId) }
+            coVerify(exactly = 1) {
+                behandlingsInntektsGetterMock.getBehandlingsInntekt(
+                    vedtakIdUlidParametre,
+                    callId
+                )
+            }
+            coVerify(exactly = 1) {
+                behandlingsInntektsGetterMock.getSpesifisertInntekt(
+                    vedtakIdUlidParametre,
+                    callId
+                )
+            }
+            coVerify(exactly = 1) {
+                behandlingsInntektsGetterMock.getKlassifisertInntekt(
+                    vedtakIdUlidParametre,
+                    callId
+                )
+            }
         }
     }
 
@@ -253,11 +308,34 @@ internal class InntektRouteSpec {
         }
     }
 
+    @Test
+    fun `Spesifisert request fails on post request with unknown person `() = testApp {
+        handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", apiKey)
+            setBody(jsonUkjentPerson)
+        }.apply {
+            assertEquals(HttpStatusCode.BadRequest, response.status())
+        }
+    }
+
+    @Test
+    fun `Klassifisert request fails on post request with unknownperson`() = testApp {
+        handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            addHeader("X-API-KEY", apiKey)
+            setBody(jsonUkjentPerson)
+        }.apply {
+            assertEquals(HttpStatusCode.BadRequest, response.status())
+        }
+    }
+
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication(
             mockInntektApi(
                 behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-                apiAuthApiKeyVerifier = authApiKeyVerifier
+                apiAuthApiKeyVerifier = authApiKeyVerifier,
+                personOppslag = personOppslagMock
             )
         ) { callback() }
     }
