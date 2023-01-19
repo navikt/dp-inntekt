@@ -38,7 +38,6 @@ class PdlGraphQLRepository(
         } else {
             result.toPerson()?.also {
                 log.debug { "Fikk hentet PDL person" }
-
             } ?: throw PersonNotFoundException(ident = ident, msg = "Feil ved parsing av Person json")
         }
     }
