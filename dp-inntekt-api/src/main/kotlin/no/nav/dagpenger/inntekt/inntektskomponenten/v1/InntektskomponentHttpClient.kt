@@ -61,7 +61,7 @@ class InntektskomponentHttpClient(
         withLoggingContext(
             "callId" to externalCallId
         ) {
-            logg.info("Fetching new inntekt for $request")
+            logg.info("Fetching new inntekt for ${request.copy(fødselsnummer = "<REDACTED>")}")
 
             try {
                 val (_, response, result) = with(hentInntektlisteUrl.httpPost()) {
