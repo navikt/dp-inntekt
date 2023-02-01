@@ -15,7 +15,6 @@ import java.net.InetAddress
 import java.net.UnknownHostException
 
 internal object Config {
-
     private val localProperties = ConfigurationMap(
         mapOf(
             "database.host" to "localhost",
@@ -59,7 +58,7 @@ internal object Config {
             "application.httpPort" to "8099",
             "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
             "unleash.url" to "https://unleash.nais.io/api/",
-            "pdl.url" to "http://pdl-api.pdl.svc.nais.local/graphql",
+            "pdl.url" to "https://pdl-api-q1.dev.intern.nav.no/graphql",
             "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret"
         )
     )
@@ -83,7 +82,6 @@ internal object Config {
             "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret"
         )
     )
-
     val config by lazy {
         when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
             "dev-fss" -> ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding devProperties
@@ -93,7 +91,6 @@ internal object Config {
             }
         }
     }
-
     val Configuration.database
         get() = InntektApiConfig.Database(
             host = this[Key("database.host", stringType)],
@@ -103,52 +100,52 @@ internal object Config {
             password = this.getOrNull(Key("database.password", stringType)),
             flywayLocations = this.getOrNull(Key("flyway.locations", stringType))?.split(",")
                 ?: listOf("db/migration")
-
         )
-    val Configuration.vault get() = InntektApiConfig.Vault(
-        mountPath = this[Key("vault.mountpath", stringType)]
-    )
-    val Configuration.pdl get() = InntektApiConfig.Pdl(
-        url = this[Key("pdl.url", stringType)]
-    )
-    val Configuration.enhetsregister get() = InntektApiConfig.Enhetsregister(
-        url = this[Key("enhetsregisteret.url", stringType)]
-    )
-
+    val Configuration.vault
+        get() = InntektApiConfig.Vault(
+            mountPath = this[Key("vault.mountpath", stringType)]
+        )
+    val Configuration.pdl
+        get() = InntektApiConfig.Pdl(
+            url = this[Key("pdl.url", stringType)]
+        )
+    val Configuration.enhetsregister
+        get() = InntektApiConfig.Enhetsregister(
+            url = this[Key("enhetsregisteret.url", stringType)]
+        )
     val Configuration.profile get() = this[Key("application.profile", stringType)].let { Profile.valueOf(it) }
-
-    val Configuration.application get() = InntektApiConfig.Application(
-        id = this.getOrElse(Key("application.id", stringType), "dp-inntekt-api-consumer"),
-        brokers = this[Key("KAFKA_BROKERS", stringType)],
-        profile = this.profile,
-        credential = if (this.profile == Profile.LOCAL) null else KafkaAivenCredentials(),
-        httpPort = this[Key("application.httpPort", intType)],
-        username = this[Key("srvdp.inntekt.api.username", stringType)],
-        password = this[Key("srvdp.inntekt.api.password", stringType)],
-        hentinntektListeUrl = this[Key("hentinntektliste.url", stringType)],
-        enhetsregisteretUrl = this[Key("enhetsregisteret.url", stringType)],
-        oicdStsUrl = this[Key("oidc.sts.issuerurl", stringType)],
-        jwksUrl = this[Key("jwks.url", stringType)],
-        jwksIssuer = this[Key("jwks.issuer", stringType)],
-        name = "dp-inntekt-api",
-        apiSecret = this[Key("api.secret", stringType)],
-        allowedApiKeys = this[Key("api.keys", stringType)].split(",").toList(),
-        unleashConfig = UnleashConfig.builder()
-            .appName(this.getOrElse(Key("app.name", stringType), "dp-inntekt-api"))
-            .instanceId(getHostname())
-            .unleashAPI(this[Key("unleash.url", stringType)])
-            .build(),
-    )
-
-    val Configuration.inntektApiConfig get() = InntektApiConfig(
-        database = this.database,
-        vault = this.vault,
-        application = this.application,
-        pdl = this.pdl,
-        enhetsregisteretUrl = this.enhetsregister,
-        inntektBruktDataTopic = this[Key("kafka.inntekt.brukt.topic", stringType)]
-
-    )
+    val Configuration.application
+        get() = InntektApiConfig.Application(
+            id = this.getOrElse(Key("application.id", stringType), "dp-inntekt-api-consumer"),
+            brokers = this[Key("KAFKA_BROKERS", stringType)],
+            profile = this.profile,
+            credential = if (this.profile == Profile.LOCAL) null else KafkaAivenCredentials(),
+            httpPort = this[Key("application.httpPort", intType)],
+            username = this[Key("srvdp.inntekt.api.username", stringType)],
+            password = this[Key("srvdp.inntekt.api.password", stringType)],
+            hentinntektListeUrl = this[Key("hentinntektliste.url", stringType)],
+            enhetsregisteretUrl = this[Key("enhetsregisteret.url", stringType)],
+            oicdStsUrl = this[Key("oidc.sts.issuerurl", stringType)],
+            jwksUrl = this[Key("jwks.url", stringType)],
+            jwksIssuer = this[Key("jwks.issuer", stringType)],
+            name = "dp-inntekt-api",
+            apiSecret = this[Key("api.secret", stringType)],
+            allowedApiKeys = this[Key("api.keys", stringType)].split(",").toList(),
+            unleashConfig = UnleashConfig.builder()
+                .appName(this.getOrElse(Key("app.name", stringType), "dp-inntekt-api"))
+                .instanceId(getHostname())
+                .unleashAPI(this[Key("unleash.url", stringType)])
+                .build()
+        )
+    val Configuration.inntektApiConfig
+        get() = InntektApiConfig(
+            database = this.database,
+            vault = this.vault,
+            application = this.application,
+            pdl = this.pdl,
+            enhetsregisteretUrl = this.enhetsregister,
+            inntektBruktDataTopic = this[Key("kafka.inntekt.brukt.topic", stringType)]
+        )
 }
 
 data class InntektApiConfig(
@@ -159,7 +156,6 @@ data class InntektApiConfig(
     val enhetsregisteretUrl: Enhetsregister,
     val inntektBruktDataTopic: String
 ) {
-
     data class Database(
         val host: String,
         val port: String,
@@ -167,7 +163,6 @@ data class InntektApiConfig(
         val user: String?,
         val password: String?,
         val flywayLocations: List<String>
-
     )
 
     data class Vault(
@@ -190,7 +185,7 @@ data class InntektApiConfig(
         val name: String,
         val apiSecret: String,
         val allowedApiKeys: List<String>,
-        val unleashConfig: UnleashConfig,
+        val unleashConfig: UnleashConfig
     )
 
     data class Pdl(
