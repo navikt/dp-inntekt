@@ -15,7 +15,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.runBlocking
-import no.nav.dagpenger.inntekt.JwtStub
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
 import no.nav.dagpenger.inntekt.db.InntektId
@@ -57,34 +56,33 @@ internal class UklassifisertInntektApiTest {
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
     private val inntektStoreMock: InntektStore = mockk()
     private val inntektId = InntektId(ULID().nextULID())
-    private val jwtStub = JwtStub("https://localhost")
-    private val token = jwtStub.createTokenFor("user")
+    private val token = TestApplication.testOAuthToken
     private val notFoundQuery =
         Inntektparametre(
             aktørId = aktørId,
             fødselsnummer = fødselsnummer,
             regelkontekst = RegelKontekst("1", "VEDTAK"),
-            beregningsdato = LocalDate.of(2019, 1, 8)
+            beregningsdato = LocalDate.of(2019, 1, 8),
         )
     private val foundQuery =
         Inntektparametre(
             aktørId = aktørId,
             fødselsnummer = fødselsnummer,
             regelkontekst = RegelKontekst(aktørId, "VEDTAK"),
-            beregningsdato = LocalDate.of(2019, 1, 8)
+            beregningsdato = LocalDate.of(2019, 1, 8),
         )
     private val inntektkomponentenFoundRequest = InntektkomponentRequest(
         aktørId = aktørId,
         fødselsnummer = fødselsnummer,
         månedFom = YearMonth.of(2016, 1),
-        månedTom = YearMonth.of(2018, 12)
+        månedTom = YearMonth.of(2018, 12),
     )
     private val personOppslagMock: PersonOppslag = mockk()
     private val emptyInntekt = InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, aktørId))
     private val storedInntekt = StoredInntekt(
         inntektId = inntektId,
         inntekt = emptyInntekt,
-        manueltRedigert = false
+        manueltRedigert = false,
     )
     private val uklassifisertInntekt = "/v1/inntekt/uklassifisert"
 
@@ -102,9 +100,9 @@ internal class UklassifisertInntektApiTest {
                 command = StoreInntektCommand(
                     inntektparametre = foundQuery,
                     inntekt = storedInntekt.inntekt,
-                    manueltRedigert = null
+                    manueltRedigert = null,
                 ),
-                created = any()
+                created = any(),
             )
         } returns storedInntekt
 
@@ -113,9 +111,9 @@ internal class UklassifisertInntektApiTest {
                 command = StoreInntektCommand(
                     inntektparametre = foundQuery,
                     inntekt = storedInntekt.inntekt,
-                    manueltRedigert = ManueltRedigert.from(true, "user")
+                    manueltRedigert = ManueltRedigert.from(true, "user"),
                 ),
-                created = any()
+                created = any(),
             )
         } returns storedInntekt
 
@@ -125,7 +123,7 @@ internal class UklassifisertInntektApiTest {
             inntektId,
             InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
             false,
-            LocalDateTime.now()
+            LocalDateTime.now(),
         )
 
         every {
@@ -139,7 +137,7 @@ internal class UklassifisertInntektApiTest {
             fødselsnummer = fødselsnummer,
             fornavn = "Navn",
             etternavn = "Navnesen",
-            mellomnavn = null
+            mellomnavn = null,
         )
     }
 
@@ -147,9 +145,9 @@ internal class UklassifisertInntektApiTest {
     fun `GET unknown uklassifisert inntekt should return 404 not found`() = testApp {
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}"
+            "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}",
         ) {
-            addHeader(HttpHeaders.Cookie, "ID_token=$token")
+            addHeader(HttpHeaders.Authorization, "Bearer $token")
         }.apply {
             assertEquals(HttpStatusCode.NotFound, response.status())
             val problem = moshiInstance.adapter(Problem::class.java).fromJson(response.content!!)
@@ -158,7 +156,7 @@ internal class UklassifisertInntektApiTest {
             assertEquals(404, problem?.status)
             assertEquals(
                 "Inntekt with for InntektRequest(aktørId=$aktørId, kontekstId=1, kontekstType=VEDTAK, beregningsDato=2019-01-08) not found.",
-                problem?.detail
+                problem?.detail,
             )
         }
     }
@@ -167,29 +165,8 @@ internal class UklassifisertInntektApiTest {
     fun `GET uklassifisert without auth cookie should return 401 `() = testApp {
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}"
+            "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}",
         ) {
-        }.apply {
-            Assertions.assertEquals(HttpStatusCode.Unauthorized, response.status())
-            val problem = moshiInstance.adapter<Problem>(Problem::class.java).fromJson(response.content!!)
-            assertEquals("Ikke innlogget", problem?.title)
-            assertEquals("urn:dp:error:inntekt:auth", problem?.type.toString())
-            assertEquals(401, problem?.status)
-            assertEquals(
-                "Cookie with name ID_token not found",
-                problem?.detail
-            )
-        }
-    }
-
-    @Test
-    fun `GET uklassifisert without inncorrect auth cookie should return  `() = testApp {
-        val anotherIssuer = JwtStub("https://anotherissuer")
-        handleRequest(
-            HttpMethod.Get,
-            "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}"
-        ) {
-            addHeader(HttpHeaders.Cookie, "ID_token=${anotherIssuer.createTokenFor("user")}")
         }.apply {
             Assertions.assertEquals(HttpStatusCode.Unauthorized, response.status())
         }
@@ -199,9 +176,9 @@ internal class UklassifisertInntektApiTest {
     fun `GET uklassifisert inntekt with malformed parameters should return bad request`() = testApp {
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/blabla"
+            "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/blabla",
         ) {
-            addHeader(HttpHeaders.Cookie, "ID_token=$token")
+            addHeader(HttpHeaders.Authorization, "Bearer $token")
         }.apply {
             assertEquals(HttpStatusCode.BadRequest, response.status())
         }
@@ -211,9 +188,9 @@ internal class UklassifisertInntektApiTest {
     fun `Get request for uklassifisert inntekt should return 200 ok`() = testApp {
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}"
+            "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
         ) {
-            addHeader(HttpHeaders.Cookie, "ID_token=$token")
+            addHeader(HttpHeaders.Authorization, "Bearer $token")
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
             val storedInntekt =
@@ -226,9 +203,9 @@ internal class UklassifisertInntektApiTest {
     fun `Get request for uncached uklassifisert inntekt should return 200 ok`() = testApp {
         handleRequest(
             HttpMethod.Get,
-            "$uklassifisertInntekt/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}"
+            "$uklassifisertInntekt/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
         ) {
-            addHeader(HttpHeaders.Cookie, "ID_token=$token")
+            addHeader(HttpHeaders.Authorization, "Bearer $token")
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
             val uncachedInntekt =
@@ -244,15 +221,15 @@ internal class UklassifisertInntektApiTest {
             timestamp = null,
             inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
             manueltRedigert = false,
-            redigertAvSaksbehandler = false
+            redigertAvSaksbehandler = false,
         )
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}"
+            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader(HttpHeaders.Cookie, "ID_token=$token")
+            addHeader(HttpHeaders.Authorization, "Bearer $token")
             setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -269,15 +246,15 @@ internal class UklassifisertInntektApiTest {
             timestamp = null,
             inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
             manueltRedigert = false,
-            redigertAvSaksbehandler = true
+            redigertAvSaksbehandler = true,
         )
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}"
+            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader(HttpHeaders.Cookie, "ID_token=$token")
+            addHeader(HttpHeaders.Authorization, "Bearer $token")
             setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -311,24 +288,24 @@ internal class UklassifisertInntektApiTest {
                                     fordel = null,
                                     inntektType = InntektType.LOENNSINNTEKT,
                                     inntektsperiodetype = null,
-                                    inntektsstatus = null
-                                )
-                            )
-                        )
-                    )
+                                    inntektsstatus = null,
+                                ),
+                            ),
+                        ),
+                    ),
                 ),
-                ident = Aktoer(AktoerType.AKTOER_ID, aktørId)
+                ident = Aktoer(AktoerType.AKTOER_ID, aktørId),
             ),
             manueltRedigert = false,
-            redigertAvSaksbehandler = true
+            redigertAvSaksbehandler = true,
         )
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}"
+            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader(HttpHeaders.Cookie, "ID_token=$token")
+            addHeader(HttpHeaders.Authorization, "Bearer $token")
             val body = moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt)
             setBody(body.replace(oldValue = "123", newValue = ""))
         }.apply {
@@ -343,22 +320,22 @@ internal class UklassifisertInntektApiTest {
             timestamp = null,
             inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
             manueltRedigert = false,
-            redigertAvSaksbehandler = true
+            redigertAvSaksbehandler = true,
         )
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}"
+            "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader(HttpHeaders.Cookie, "ID_token=$token")
+            addHeader(HttpHeaders.Authorization, "Bearer $token")
             setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
             val storedInntekt =
                 moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
             assertEquals(storedInntekt.inntektId, inntektId)
-            shouldBeCounted(metricName = INNTEKT_OPPFRISKING)
+            shouldBeCounted(metricName = INNTEKT_OPPFRISKING_BRUKT)
         }
     }
 
@@ -369,15 +346,15 @@ internal class UklassifisertInntektApiTest {
             timestamp = null,
             inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
             manueltRedigert = false,
-            redigertAvSaksbehandler = false
+            redigertAvSaksbehandler = false,
         )
 
         handleRequest(
             HttpMethod.Post,
-            "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}"
+            "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader(HttpHeaders.Cookie, "ID_token=$token")
+            addHeader(HttpHeaders.Authorization, "Bearer $token")
             setBody(moshiInstance.adapter(GUIInntekt::class.java).toJson(guiInntekt))
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
@@ -405,9 +382,8 @@ internal class UklassifisertInntektApiTest {
                 inntektskomponentClient = inntektskomponentClientMock,
                 inntektStore = inntektStoreMock,
                 personOppslag = personOppslagMock,
-                jwkProvider = jwtStub.stubbedJwkProvider()
             ),
-        callback: TestApplicationEngine.() -> Unit
+        callback: TestApplicationEngine.() -> Unit,
     ) {
         withTestApplication(moduleFunction) { callback() }
     }

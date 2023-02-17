@@ -1,6 +1,5 @@
 package no.nav.dagpenger.inntekt
 
-import com.auth0.jwk.JwkProvider
 import com.natpryce.konfig.Configuration
 import com.ryanharter.ktor.moshi.moshi
 import com.squareup.moshi.JsonDataException
@@ -8,13 +7,11 @@ import com.squareup.moshi.JsonEncodingException
 import de.huxhorn.sulky.ulid.ULID
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.http.isSuccess
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.plugins.callid.CallId
@@ -23,7 +20,6 @@ import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.defaultheaders.DefaultHeaders
 import io.ktor.server.plugins.statuspages.StatusPages
-import io.ktor.server.request.authorization
 import io.ktor.server.request.path
 import io.ktor.server.response.respond
 import io.ktor.server.routing.route
@@ -34,7 +30,6 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import mu.KotlinLogging
 import mu.withLoggingContext
-import no.nav.dagpenger.inntekt.Config.application
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -62,7 +57,6 @@ internal fun Application.inntektApi(
     behandlingsInntektsGetter: BehandlingsInntektsGetter,
     personOppslag: PersonOppslag,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
-    jwkProvider: JwkProvider,
     enhetsregisterClient: EnhetsregisterClient,
     kronetilleggUttrekk: KronetilleggUttrekk,
     healthChecks: List<HealthCheck>,
@@ -83,27 +77,6 @@ internal fun Application.inntektApi(
                         else -> null
                     }
                 }
-            }
-        }
-
-        jwt(name = "jwt") {
-            realm = "dp-inntekt-api"
-            verifier(jwkProvider, config.application.jwksIssuer) {
-                acceptNotBefore(10)
-                acceptIssuedAt(10)
-            }
-            authHeader { call ->
-                val cookie = call.request.cookies["ID_token"]
-                    ?: throw CookieNotSetException("Cookie with name ID_token not found")
-                HttpAuthHeader.Single("Bearer", cookie)
-            }
-            skipWhen {
-                sikkerLogg.info { "Request har auth header: ${it.request.authorization()}" }
-                it.request.authorization() != null
-            }
-            validate { credentials ->
-                LOGGER.info { "Autentiserte kall med ISSO-credentials" }
-                return@validate JWTPrincipal(credentials.payload)
             }
         }
 

@@ -1,6 +1,5 @@
 package no.nav.dagpenger.inntekt.v1
 
-import com.auth0.jwk.JwkProvider
 import com.natpryce.konfig.Configuration
 import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.overriding
@@ -27,17 +26,15 @@ import no.nav.security.mock.oauth2.MockOAuth2Server
 
 internal object TestApplication {
     private const val ISSUER_ID = "default"
-
     val mockOAuth2Server: MockOAuth2Server by lazy {
         MockOAuth2Server().also {
             it.start()
         }
     }
-
     val testOAuthToken: String by lazy {
         mockOAuth2Server.issueToken(
-            issuerId = ISSUER_ID
-
+            issuerId = ISSUER_ID,
+            subject = "user",
         ).serialize()
     }
 
@@ -46,8 +43,8 @@ internal object TestApplication {
             mapOf(
                 "AZURE_OPENID_CONFIG_JWKS_URI" to mockOAuth2Server.jwksUrl(ISSUER_ID).toString(),
                 "AZURE_OPENID_CONFIG_ISSUER" to mockOAuth2Server.issuerUrl(ISSUER_ID).toString(),
-                "AZURE_APP_CLIENT_ID" to ISSUER_ID
-            )
+                "AZURE_APP_CLIENT_ID" to ISSUER_ID,
+            ),
         )
     }
 
@@ -57,10 +54,9 @@ internal object TestApplication {
         behandlingsInntektsGetter: BehandlingsInntektsGetter = mockk(),
         personOppslag: PersonOppslag = mockk(),
         apiAuthApiKeyVerifier: AuthApiKeyVerifier = mockk(relaxed = true),
-        jwkProvider: JwkProvider = mockk(relaxed = true),
         enhetsregisterClient: EnhetsregisterClient = mockk(relaxed = true),
         kronetilleggUttrekk: KronetilleggUttrekk = mockk(relaxed = true),
-        healthChecks: List<HealthCheck> = emptyList()
+        healthChecks: List<HealthCheck> = emptyList(),
     ): Application.() -> Unit {
         return fun Application.() {
             inntektApi(
@@ -70,24 +66,23 @@ internal object TestApplication {
                 behandlingsInntektsGetter = behandlingsInntektsGetter,
                 personOppslag = personOppslag,
                 apiAuthApiKeyVerifier = apiAuthApiKeyVerifier,
-                jwkProvider = jwkProvider,
                 enhetsregisterClient = enhetsregisterClient,
-                healthChecks = healthChecks,
                 kronetilleggUttrekk = kronetilleggUttrekk,
-                collectorRegistry = CollectorRegistry(true)
+                healthChecks = healthChecks,
+                collectorRegistry = CollectorRegistry(true),
             )
         }
     }
 
     internal fun <R> withMockAuthServerAndTestApplication(
         moduleFunction: Application.() -> Unit,
-        test: TestApplicationEngine.() -> R
+        test: TestApplicationEngine.() -> R,
     ): R = withTestApplication(moduleFunction, test)
 
     internal fun TestApplicationEngine.handleAuthenticatedAzureAdRequest(
         method: HttpMethod,
         uri: String,
-        test: TestApplicationRequest.() -> Unit = {}
+        test: TestApplicationRequest.() -> Unit = {},
     ): TestApplicationCall {
         return this.handleRequest(method, uri) {
             addHeader("Authorization", "Bearer $testOAuthToken")

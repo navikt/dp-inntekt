@@ -334,8 +334,8 @@ internal class InntektRouteSpec {
         withTestApplication(
             mockInntektApi(
                 behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-                apiAuthApiKeyVerifier = authApiKeyVerifier,
-                personOppslag = personOppslagMock
+                personOppslag = personOppslagMock,
+                apiAuthApiKeyVerifier = authApiKeyVerifier
             )
         ) { callback() }
     }

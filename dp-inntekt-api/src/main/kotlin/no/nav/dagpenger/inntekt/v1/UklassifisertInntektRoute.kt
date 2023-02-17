@@ -57,9 +57,9 @@ private val inntektOppfriskingBruktCounter =
 fun Route.uklassifisertInntekt(
     inntektskomponentClient: InntektskomponentClient,
     inntektStore: InntektStore,
-    personOppslag: PersonOppslag
+    personOppslag: PersonOppslag,
 ) {
-    authenticate("jwt", "azure") {
+    authenticate("azure") {
         route("/uklassifisert/{aktørId}/{kontekstType}/{kontekstId}/{beregningsDato}") {
             get {
                 withContext(Dispatchers.IO) {
@@ -70,8 +70,8 @@ fun Route.uklassifisertInntekt(
                                 aktørId = person.aktørId,
                                 fødselsnummer = person.fødselsnummer,
                                 regelkontekst = RegelKontekst(this.kontekstId, this.kontekstType),
-                                beregningsdato = this.beregningsDato
-                            )
+                                beregningsdato = this.beregningsDato,
+                            ),
                         )?.let {
                             inntektStore.getInntekt(it)
                         }?.let {
@@ -95,14 +95,14 @@ fun Route.uklassifisertInntekt(
                                         aktørId = person.aktørId,
                                         fødselsnummer = person.fødselsnummer,
                                         regelkontekst = RegelKontekst(this.kontekstId, this.kontekstType),
-                                        beregningsdato = this.beregningsDato
+                                        beregningsdato = this.beregningsDato,
                                     ),
                                     inntekt = it.inntekt,
                                     manueltRedigert = ManueltRedigert.from(
                                         guiInntekt.redigertAvSaksbehandler,
-                                        getSubject()
-                                    )
-                                )
+                                        getSubject(),
+                                    ),
+                                ),
                             )
                         }.let {
                             call.respond(
@@ -110,8 +110,8 @@ fun Route.uklassifisertInntekt(
                                 mapToGUIInntekt(
                                     it,
                                     Opptjeningsperiode(this.beregningsDato),
-                                    guiInntekt.inntektsmottaker
-                                )
+                                    guiInntekt.inntektsmottaker,
+                                ),
                             )
                         }.also {
                             inntektKorrigeringCounter.inc()
@@ -157,14 +157,14 @@ fun Route.uklassifisertInntekt(
                                         aktørId = person.aktørId,
                                         fødselsnummer = person.fødselsnummer,
                                         regelkontekst = RegelKontekst(this.kontekstId, this.kontekstType),
-                                        beregningsdato = this.beregningsDato
+                                        beregningsdato = this.beregningsDato,
                                     ),
                                     inntekt = it.inntekt,
                                     manueltRedigert = ManueltRedigert.from(
                                         guiInntekt.redigertAvSaksbehandler,
-                                        getSubject()
-                                    )
-                                )
+                                        getSubject(),
+                                    ),
+                                ),
                             )
                         }.let {
                             call.respond(
@@ -172,8 +172,8 @@ fun Route.uklassifisertInntekt(
                                 mapToGUIInntekt(
                                     it,
                                     Opptjeningsperiode(this.beregningsDato),
-                                    guiInntekt.inntektsmottaker
-                                )
+                                    guiInntekt.inntektsmottaker,
+                                ),
                             )
                         }.also {
                             inntektOppfriskingBruktCounter.inc()
@@ -189,7 +189,7 @@ fun Route.uklassifisertInntekt(
                 call.respondText(
                     inntektKlassifiseringsKoderJsonAdapter.toJson(dataGrunnlagKlassifiseringToVerdikode.values),
                     ContentType.Application.Json,
-                    HttpStatusCode.OK
+                    HttpStatusCode.OK,
                 )
             }
         }
@@ -209,21 +209,21 @@ private fun PipelineContext<Unit, ApplicationCall>.getSubject(): String {
 
 private inline fun PipelineContext<Unit, ApplicationCall>.withInntektRequest(
     route: String,
-    block: InntektRequest.() -> Unit
+    block: InntektRequest.() -> Unit,
 ) {
     val inntektRequest = runCatching {
         InntektRequest(
             aktørId = call.parameters["aktørId"]!!,
             kontekstId = call.parameters["kontekstId"]!!,
             kontekstType = call.parameters["kontekstType"]!!,
-            beregningsDato = LocalDate.parse(call.parameters["beregningsDato"]!!)
+            beregningsDato = LocalDate.parse(call.parameters["beregningsDato"]!!),
         )
     }.getOrElse { t -> throw IllegalArgumentException("Failed to parse parameters", t) }
 
     withLoggingContext(
         "route" to route,
         "kontekstId" to inntektRequest.kontekstId,
-        "kontekstType" to inntektRequest.kontekstType
+        "kontekstType" to inntektRequest.kontekstType,
     ) {
         block(inntektRequest)
     }
@@ -233,7 +233,7 @@ data class InntektRequest(
     val aktørId: String,
     val kontekstId: String,
     val kontekstType: String,
-    val beregningsDato: LocalDate
+    val beregningsDato: LocalDate,
 )
 
 val toInntektskomponentRequest: (Person, Opptjeningsperiode) -> InntektkomponentRequest =
