@@ -74,7 +74,6 @@ internal fun Application.inntektApi(
     }
 
     install(Authentication) {
-
         apiKeyAuth("apikey") {
             apiKeyName = "X-API-KEY"
             validate { apikeyCredential: ApiKeyCredential ->
@@ -103,6 +102,7 @@ internal fun Application.inntektApi(
                 it.request.authorization() != null
             }
             validate { credentials ->
+                LOGGER.info { "Autentiserte kall med ISSO-credentials" }
                 return@validate JWTPrincipal(credentials.payload)
             }
         }
@@ -113,12 +113,11 @@ internal fun Application.inntektApi(
     }
 
     install(StatusPages) {
-
         exception<Throwable> { call, cause ->
             LOGGER.error("Request failed!", cause)
             val error = Problem(
                 type = URI("urn:dp:error:inntekt"),
-                title = "Uhåndtert feil!"
+                title = "Uhåndtert feil!",
             )
             call.respond(HttpStatusCode.InternalServerError, error)
         }
@@ -128,7 +127,7 @@ internal fun Application.inntektApi(
                 type = URI("urn:dp:error:inntekt"),
                 title = "Kunne ikke finne inntekt i databasen",
                 status = 404,
-                detail = cause.message
+                detail = cause.message,
             )
             call.respond(HttpStatusCode.NotFound, problem)
         }
@@ -138,7 +137,7 @@ internal fun Application.inntektApi(
                 type = URI("urn:dp:error:inntekt"),
                 title = "InntektsId må være en gyldig ULID",
                 detail = cause.message,
-                status = HttpStatusCode.BadRequest.value
+                status = HttpStatusCode.BadRequest.value,
             )
             call.respond(HttpStatusCode.BadRequest, problem)
         }
@@ -146,16 +145,20 @@ internal fun Application.inntektApi(
             val statusCode =
                 if (HttpStatusCode.fromValue(cause.status)
                     .isSuccess()
-                ) HttpStatusCode.InternalServerError else HttpStatusCode.fromValue(
-                    cause.status
-                )
+                ) {
+                    HttpStatusCode.InternalServerError
+                } else {
+                    HttpStatusCode.fromValue(
+                        cause.status,
+                    )
+                }
             sikkerLogg.error(cause) { "Request failed against inntektskomponenten" }
             LOGGER.error("Request failed against inntektskomponenten")
             val error = Problem(
                 type = URI("urn:dp:error:inntektskomponenten"),
                 title = "Innhenting av inntekt mot a-inntekt feilet. Prøv igjen senere",
                 status = statusCode.value,
-                detail = cause.detail
+                detail = cause.detail,
             )
             call.respond(statusCode, error)
         }
@@ -164,7 +167,7 @@ internal fun Application.inntektApi(
             val error = Problem(
                 type = URI("urn:dp:error:inntekt:parameter"),
                 title = "Klarte ikke å lese parameterene",
-                status = 400
+                status = 400,
             )
             call.respond(HttpStatusCode.BadRequest, error)
         }
@@ -173,7 +176,7 @@ internal fun Application.inntektApi(
             val error = Problem(
                 type = URI("urn:dp:error:inntekt:parameter"),
                 title = "Parameteret er ikke gyldig, mangler obligatorisk felt: '${cause.message}'",
-                status = 400
+                status = 400,
             )
             call.respond(HttpStatusCode.BadRequest, error)
         }
@@ -182,7 +185,7 @@ internal fun Application.inntektApi(
             val error = Problem(
                 type = URI("urn:dp:error:inntekt:parameter"),
                 title = "Parameteret er ikke gyldig, mangler obligatorisk felt: '${cause.message}'",
-                status = 400
+                status = 400,
             )
             call.respond(HttpStatusCode.BadRequest, error)
         }
@@ -193,7 +196,7 @@ internal fun Application.inntektApi(
             val error = Problem(
                 type = URI("urn:dp:error:inntekt:person"),
                 title = "Kunne ikke finne inntekt for ukjent person",
-                status = 400
+                status = 400,
             )
             call.respond(HttpStatusCode.BadRequest, error)
         }
@@ -204,7 +207,7 @@ internal fun Application.inntektApi(
                 type = URI("urn:dp:error:inntekt:auth"),
                 title = "Ikke innlogget",
                 detail = "${cause.message}",
-                status = statusCode.value
+                status = statusCode.value,
             )
             call.respond(statusCode, error)
         }
