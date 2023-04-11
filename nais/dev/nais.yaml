@@ -35,6 +35,7 @@ spec:
       memory: 256Mi
   azure:
     application:
+      allowAllUsers: true # Dette var default før NAIS endret default til false
       enabled: true
   accessPolicy:
     inbound:

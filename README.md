@@ -54,7 +54,7 @@ ctrl-c og docker-compose -f docker-compose.yml down
 
 ### Tilgang til Postgres databasen
 
-For utfyllende dokumentasjon se [Postgres i NAV](https://github.com/navikt/utvikling/blob/master/PostgreSQL.md)
+For utfyllende dokumentasjon se [Postgres i NAV](https://github.com/navikt/utvikling/blob/main/docs/teknisk/PostgreSQL.md)
 
 #### Tldr
 
