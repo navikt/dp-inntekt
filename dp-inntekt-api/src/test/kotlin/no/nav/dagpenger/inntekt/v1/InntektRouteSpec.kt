@@ -40,8 +40,8 @@ internal class InntektRouteSpec {
 
     private val fnr = getFodselsnummerForDate(
         Date.from(
-            LocalDate.now().minusYears(20).atStartOfDay(ZoneId.systemDefault()).toInstant()
-        )
+            LocalDate.now().minusYears(20).atStartOfDay(ZoneId.systemDefault()).toInstant(),
+        ),
     ).personnummer
     private val ulid = ULID().nextULID()
     private val aktørId = "1234"
@@ -77,7 +77,7 @@ internal class InntektRouteSpec {
         aktørId = "$aktørId",
         fødselsnummer = "$fnr",
         regelkontekst = RegelKontekst("1", "vedtak"),
-        beregningsdato = beregningsdato
+        beregningsdato = beregningsdato,
 
     )
 
@@ -85,14 +85,14 @@ internal class InntektRouteSpec {
         aktørId = aktørId,
         fødselsnummer = fnr,
         regelkontekst = RegelKontekst(ulid, "vedtak"),
-        beregningsdato = beregningsdato
+        beregningsdato = beregningsdato,
     )
 
     private val fnrParametre = Inntektparametre(
         aktørId = aktørId,
         regelkontekst = RegelKontekst(ulid, "vedtak"),
         fødselsnummer = fnr,
-        beregningsdato = beregningsdato
+        beregningsdato = beregningsdato,
     )
 
     private val jsonMissingFields =
@@ -120,7 +120,7 @@ internal class InntektRouteSpec {
             aktørId = aktørId,
             fornavn = "fornavn",
             mellomnavn = null,
-            etternavn = "etternav"
+            etternavn = "etternav",
 
         )
         coEvery { it.hentPerson(fnr) } returns person
@@ -144,7 +144,7 @@ internal class InntektRouteSpec {
     private val storedInntekt = StoredInntekt(
         inntektId,
         emptyInntekt,
-        false
+        false,
     )
 
     init {
@@ -215,13 +215,13 @@ internal class InntektRouteSpec {
             coVerify(exactly = 1) {
                 behandlingsInntektsGetterMock.getBehandlingsInntekt(
                     vedtakIdUlidParametre,
-                    callId
+                    callId,
                 )
             }
             coVerify(exactly = 1) {
                 behandlingsInntektsGetterMock.getSpesifisertInntekt(
                     vedtakIdUlidParametre,
-                    callId
+                    callId,
                 )
             }
         }
@@ -254,19 +254,19 @@ internal class InntektRouteSpec {
             coVerify(exactly = 1) {
                 behandlingsInntektsGetterMock.getBehandlingsInntekt(
                     vedtakIdUlidParametre,
-                    callId
+                    callId,
                 )
             }
             coVerify(exactly = 1) {
                 behandlingsInntektsGetterMock.getSpesifisertInntekt(
                     vedtakIdUlidParametre,
-                    callId
+                    callId,
                 )
             }
             coVerify(exactly = 1) {
                 behandlingsInntektsGetterMock.getKlassifisertInntekt(
                     vedtakIdUlidParametre,
-                    callId
+                    callId,
                 )
             }
         }
@@ -335,8 +335,8 @@ internal class InntektRouteSpec {
             mockInntektApi(
                 behandlingsInntektsGetter = behandlingsInntektsGetterMock,
                 personOppslag = personOppslagMock,
-                apiAuthApiKeyVerifier = authApiKeyVerifier
-            )
+                apiAuthApiKeyVerifier = authApiKeyVerifier,
+            ),
         ) { callback() }
     }
 }

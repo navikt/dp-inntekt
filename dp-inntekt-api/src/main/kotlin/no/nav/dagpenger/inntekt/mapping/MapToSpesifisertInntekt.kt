@@ -13,7 +13,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
 import java.time.LocalDateTime
 import java.time.YearMonth
 
-fun mapToSpesifisertInntekt(storedInntekt: StoredInntekt, sisteAvsluttendeKalenderMåned: YearMonth) =
+fun mapToSpesifisertInntekt(storedInntekt: StoredInntekt, sisteAvsluttendeKalenderMåned: YearMonth): SpesifisertInntekt =
     SpesifisertInntekt(
         inntektId = InntektId(storedInntekt.inntektId.id),
         ident = Aktør(

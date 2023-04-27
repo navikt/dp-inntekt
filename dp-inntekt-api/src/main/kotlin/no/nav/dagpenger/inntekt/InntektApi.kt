@@ -1,19 +1,21 @@
 package no.nav.dagpenger.inntekt
 
 import com.natpryce.konfig.Configuration
-import com.ryanharter.ktor.moshi.moshi
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonEncodingException
 import de.huxhorn.sulky.ulid.ULID
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
+import io.ktor.serialization.jackson.JacksonConverter
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
+import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.callloging.CallLogging
@@ -39,6 +41,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpCl
 import no.nav.dagpenger.inntekt.oppslag.PersonNotFoundException
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
+import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import no.nav.dagpenger.inntekt.v1.enhetsregisteret
 import no.nav.dagpenger.inntekt.v1.inntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
@@ -153,6 +156,15 @@ internal fun Application.inntektApi(
             )
             call.respond(HttpStatusCode.BadRequest, error)
         }
+        exception<BadRequestException> { call, cause ->
+            LOGGER.warn("Request does not match expected json", cause)
+            val error = Problem(
+                type = URI("urn:dp:error:inntekt:parameter"),
+                title = "Parameteret er ikke gyldig, mangler obligatorisk felt: '${cause.message}'",
+                status = 400,
+            )
+            call.respond(HttpStatusCode.BadRequest, error)
+        }
         exception<IllegalArgumentException> { call, cause ->
             LOGGER.warn("Request does not match expected json", cause)
             val error = Problem(
@@ -205,7 +217,7 @@ internal fun Application.inntektApi(
     }
 
     install(ContentNegotiation) {
-        moshi(moshiInstance)
+        register(ContentType.Application.Json, JacksonConverter(jacksonObjectMapper))
     }
 
     routing {

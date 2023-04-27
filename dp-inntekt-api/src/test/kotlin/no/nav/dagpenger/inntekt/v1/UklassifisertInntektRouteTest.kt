@@ -230,11 +230,11 @@ internal class UklassifisertInntektApiTest {
         ) {
             addHeader(HttpHeaders.ContentType, "application/json")
             addHeader(HttpHeaders.Authorization, "Bearer $token")
-            setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
+            setBody(moshiInstance.adapter(GUIInntekt::class.java).toJson(guiInntekt))
         }.apply {
             assertEquals(HttpStatusCode.OK, response.status())
             val storedInntekt =
-                moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+                moshiInstance.adapter(StoredInntekt::class.java).fromJson(response.content!!)!!
             assertEquals(storedInntekt.inntektId, inntektId)
         }
     }

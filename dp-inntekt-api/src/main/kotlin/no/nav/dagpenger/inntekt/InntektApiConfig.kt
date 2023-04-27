@@ -8,7 +8,7 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
-import no.finn.unleash.util.UnleashConfig
+import io.getunleash.util.UnleashConfig
 import no.nav.dagpenger.streams.Credential
 import no.nav.dagpenger.streams.KafkaAivenCredentials
 import java.net.InetAddress
