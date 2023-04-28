@@ -158,6 +158,7 @@ enum class InntektBeskrivelse {
     @JsonProperty("arbeidsoppholdKost")
     ARBEIDSOPPHOLD_KOST,
 
+    @Json(name = "arbeidsoppholdLosji")
     @JsonProperty("arbeidsoppholdLosji")
     ARBEIDSOPPHOLD_LOSJI,
 
