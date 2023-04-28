@@ -1,10 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 
+
 plugins {
     application
     id(Shadow.shadow) version Shadow.version
-    id(Graphql.graphql) version Graphql.version
+    id("com.expediagroup.graphql") version "6.4.0"
     id("de.undercouch.download") version "5.3.0"
 }
 
@@ -25,6 +26,7 @@ application {
 }
 
 val grpcVersion = "1.38.1"
+val expediaGraphqlVersion = "6.4.0"
 
 dependencies {
     implementation(project(":dp-inntekt-grpc"))
@@ -39,24 +41,28 @@ dependencies {
     implementation(Ktor2.Server.library("call-logging"))
     implementation(Ktor2.Server.library("default-headers"))
     implementation(Ktor2.Server.library("content-negotiation"))
-    implementation(Ktor2.Server.library("metrics-micrometer"))
+    implementation("io.ktor:ktor-serialization-jackson:${Ktor2.version}")
     implementation(Ktor2.Server.library("metrics-micrometer"))
 
     implementation(Micrometer.prometheusRegistry)
 
-    implementation(Graphql.client)
-    implementation(Graphql.library("ktor-client"))
-    implementation(Graphql.library("client-jackson"))
+    implementation("com.expediagroup:graphql-kotlin-client:$expediaGraphqlVersion")
+    implementation("com.expediagroup:graphql-kotlin-ktor-client:$expediaGraphqlVersion")
+    implementation("com.expediagroup:graphql-kotlin-client-jackson:$expediaGraphqlVersion")
+
     implementation(Ktor2.Client.library("logging-jvm"))
     implementation(Ktor2.Client.library("apache"))
 
+    implementation(Jackson.core)
+    implementation(Jackson.kotlin)
+    implementation(Jackson.jsr310)
+
     // unleash
-    implementation("no.finn.unleash:unleash-client-java:3.3.1")
+    implementation("io.getunleash:unleash-client-java:8.0.0")
 
     implementation(Moshi.moshi)
     implementation(Moshi.moshiAdapters)
     implementation(Moshi.moshiKotlin)
-    implementation("com.github.cs125-illinois:ktor-moshi:2b13e43520")
 
     implementation(Dagpenger.Streams)
     implementation(Kafka.clients)
@@ -82,6 +88,7 @@ dependencies {
     implementation(Database.Postgres)
     implementation(Database.Kotlinquery)
     implementation(Konfig.konfig)
+    implementation("org.slf4j:slf4j-api:2.0.7")
     implementation(Database.VaultJdbc) {
         exclude(module = "slf4j-simple")
         exclude(module = "slf4j-api")
@@ -110,6 +117,7 @@ dependencies {
     testImplementation(Junit5.params)
     testRuntimeOnly(Junit5.engine)
     testImplementation(Wiremock.standalone)
+    testImplementation(KoTest.library("assertions-json"))
     testImplementation(KoTest.assertions)
     testImplementation(KoTest.runner)
     testImplementation(KoTest.property)
