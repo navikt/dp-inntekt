@@ -52,7 +52,7 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
-          RESOURCE: nais/dev/nais.yaml
+          RESOURCE: nais/dev/nais.yaml,nais/grpc-svc.yaml
           VARS: nais/vars.yaml
           PRINT_PAYLOAD: true
   deploy-prod:
@@ -68,6 +68,6 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-fss
-          RESOURCE: nais/prod/nais.yaml
+          RESOURCE: nais/prod/nais.yaml,nais/grpc-svc.yaml
           VARS: nais/vars.yaml
           PRINT_PAYLOAD: true
