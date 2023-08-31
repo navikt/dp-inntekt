@@ -117,6 +117,7 @@ private val posteringsTypeMapping = biMapOf(
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.TREKK_I_LOENN_FOR_FERIE, SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK) to PosteringsType.L_TREKK_I_LØNN_FOR_FERIE_T,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.TIPS, null) to PosteringsType.L_TIPS,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.SKATTEPLIKTIG_PERSONALRABATT, null) to PosteringsType.L_SKATTEPLIKTIG_PERSONALRABATT,
+    PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.SKATTEPLIKTIG_GODTGJOERELSE_SAERAVTALE_UTLAND, null) to PosteringsType.L_SKATTEPLIKTIG_GODTGJOERELSE_SAERAVTALE_UTLAND,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_OG_ANNEN_GODTGJOERELSE_SOM_IKKE_ER_SKATTEPLIKTIG) to PosteringsType.L_ANNET_IKKE_SKATTEPLIKTIG,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_UTBETALT_FRA_DEN_NORSKE_STAT_OPPTJENT_I_UTLANDET) to PosteringsType.L_ANNET_UTLANDET,
     PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_VED_KONKURS_ELLER_STATSGARANTI_OSV) to PosteringsType.L_ANNET_KONKURS

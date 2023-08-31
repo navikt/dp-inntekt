@@ -18,6 +18,7 @@ buildscript {
 repositories {
     mavenCentral()
     maven("https://packages.confluent.io/maven/")
+    maven("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
 }
 
 application {
@@ -31,7 +32,8 @@ val expediaGraphqlVersion = "6.4.0"
 dependencies {
     implementation(project(":dp-inntekt-grpc"))
 
-    implementation(Dagpenger.Events)
+    implementation("com.github.navikt:dagpenger-events:20230831.d11fdb")
+    implementation("com.github.navikt:dagpenger-streams:20230831.f3d785")
 
     implementation(Ktor2.Server.library("netty"))
     implementation(Ktor2.Server.library("auth"))
@@ -64,7 +66,6 @@ dependencies {
     implementation(Moshi.moshiAdapters)
     implementation(Moshi.moshiKotlin)
 
-    implementation(Dagpenger.Streams)
     implementation(Kafka.clients)
 
     implementation(Kotlin.Logging.kotlinLogging)
