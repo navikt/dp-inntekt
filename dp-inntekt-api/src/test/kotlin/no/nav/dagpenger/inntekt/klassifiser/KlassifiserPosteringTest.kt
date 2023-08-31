@@ -82,7 +82,8 @@ internal class KlassifiserPosteringTest {
             PosteringsType.L_ANNET_IKKE_SKATTEPLIKTIG,
             PosteringsType.L_ANNET_UTLANDET,
             PosteringsType.L_ANNET_KONKURS,
-            PosteringsType.L_HONORAR_AKKORD_PROSENT_PROVISJON_H
+            PosteringsType.L_HONORAR_AKKORD_PROSENT_PROVISJON_H,
+            PosteringsType.L_SKATTEPLIKTIG_GODTGJOERELSE_SAERAVTALE_UTLAND
         )
 
         val spesifisertInntekt = createTestSpesifisertInntekt(arbeidsPosteringsTyper)

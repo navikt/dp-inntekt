@@ -397,4 +397,8 @@ enum class InntektBeskrivelse {
     @Json(name = "skattepliktigPersonalrabatt")
     @JsonProperty("skattepliktigPersonalrabatt")
     SKATTEPLIKTIG_PERSONALRABATT,
+
+    @Json(name = "skattepliktigGodtgjoerelseSaeravtaleUtland")
+    @JsonProperty("skattepliktigGodtgjoerelseSaeravtaleUtland")
+    SKATTEPLIKTIG_GODTGJOERELSE_SAERAVTALE_UTLAND,
 }

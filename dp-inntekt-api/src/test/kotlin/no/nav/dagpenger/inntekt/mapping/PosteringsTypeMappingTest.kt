@@ -528,6 +528,19 @@ internal class PosteringsTypeMappingTest {
     }
 
     @Test
+    fun `test posteringstype-mapping for Skattepliktig godtgjørelse særavtale utland"`() {
+        val posteringsType = PosteringsType.L_SKATTEPLIKTIG_GODTGJOERELSE_SAERAVTALE_UTLAND
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(
+            InntektType.LOENNSINNTEKT,
+            InntektBeskrivelse.SKATTEPLIKTIG_GODTGJOERELSE_SAERAVTALE_UTLAND,
+            null
+        )
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
     fun `test posteringstype-mapping for Sluttvederlag`() {
         val posteringsType = PosteringsType.L_SLUTTVEDERLAG
         val posteringsTypeInfo = PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.SLUTTVEDERLAG, null)
