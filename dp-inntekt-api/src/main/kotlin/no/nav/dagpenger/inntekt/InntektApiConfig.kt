@@ -47,7 +47,7 @@ internal object Config {
             "database.name" to "dp-inntekt-db-q0",
             "flyway.locations" to "db/migration,db/testdata",
             "vault.mountpath" to "postgresql/preprod-fss/",
-            "hentinntektliste.url" to "https://app-q1.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
+            "hentinntektliste.url" to "https://app-q0.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
             "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
             "oidc.sts.issuerurl" to "https://security-token-service.nais.preprod.local/",
             "application.profile" to "DEV",
