@@ -141,27 +141,33 @@ tasks.named("test") {
     dependsOn("copySchemaToResources")
 }
 
+tasks.named("processResources") {
+    dependsOn("copySchemaToResources")
+}
+
 tasks.named("graphqlGenerateClient") {
+    dependsOn("copySchemaToResources")
     dependsOn("downloadPdlSDL")
 }
 
+val Project.buildDir_: File get() = layout.buildDirectory.get().asFile
 val schema = "schema.graphql"
 
 val graphqlGenerateClient by tasks.getting(com.expediagroup.graphql.plugin.gradle.tasks.GraphQLGenerateClientTask::class) {
     packageName.set("no.nav.pdl")
-    schemaFile.set(File("$buildDir/$schema"))
+    schemaFile.set(File("$buildDir_/$schema"))
     queryFileDirectory.set(File("$projectDir/src/main/resources"))
 }
 
 val downloadPdlSDL by tasks.register<de.undercouch.gradle.tasks.download.Download>("downloadPdlSDL") {
     src("https://navikt.github.io/pdl/pdl-api-sdl.graphqls")
-    dest(File(buildDir, schema))
+    dest(File(buildDir_, schema))
 }
 
 tasks.register<Copy>("copySchemaToResources") {
     dependsOn(downloadPdlSDL)
 
-    from(buildDir) {
+    from(buildDir_) {
         include(schema)
     }
     into("$projectDir/src/main/resources")
@@ -170,7 +176,7 @@ tasks.register<Copy>("copySchemaToResources") {
 // To get intellij to make sense of generated sources from graphql client
 java {
     val mainJavaSourceSet: SourceDirectorySet = sourceSets.getByName("main").java
-    val graphqlDir = "$buildDir/generated/source/graphql/main"
+    val graphqlDir = "$buildDir_/generated/source/graphql/main"
     mainJavaSourceSet.srcDirs(graphqlDir)
 }
 
