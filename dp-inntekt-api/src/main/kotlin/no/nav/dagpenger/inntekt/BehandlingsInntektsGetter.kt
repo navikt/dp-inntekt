@@ -16,8 +16,8 @@ private val LOGGER = KotlinLogging.logger {}
 
 class BehandlingsInntektsGetter(
     private val inntektskomponentClient: InntektskomponentClient,
-    private val inntektStore: InntektStore
-) {
+    private val inntektStore: InntektStore,
+) : InntektStore by inntektStore {
     suspend fun getKlassifisertInntekt(inntektparametre: Inntektparametre, callId: String? = null): Inntekt {
         return klassifiserOgMapInntekt(getSpesifisertInntekt(inntektparametre, callId))
     }
@@ -25,13 +25,13 @@ class BehandlingsInntektsGetter(
     suspend fun getSpesifisertInntekt(inntektparametre: Inntektparametre, callId: String? = null): SpesifisertInntekt {
         return mapToSpesifisertInntekt(
             getBehandlingsInntekt(inntektparametre, callId),
-            inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned
+            inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned,
         )
     }
 
     internal suspend fun getBehandlingsInntekt(
         inntektparametre: Inntektparametre,
-        callId: String? = null
+        callId: String? = null,
     ): StoredInntekt {
         return isInntektStored(inntektparametre)?.let {
             LOGGER.info { "Henter stored inntekt: ${inntektparametre.toDebugString()}" }
@@ -42,19 +42,19 @@ class BehandlingsInntektsGetter(
 
     private suspend fun fetchAndStoreInntekt(
         inntektparametre: Inntektparametre,
-        callId: String? = null
+        callId: String? = null,
     ): StoredInntekt {
         val inntektkomponentRequest = InntektkomponentRequest(
             aktørId = inntektparametre.aktørId,
             fødselsnummer = inntektparametre.fødselsnummer,
             månedFom = inntektparametre.opptjeningsperiode.førsteMåned,
-            månedTom = inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned
+            månedTom = inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned,
         )
         return inntektStore.storeInntekt(
             StoreInntektCommand(
                 inntektparametre = inntektparametre,
-                inntekt = inntektskomponentClient.getInntekt(inntektkomponentRequest, callId = callId)
-            )
+                inntekt = inntektskomponentClient.getInntekt(inntektkomponentRequest, callId = callId),
+            ),
         )
     }
 

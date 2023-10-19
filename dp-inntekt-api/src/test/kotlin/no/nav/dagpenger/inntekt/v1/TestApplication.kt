@@ -9,7 +9,6 @@ import io.ktor.server.testing.TestApplicationCall
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.withTestApplication
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
@@ -73,11 +72,6 @@ internal object TestApplication {
             )
         }
     }
-
-    internal fun <R> withMockAuthServerAndTestApplication(
-        moduleFunction: Application.() -> Unit,
-        test: TestApplicationEngine.() -> R,
-    ): R = withTestApplication(moduleFunction, test)
 
     internal fun TestApplicationEngine.handleAuthenticatedAzureAdRequest(
         method: HttpMethod,

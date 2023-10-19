@@ -19,7 +19,7 @@ fun klassifiserOgMapInntekt(spesifisertInntekt: SpesifisertInntekt): Inntekt {
         inntektsId = spesifisertInntekt.inntektId.id,
         inntektsListe = klassifisertInntektMåneder,
         manueltRedigert = spesifisertInntekt.manueltRedigert,
-        sisteAvsluttendeKalenderMåned = spesifisertInntekt.sisteAvsluttendeKalenderMåned
+        sisteAvsluttendeKalenderMåned = spesifisertInntekt.sisteAvsluttendeKalenderMåned,
     )
 }
 
@@ -33,7 +33,7 @@ private fun mapTilKlassifisertInntektMåneder(klassifisertePosteringer: List<Kla
 private fun mapTilKlassifisertInntektMåned(
     årmåned: YearMonth,
     klassifisertePosteringer: List<KlassifisertPostering>,
-    avvikMåneder: Map<YearMonth, List<Avvik>>
+    avvikMåneder: Map<YearMonth, List<Avvik>>,
 ) = KlassifisertInntektMåned(
     årMåned = årmåned,
     harAvvik = avvikMåneder.containsKey(årmåned),
@@ -42,7 +42,7 @@ private fun mapTilKlassifisertInntektMåned(
         .map { (klasse, klassifisertePosteringerForKlasse) ->
             KlassifisertInntekt(
                 beløp = klassifisertePosteringerForKlasse.fold(BigDecimal.ZERO) { sum, postering -> sum + postering.postering.beløp },
-                inntektKlasse = klasse
+                inntektKlasse = klasse,
             )
-        }
+        },
 )

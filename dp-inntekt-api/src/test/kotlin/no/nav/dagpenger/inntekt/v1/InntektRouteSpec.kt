@@ -330,6 +330,17 @@ internal class InntektRouteSpec {
         }
     }
 
+    @Test
+    fun `Hente klassifisert inntekt basert på inntekt ID`() = testApp {
+        handleAuthenticatedAzureAdRequest(HttpMethod.Get, "/v2/inntekt/klassifisert/${inntektId.id}") {
+        }.apply {
+            assertEquals(HttpStatusCode.OK, response.status())
+        }
+        handleAuthenticatedAzureAdRequest(HttpMethod.Get, "/v2/inntekt/klassifisert/1234") {
+        }.apply {
+            assertEquals(HttpStatusCode.BadRequest, response.status())
+        }
+    }
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication(
             mockInntektApi(
