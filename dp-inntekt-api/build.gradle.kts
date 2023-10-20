@@ -27,7 +27,7 @@ application {
 }
 
 val grpcVersion = "1.58.0"
-val expediaGraphqlVersion = "6.4.0"
+val expediaGraphqlVersion = "7.0.1"
 
 dependencies {
     implementation(project(":dp-inntekt-grpc"))
