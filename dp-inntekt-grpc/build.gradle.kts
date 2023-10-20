@@ -7,7 +7,7 @@ val protobufGradleVersion = "0.9.4"
 
 plugins {
     kotlin("jvm")
-    id("com.google.protobuf") version "0.9.2"
+    id("com.google.protobuf") version "0.9.4"
 }
 
 apply(plugin = "com.google.protobuf")
