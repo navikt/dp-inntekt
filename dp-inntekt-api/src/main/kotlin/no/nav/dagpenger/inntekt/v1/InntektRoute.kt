@@ -16,7 +16,6 @@ import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.RegelKontekst
-import no.nav.dagpenger.inntekt.klassifiserer.klassifiserOgMapInntekt
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import java.time.LocalDate
 
@@ -64,7 +63,7 @@ fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter, personOp
         get("{inntektId}") {
             withContext(IO) {
                 val inntektId = call.parameters["inntektId"]?.let { InntektId(it) } ?: throw MissingRequestParameterException("inntektId")
-                val inntekt = klassifiserOgMapInntekt(behandlingsInntektsGetter.getSpesifisertInntekt(inntektId = inntektId))
+                val inntekt = behandlingsInntektsGetter.getKlassifisertInntekt(inntektId = inntektId)
                 call.respond(HttpStatusCode.OK, inntekt)
             }
         }

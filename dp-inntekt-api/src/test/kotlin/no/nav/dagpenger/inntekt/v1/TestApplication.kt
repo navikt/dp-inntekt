@@ -5,10 +5,12 @@ import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.overriding
 import io.ktor.http.HttpMethod
 import io.ktor.server.application.Application
+import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.TestApplicationCall
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.testApplication
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
@@ -70,6 +72,16 @@ internal object TestApplication {
                 healthChecks = healthChecks,
                 collectorRegistry = CollectorRegistry(true),
             )
+        }
+    }
+
+    internal fun withMockAuthServerAndTestApplication(
+        moduleFunction: Application.() -> Unit = mockInntektApi(),
+        test: suspend ApplicationTestBuilder.() -> Unit,
+    ) {
+        return testApplication {
+            application(moduleFunction)
+            test()
         }
     }
 

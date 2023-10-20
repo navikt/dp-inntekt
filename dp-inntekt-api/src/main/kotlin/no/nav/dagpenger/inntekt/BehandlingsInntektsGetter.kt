@@ -3,6 +3,7 @@ package no.nav.dagpenger.inntekt
 import mu.KotlinLogging
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
+import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
@@ -17,9 +18,13 @@ private val LOGGER = KotlinLogging.logger {}
 class BehandlingsInntektsGetter(
     private val inntektskomponentClient: InntektskomponentClient,
     private val inntektStore: InntektStore,
-) : InntektStore by inntektStore {
+) {
     suspend fun getKlassifisertInntekt(inntektparametre: Inntektparametre, callId: String? = null): Inntekt {
         return klassifiserOgMapInntekt(getSpesifisertInntekt(inntektparametre, callId))
+    }
+
+    fun getKlassifisertInntekt(inntektId: InntektId): Inntekt {
+        return klassifiserOgMapInntekt(inntektStore.getSpesifisertInntekt(inntektId))
     }
 
     suspend fun getSpesifisertInntekt(inntektparametre: Inntektparametre, callId: String? = null): SpesifisertInntekt {
