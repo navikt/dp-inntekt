@@ -5,7 +5,7 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCach
 plugins {
     application
     id(Shadow.shadow) version Shadow.version
-    id("com.expediagroup.graphql") version "6.4.0"
+    id("com.expediagroup.graphql") version "7.0.1"
     id("de.undercouch.download") version "5.5.0"
 }
 
