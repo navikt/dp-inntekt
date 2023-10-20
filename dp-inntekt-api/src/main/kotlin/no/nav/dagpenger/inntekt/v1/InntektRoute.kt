@@ -2,15 +2,18 @@ package no.nav.dagpenger.inntekt.v1
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
+import io.ktor.server.plugins.MissingRequestParameterException
 import io.ktor.server.plugins.callid.callId
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
+import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
@@ -55,6 +58,13 @@ fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter, personOp
                         call.callId
                     )
                 call.respond(HttpStatusCode.OK, klassifisertInntekt)
+            }
+        }
+        get("{inntektId}") {
+            withContext(IO) {
+                val inntektId = call.parameters["inntektId"]?.let { InntektId(it) } ?: throw MissingRequestParameterException("inntektId")
+                val inntekt = behandlingsInntektsGetter.getKlassifisertInntekt(inntektId = inntektId)
+                call.respond(HttpStatusCode.OK, inntekt)
             }
         }
     }
