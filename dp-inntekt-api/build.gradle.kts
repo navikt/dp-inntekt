@@ -89,7 +89,7 @@ dependencies {
     implementation(Database.Postgres)
     implementation(Database.Kotlinquery)
     implementation(Konfig.konfig)
-    implementation("org.slf4j:slf4j-api:2.0.7")
+    implementation("org.slf4j:slf4j-api:2.0.9")
     implementation(Database.VaultJdbc) {
         exclude(module = "slf4j-simple")
         exclude(module = "slf4j-api")
