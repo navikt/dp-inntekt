@@ -1,13 +1,13 @@
 import com.google.protobuf.gradle.* // ktlint-disable no-wildcard-imports
 
-val grpcVersion = "1.58.0"
-val grpcKotlinVersion = "1.4.0"
-val protbufVersion = "3.24.4"
+val grpcVersion = "1.59.0"
+val grpcKotlinVersion = "1.4.1"
+val protbufVersion = "3.25.1"
 val protobufGradleVersion = "0.9.4"
 
 plugins {
     kotlin("jvm")
-    id("com.google.protobuf") version "0.9.2"
+    id("com.google.protobuf") version "0.9.4"
 }
 
 apply(plugin = "com.google.protobuf")
