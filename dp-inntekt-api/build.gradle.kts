@@ -82,7 +82,7 @@ dependencies {
 
     implementation(Ulid.ulid)
 
-    implementation(Dagpenger.Biblioteker.stsKlient)
+    implementation("no.nav.dagpenger:sts-klient:2023.11.27-13.50.d478414fd10d")
 
     implementation(Database.Flyway)
     implementation(Database.HikariCP)
