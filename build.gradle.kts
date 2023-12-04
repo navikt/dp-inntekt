@@ -8,8 +8,6 @@ plugins {
     `maven-publish`
 }
 
-val grpcVersion = "1.27.2"
-
 allprojects {
     group = "no.nav.dagpenger"
 
@@ -44,7 +42,6 @@ allprojects {
 
     spotless {
         kotlin {
-            targetExclude("**/generated/**") // ignore generated gRpc stuff
             ktlint(Ktlint.version)
         }
         kotlinGradle {
@@ -87,7 +84,6 @@ subprojects {
         testImplementation(Mockk.mockk)
     }
 
-    val artifactDescription = "dp-inntekt-grpc - gRPC client for fetching inntekt in Dagpenger context"
     val repoUrl = "https://github.com/navikt/dp-inntekt.git"
     val scmUrl = "scm:git:https://github.com/navikt/dp-inntekt.git"
 
@@ -108,7 +104,6 @@ subprojects {
                 artifact(sourcesJar.get())
 
                 pom {
-                    description.set(artifactDescription)
                     name.set(project.name)
                     url.set(repoUrl)
                     withXml {

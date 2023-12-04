@@ -4,7 +4,6 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
 import io.prometheus.client.hotspot.DefaultExports
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.Config.inntektApiConfig
@@ -17,7 +16,6 @@ import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.httpClient
 import no.nav.dagpenger.inntekt.oppslag.pdl.PdlGraphQLClientFactory
 import no.nav.dagpenger.inntekt.oppslag.pdl.PdlGraphQLRepository
-import no.nav.dagpenger.inntekt.rpc.InntektGrpcServer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.Vaktmester
 import no.nav.dagpenger.oidc.StsOidcClient
@@ -69,17 +67,7 @@ fun main() {
                     },
                 )
             }
-        // Provides a gRPC server for getting inntekt
-        InntektGrpcServer(
-            port = 50051,
-            inntektStore = postgresInntektStore,
-            apiKeyVerifier = authApiKeyVerifier,
-        ).also {
-            launch {
-                it.start()
-                it.blockUntilShutdown()
-            }
-        }
+
         val kronetilleggUttrekk = KronetilleggUttrekk(dataSource)
         // Provides a HTTP API for getting inntekt
         embeddedServer(Netty, port = config.application.httpPort) {

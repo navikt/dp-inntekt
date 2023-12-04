@@ -8,7 +8,6 @@
  */
 
 rootProject.name = "dp-inntekt"
-include("dp-inntekt-grpc")
 
 var jitpack: Boolean = System.getenv("JITPACK")?.toBoolean() ?: false
 

@@ -26,11 +26,9 @@ application {
     mainClass.set("no.nav.dagpenger.inntekt.ApplicationKt")
 }
 
-val grpcVersion = "1.58.0"
 val expediaGraphqlVersion = "6.4.0"
 
 dependencies {
-    implementation(project(":dp-inntekt-grpc"))
 
     implementation("com.github.navikt:dagpenger-events:20230831.d11fdb")
     implementation("com.github.navikt:dagpenger-streams:20230831.f3d785")
@@ -101,10 +99,6 @@ dependencies {
     implementation(Bekk.nocommons)
 
     implementation(Kotlinx.bimap)
-
-    // grpc
-    testImplementation("io.grpc:grpc-testing:$grpcVersion")
-    runtimeOnly("io.grpc:grpc-netty-shaded:$grpcVersion")
 
     testImplementation(kotlin("test"))
     testImplementation(Ktor2.Server.library("test-host")) {
