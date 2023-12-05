@@ -20,6 +20,48 @@
     },
     {
       "posteringsMåned": "2017-01",
+      "beløp": "100",
+      "fordel": "",
+      "inntektskilde": "",
+      "inntektsstatus": "",
+      "inntektsperiodetype": "",
+      "utbetaltIMåned": "2017-01",
+      "virksomhet": {
+        "aktørType": "ORGANISASJON",
+        "identifikator": "123456789"
+      },
+      "posteringsType": "Y_DAGPENGER_VED_ARBEIDSLØSHET_FERIETILLEGG"
+    },
+    {
+      "posteringsMåned": "2017-02",
+      "beløp": "300",
+      "fordel": "",
+      "inntektskilde": "",
+      "inntektsstatus": "",
+      "inntektsperiodetype": "",
+      "utbetaltIMåned": "2017-01",
+      "virksomhet": {
+        "aktørType": "ORGANISASJON",
+        "identifikator": "123456789"
+      },
+      "posteringsType": "Y_DAGPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE"
+    },
+    {
+      "posteringsMåned": "2017-01",
+      "beløp": "35",
+      "fordel": "",
+      "inntektskilde": "",
+      "inntektsstatus": "",
+      "inntektsperiodetype": "",
+      "utbetaltIMåned": "2017-01",
+      "virksomhet": {
+        "aktørType": "ORGANISASJON",
+        "identifikator": "123456789"
+      },
+      "posteringsType": "Y_DAGPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE_FERIETILLEGG"
+    },
+    {
+      "posteringsMåned": "2017-01",
       "beløp": "2214",
       "fordel": "",
       "inntektskilde": "",
@@ -45,6 +87,20 @@
         "identifikator": "123456789"
       },
       "posteringsType": "Y_SVANGERSKAPSPENGER"
+    },
+    {
+      "posteringsMåned": "2017-01",
+      "beløp": "65",
+      "fordel": "",
+      "inntektskilde": "",
+      "inntektsstatus": "",
+      "inntektsperiodetype": "",
+      "utbetaltIMåned": "2017-01",
+      "virksomhet": {
+        "aktørType": "ORGANISASJON",
+        "identifikator": "123456789"
+      },
+      "posteringsType": "Y_SVANGERSKAPSPENGER_FERIEPENGER"
     },
     {
       "posteringsMåned": "2017-01",
@@ -103,6 +159,20 @@
       "posteringsType": "Y_FORELDREPENGER"
     },
     {
+      "posteringsMåned": "2017-01",
+      "beløp": "966",
+      "fordel": "",
+      "inntektskilde": "",
+      "inntektsstatus": "",
+      "inntektsperiodetype": "",
+      "utbetaltIMåned": "2017-02",
+      "virksomhet": {
+        "aktørType": "ORGANISASJON",
+        "identifikator": "123456789"
+      },
+      "posteringsType": "Y_FORELDREPENGER_FERIEPENGER"
+    },
+    {
       "posteringsMåned": "2017-02",
       "beløp": "4504",
       "fordel": "",
@@ -131,7 +201,21 @@
       "posteringsType": "Y_SYKEPENGER"
     },
     {
-      "posteringsMåned": "2017-02",
+      "posteringsMåned": "2017-01",
+      "beløp": "300",
+      "fordel": "",
+      "inntektskilde": "",
+      "inntektsstatus": "",
+      "inntektsperiodetype": "",
+      "utbetaltIMåned": "2017-02",
+      "virksomhet": {
+        "aktørType": "ORGANISASJON",
+        "identifikator": "123456789"
+      },
+      "posteringsType": "Y_SYKEPENGER_FERIEPENGER"
+    },
+    {
+      "posteringsMåned": "2017-01",
       "beløp": "7283",
       "fordel": "",
       "inntektskilde": "",
@@ -143,6 +227,20 @@
         "identifikator": "123456789"
       },
       "posteringsType": "Y_SYKEPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE"
+    },
+    {
+      "posteringsMåned": "2017-01",
+      "beløp": "42",
+      "fordel": "",
+      "inntektskilde": "",
+      "inntektsstatus": "",
+      "inntektsperiodetype": "",
+      "utbetaltIMåned": "2017-02",
+      "virksomhet": {
+        "aktørType": "ORGANISASJON",
+        "identifikator": "123456789"
+      },
+      "posteringsType": "Y_SYKEPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE_FERIEPENGER"
     },
     {
       "posteringsMåned": "2017-03",
@@ -199,6 +297,90 @@
         "identifikator": "123456789"
       },
       "posteringsType": "Y_SYKEPENGER"
+    },
+    {
+      "posteringsMåned": "2017-01",
+      "beløp": "2000",
+      "fordel": "",
+      "inntektskilde": "",
+      "inntektsstatus": "",
+      "inntektsperiodetype": "",
+      "utbetaltIMåned": "2017-03",
+      "virksomhet": {
+        "aktørType": "ORGANISASJON",
+        "identifikator": "123456789"
+      },
+      "posteringsType": "Y_PLEIEPENGER"
+    },
+    {
+      "posteringsMåned": "2017-01",
+      "beløp": "200",
+      "fordel": "",
+      "inntektskilde": "",
+      "inntektsstatus": "",
+      "inntektsperiodetype": "",
+      "utbetaltIMåned": "2017-03",
+      "virksomhet": {
+        "aktørType": "ORGANISASJON",
+        "identifikator": "123456789"
+      },
+      "posteringsType": "Y_PLEIEPENGER_FERIEPENGER"
+    },
+    {
+      "posteringsMåned": "2017-01",
+      "beløp": "1463",
+      "fordel": "",
+      "inntektskilde": "",
+      "inntektsstatus": "",
+      "inntektsperiodetype": "",
+      "utbetaltIMåned": "2017-03",
+      "virksomhet": {
+        "aktørType": "ORGANISASJON",
+        "identifikator": "123456789"
+      },
+      "posteringsType": "Y_OMSORGSPENGER"
+    },
+    {
+      "posteringsMåned": "2017-01",
+      "beløp": "444",
+      "fordel": "",
+      "inntektskilde": "",
+      "inntektsstatus": "",
+      "inntektsperiodetype": "",
+      "utbetaltIMåned": "2017-03",
+      "virksomhet": {
+        "aktørType": "ORGANISASJON",
+        "identifikator": "123456789"
+      },
+      "posteringsType": "Y_OMSORGSPENGER_FERIEPENGER"
+    },
+    {
+      "posteringsMåned": "2017-01",
+      "beløp": "1463",
+      "fordel": "",
+      "inntektskilde": "",
+      "inntektsstatus": "",
+      "inntektsperiodetype": "",
+      "utbetaltIMåned": "2017-03",
+      "virksomhet": {
+        "aktørType": "ORGANISASJON",
+        "identifikator": "123456789"
+      },
+      "posteringsType": "Y_OPPLÆRINGSPENGER"
+    },
+    {
+      "posteringsMåned": "2017-01",
+      "beløp": "367",
+      "fordel": "",
+      "inntektskilde": "",
+      "inntektsstatus": "",
+      "inntektsperiodetype": "",
+      "utbetaltIMåned": "2017-03",
+      "virksomhet": {
+        "aktørType": "ORGANISASJON",
+        "identifikator": "123456789"
+      },
+      "posteringsType": "Y_OPPLÆRINGSPENGER_FERIEPENGER"
     },
     {
       "posteringsMåned": "2017-03",

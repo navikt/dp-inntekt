@@ -46,7 +46,6 @@ object Dagpenger {
 
     const val Grunnbeløp = "com.github.navikt:dp-grunnbelop:2023.04.11-15.15.dd33088904de"
     const val Streams = "com.github.navikt:dagpenger-streams:2023.04.26-10.04.3a1a87ddfe2c"
-    const val Events = "com.github.navikt:dagpenger-events:2023.04.26-10.02.4df92899b455"
 }
 
 object Database {

@@ -30,7 +30,7 @@ val expediaGraphqlVersion = "6.4.0"
 
 dependencies {
 
-    implementation("com.github.navikt:dagpenger-events:20230831.d11fdb")
+    implementation("com.github.navikt:dagpenger-events:20231204.ee1cc3")
     implementation("com.github.navikt:dagpenger-streams:20230831.f3d785")
 
     implementation(Ktor2.Server.library("netty"))
