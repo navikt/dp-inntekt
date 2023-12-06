@@ -250,6 +250,16 @@ internal class PosteringsTypeMappingTest {
     }
 
     @Test
+    fun `test posteringstype-mapping for feriepenger som gjelder foreldrepenger fra folketrygden`() {
+        val posteringsType = PosteringsType.Y_FORELDREPENGER_FERIEPENGER
+        val posteringsTypeInfo =
+            PosteringsTypeGrunnlag(InntektType.YTELSE_FRA_OFFENTLIGE, InntektBeskrivelse.FORELDREPENGER_FERIEPENGER, null)
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
     fun `test posteringstype-mapping for Helligdagstillegg`() {
         val posteringsType = PosteringsType.L_HELLIGDAGSTILLEGG
         val posteringsTypeInfo =
@@ -591,6 +601,16 @@ internal class PosteringsTypeMappingTest {
     }
 
     @Test
+    fun `test posteringstype-mapping for feriepenger som gjelder svangerskapspenger`() {
+        val posteringsType = PosteringsType.Y_SVANGERSKAPSPENGER_FERIEPENGER
+        val posteringsTypeInfo =
+            PosteringsTypeGrunnlag(InntektType.YTELSE_FRA_OFFENTLIGE, InntektBeskrivelse.SVANGERSKAPSPENGER_FERIEPENGER, null)
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
     fun `test posteringstype-mapping for Timelønn`() {
         val posteringsType = PosteringsType.L_TIMELØNN
         val posteringsTypeInfo = PosteringsTypeGrunnlag(InntektType.LOENNSINNTEKT, InntektBeskrivelse.TIMELOENN, null)
@@ -684,6 +704,19 @@ internal class PosteringsTypeMappingTest {
     }
 
     @Test
+    fun `test posteringstype-mapping for ferietillegg som gjelder dagpenger ved arbeidsløshet`() {
+        val posteringsType = PosteringsType.Y_DAGPENGER_VED_ARBEIDSLØSHET_FERIETILLEGG
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(
+            InntektType.YTELSE_FRA_OFFENTLIGE,
+            InntektBeskrivelse.DAGPENGER_VED_ARBEIDSLOESHET_FERIETILLEGG,
+            null
+        )
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
     fun `test posteringstype-mapping for Dagpenger til fisker`() {
         val posteringsType = PosteringsType.N_DAGPENGER_TIL_FISKER
         val posteringsTypeInfo =
@@ -707,6 +740,117 @@ internal class PosteringsTypeMappingTest {
     }
 
     @Test
+    fun `test posteringstype-mapping for ferietillegg som gjelder dagpenger til fisker som bare har hyre`() {
+        val posteringsType = PosteringsType.Y_DAGPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE_FERIETILLEGG
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(
+            InntektType.YTELSE_FRA_OFFENTLIGE,
+            InntektBeskrivelse.DAGPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE_FERIETILLEGG,
+            null
+        )
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
+    fun `test posteringstype-mapping for omsorgspenger`() {
+        val posteringsType = PosteringsType.Y_OMSORGSPENGER
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(
+            InntektType.YTELSE_FRA_OFFENTLIGE,
+            InntektBeskrivelse.OMSORGSPENGER,
+            null
+        )
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
+    fun `test posteringstype-mapping for feriepenger som gjelder omsorgspenger`() {
+        val posteringsType = PosteringsType.Y_OMSORGSPENGER_FERIEPENGER
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(
+            InntektType.YTELSE_FRA_OFFENTLIGE,
+            InntektBeskrivelse.OMSORGSPENGER_FERIEPENGER,
+            null
+        )
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
+    fun `test posteringstype-mapping for opplæringspenger`() {
+        val posteringsType = PosteringsType.Y_OPPLÆRINGSPENGER
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(
+            InntektType.YTELSE_FRA_OFFENTLIGE,
+            InntektBeskrivelse.OPPLÆRINGSPENGER,
+            null
+        )
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
+    fun `test posteringstype-mapping for fereipenger som gjelder opplæringspenger`() {
+        val posteringsType = PosteringsType.Y_OPPLÆRINGSPENGER_FERIEPENGER
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(
+            InntektType.YTELSE_FRA_OFFENTLIGE,
+            InntektBeskrivelse.OPPLÆRINGSPENGER_FERIEPENGER,
+            null
+        )
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
+    fun `test posteringstype-mapping for pleiepenger`() {
+        val posteringsType = PosteringsType.Y_PLEIEPENGER
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(
+            InntektType.YTELSE_FRA_OFFENTLIGE,
+            InntektBeskrivelse.PLEIEPENGER,
+            null
+        )
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
+    fun `test posteringstype-mapping for fereipenger som gjelder pleiepenger`() {
+        val posteringsType = PosteringsType.Y_PLEIEPENGER_FERIEPENGER
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(
+            InntektType.YTELSE_FRA_OFFENTLIGE,
+            InntektBeskrivelse.PLEIEPENGER_FERIEPENGER,
+            null
+        )
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
+    fun `test posteringstype-mapping for Sykepenger fra folketrygden`() {
+        val posteringsType = PosteringsType.Y_SYKEPENGER
+        val posteringsTypeInfo =
+            PosteringsTypeGrunnlag(InntektType.YTELSE_FRA_OFFENTLIGE, InntektBeskrivelse.SYKEPENGER, null)
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
+    fun `test posteringstype-mapping for feriepenger som gjelder sykepenger fra folketrygden`() {
+        val posteringsType = PosteringsType.Y_SYKEPENGER_FERIEPENGER
+        val posteringsTypeInfo =
+            PosteringsTypeGrunnlag(InntektType.YTELSE_FRA_OFFENTLIGE, InntektBeskrivelse.SYKEPENGER_FERIEPENGER, null)
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
     fun `test posteringstype-mapping for Sykepenger til fisker`() {
         val posteringsType = PosteringsType.N_SYKEPENGER_TIL_FISKER
         val posteringsTypeInfo =
@@ -722,6 +866,19 @@ internal class PosteringsTypeMappingTest {
         val posteringsTypeInfo = PosteringsTypeGrunnlag(
             InntektType.YTELSE_FRA_OFFENTLIGE,
             InntektBeskrivelse.SYKEPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE,
+            null
+        )
+
+        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
+        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
+    }
+
+    @Test
+    fun `test posteringstype-mapping for feriepenger som gjelder sykepenger til fisker som bare har hyre`() {
+        val posteringsType = PosteringsType.Y_SYKEPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE_FERIEPENGER
+        val posteringsTypeInfo = PosteringsTypeGrunnlag(
+            InntektType.YTELSE_FRA_OFFENTLIGE,
+            InntektBeskrivelse.SYKEPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE_FERIEPENGER,
             null
         )
 
@@ -899,16 +1056,6 @@ internal class PosteringsTypeMappingTest {
     fun `test posteringstype-mapping for Vederlag lott`() {
         val posteringsType = PosteringsType.N_VEDERLAG
         val posteringsTypeInfo = PosteringsTypeGrunnlag(InntektType.NAERINGSINNTEKT, InntektBeskrivelse.VEDERLAG, null)
-
-        assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
-        assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))
-    }
-
-    @Test
-    fun `test posteringstype-mapping for Sykepenger fra folketrygden`() {
-        val posteringsType = PosteringsType.Y_SYKEPENGER
-        val posteringsTypeInfo =
-            PosteringsTypeGrunnlag(InntektType.YTELSE_FRA_OFFENTLIGE, InntektBeskrivelse.SYKEPENGER, null)
 
         assertEquals(posteringsType, toPosteringsType(posteringsTypeInfo))
         assertEquals(posteringsTypeInfo, toPosteringsTypeGrunnlag(posteringsType))

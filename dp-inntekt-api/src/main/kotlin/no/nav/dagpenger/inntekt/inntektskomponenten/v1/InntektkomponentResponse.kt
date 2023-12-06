@@ -218,10 +218,6 @@ enum class InntektBeskrivelse {
     @JsonProperty("fondForIdrettsutoevere")
     FOND_FOR_IDRETTSUTOEVERE,
 
-    @Json(name = "foreldrepenger")
-    @JsonProperty("foreldrepenger")
-    FORELDREPENGER,
-
     @Json(name = "helligdagstillegg")
     @JsonProperty("helligdagstillegg")
     HELLIGDAGSTILLEGG,
@@ -330,13 +326,21 @@ enum class InntektBeskrivelse {
     @JsonProperty("styrehonorarOgGodtgjoerelseVerv")
     STYREHONORAR_OG_GODTGJOERELSE_VERV,
 
-    @Json(name = "svangerskapspenger")
-    @JsonProperty("svangerskapspenger")
-    SVANGERSKAPSPENGER,
-
     @Json(name = "timeloenn")
     @JsonProperty("timeloenn")
     TIMELOENN,
+
+    @Json(name = "tips")
+    @JsonProperty("tips")
+    TIPS,
+
+    @Json(name = "skattepliktigPersonalrabatt")
+    @JsonProperty("skattepliktigPersonalrabatt")
+    SKATTEPLIKTIG_PERSONALRABATT,
+
+    @Json(name = "skattepliktigGodtgjoerelseSaeravtaleUtland")
+    @JsonProperty("skattepliktigGodtgjoerelseSaeravtaleUtland")
+    SKATTEPLIKTIG_GODTGJOERELSE_SAERAVTALE_UTLAND,
 
     @Json(name = "trekkILoennForFerie")
     @JsonProperty("trekkILoennForFerie")
@@ -358,9 +362,21 @@ enum class InntektBeskrivelse {
     @JsonProperty("yrkebilTjenestligbehovListepris")
     YRKEBIL_TJENESTLIGBEHOV_LISTEPRIS,
 
+    @Json(name = "lottKunTrygdeavgift")
+    @JsonProperty("lottKunTrygdeavgift")
+    LOTT_KUN_TRYGDEAVGIFT,
+
+    @Json(name = "vederlag")
+    @JsonProperty("vederlag")
+    VEDERLAG,
+
     @Json(name = "dagpengerVedArbeidsloeshet")
     @JsonProperty("dagpengerVedArbeidsloeshet")
     DAGPENGER_VED_ARBEIDSLOESHET,
+
+    @Json(name = "ferietilleggDagpengerVedArbeidsloeshet")
+    @JsonProperty("ferietilleggDagpengerVedArbeidsloeshet")
+    DAGPENGER_VED_ARBEIDSLOESHET_FERIETILLEGG,
 
     @Json(name = "dagpengerTilFisker")
     @JsonProperty("dagpengerTilFisker")
@@ -370,6 +386,34 @@ enum class InntektBeskrivelse {
     @JsonProperty("dagpengerTilFiskerSomBareHarHyre")
     DAGPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE,
 
+    @Json(name = "ferietilleggDagpengerTilFiskerSomBareHarHyre")
+    @JsonProperty("ferietilleggDagpengerTilFiskerSomBareHarHyre")
+    DAGPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE_FERIETILLEGG,
+
+    @Json(name = "foreldrepenger")
+    @JsonProperty("foreldrepenger")
+    FORELDREPENGER,
+
+    @Json(name = "feriepengerForeldrepenger")
+    @JsonProperty("feriepengerForeldrepenger")
+    FORELDREPENGER_FERIEPENGER,
+
+    @Json(name = "svangerskapspenger")
+    @JsonProperty("svangerskapspenger")
+    SVANGERSKAPSPENGER,
+
+    @Json(name = "feriepengerSvangerskapspenger")
+    @JsonProperty("feriepengerSvangerskapspenger")
+    SVANGERSKAPSPENGER_FERIEPENGER,
+
+    @Json(name = "sykepenger")
+    @JsonProperty("sykepenger")
+    SYKEPENGER,
+
+    @Json(name = "feriepengerSykepenger")
+    @JsonProperty("feriepengerSykepenger")
+    SYKEPENGER_FERIEPENGER,
+
     @Json(name = "sykepengerTilFisker")
     @JsonProperty("sykepengerTilFisker")
     SYKEPENGER_TIL_FISKER,
@@ -378,27 +422,31 @@ enum class InntektBeskrivelse {
     @JsonProperty("sykepengerTilFiskerSomBareHarHyre")
     SYKEPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE,
 
-    @Json(name = "lottKunTrygdeavgift")
-    @JsonProperty("lottKunTrygdeavgift")
-    LOTT_KUN_TRYGDEAVGIFT,
+    @Json(name = "feriepengerSykepengerTilFiskerSomBareHarHyre")
+    @JsonProperty("feriepengerSykepengerTilFiskerSomBareHarHyre")
+    SYKEPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE_FERIEPENGER,
 
-    @Json(name = "vederlag")
-    @JsonProperty("vederlag")
-    VEDERLAG,
+    @Json(name = "pleiepenger")
+    @JsonProperty("pleiepenger")
+    PLEIEPENGER,
 
-    @Json(name = "sykepenger")
-    @JsonProperty("sykepenger")
-    SYKEPENGER,
+    @Json(name = "feriepengerPleiepenger")
+    @JsonProperty("feriepengerPleiepenger")
+    PLEIEPENGER_FERIEPENGER,
 
-    @Json(name = "tips")
-    @JsonProperty("tips")
-    TIPS,
+    @Json(name = "omsorgspenger")
+    @JsonProperty("omsorgspenger")
+    OMSORGSPENGER,
 
-    @Json(name = "skattepliktigPersonalrabatt")
-    @JsonProperty("skattepliktigPersonalrabatt")
-    SKATTEPLIKTIG_PERSONALRABATT,
+    @Json(name = "feriepengerOmsorgspenger")
+    @JsonProperty("feriepengerOmsorgspenger")
+    OMSORGSPENGER_FERIEPENGER,
 
-    @Json(name = "skattepliktigGodtgjoerelseSaeravtaleUtland")
-    @JsonProperty("skattepliktigGodtgjoerelseSaeravtaleUtland")
-    SKATTEPLIKTIG_GODTGJOERELSE_SAERAVTALE_UTLAND,
+    @Json(name = "opplaeringspenger")
+    @JsonProperty("opplaeringspenger")
+    OPPLÆRINGSPENGER,
+
+    @Json(name = "feriepengerOpplaeringspenger")
+    @JsonProperty("feriepengerOpplaeringspenger")
+    OPPLÆRINGSPENGER_FERIEPENGER,
 }
