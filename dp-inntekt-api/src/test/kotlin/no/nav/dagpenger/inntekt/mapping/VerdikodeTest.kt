@@ -517,7 +517,7 @@ internal class VerdikodeTest {
 
     @Test
     fun `test verdikode-mapping for Svangerskapspenger`() {
-        val verdiKode = "Svangerskapspenger"
+        val verdiKode = "Svangerskapspenger fra folketrygden"
         val datagrunnlag =
             DatagrunnlagKlassifisering(InntektType.YTELSE_FRA_OFFENTLIGE, InntektBeskrivelse.SVANGERSKAPSPENGER, null)
 
@@ -571,8 +571,8 @@ internal class VerdikodeTest {
     }
 
     @Test
-    fun `test verdikode-mapping for Yrkebil tjenestligbehov kilometer`() {
-        val verdiKode = "Yrkebil tjenestligbehov kilometer"
+    fun `test verdikode-mapping for Yrkesbil tjenestlig behov kilometer`() {
+        val verdiKode = "Yrkesbil tjenestlig behov kilometer"
         val datagrunnlag = DatagrunnlagKlassifisering(
             InntektType.LOENNSINNTEKT,
             InntektBeskrivelse.YRKEBIL_TJENESTLIGBEHOV_KILOMETER,
@@ -584,8 +584,8 @@ internal class VerdikodeTest {
     }
 
     @Test
-    fun `test verdikode-mapping for Yrkebil tjenestligbehov listepris`() {
-        val verdiKode = "Yrkebil tjenestligbehov listepris"
+    fun `test verdikode-mapping for Yrkesbil tjenestlig behov listepris`() {
+        val verdiKode = "Yrkesbil tjenestlig behov listepris"
         val datagrunnlag = DatagrunnlagKlassifisering(
             InntektType.LOENNSINNTEKT,
             InntektBeskrivelse.YRKEBIL_TJENESTLIGBEHOV_LISTEPRIS,
@@ -809,8 +809,8 @@ internal class VerdikodeTest {
     }
 
     @Test
-    fun `test verdikode-mapping for Trekk i lønn for ferie - Hyre`() {
-        val verdiKode = "Trekk i lønn for ferie - Hyre"
+    fun `test verdikode-mapping for Hyre - Trekk i lønn for ferie`() {
+        val verdiKode = "Hyre - Trekk i lønn for ferie"
         val datagrunnlag = DatagrunnlagKlassifisering(
             InntektType.LOENNSINNTEKT,
             InntektBeskrivelse.TREKK_I_LOENN_FOR_FERIE,
@@ -985,7 +985,7 @@ internal class VerdikodeTest {
 
     @Test
     fun `test verdikode-mapping for Trekk i lønn for ferie - Tiltak`() {
-        val verdiKode = "Trekk i lønn for ferie - Tiltak"
+        val verdiKode = "Tiltak - Trekk i lønn for ferie"
         val datagrunnlag = DatagrunnlagKlassifisering(
             InntektType.LOENNSINNTEKT,
             InntektBeskrivelse.TREKK_I_LOENN_FOR_FERIE,
