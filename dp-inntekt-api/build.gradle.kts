@@ -5,7 +5,7 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCach
 plugins {
     application
     id(Shadow.shadow) version Shadow.version
-    id("com.expediagroup.graphql") version "6.4.0"
+    id("com.expediagroup.graphql") version "7.0.2"
     id("de.undercouch.download") version "5.5.0"
 }
 
@@ -26,11 +26,11 @@ application {
     mainClass.set("no.nav.dagpenger.inntekt.ApplicationKt")
 }
 
-val expediaGraphqlVersion = "6.4.0"
+val expediaGraphqlVersion = "7.0.2"
 
 dependencies {
 
-    implementation("com.github.navikt:dagpenger-events:20231204.ee1cc3")
+    implementation("com.github.navikt:dagpenger-events:2023081713361692272216.01ab7c590338")
     implementation("com.github.navikt:dagpenger-streams:20230831.f3d785")
 
     implementation(Ktor2.Server.library("netty"))
@@ -58,7 +58,7 @@ dependencies {
     implementation(Jackson.jsr310)
 
     // unleash
-    implementation("io.getunleash:unleash-client-java:8.0.0")
+    implementation("io.getunleash:unleash-client-java:9.2.0")
 
     implementation(Moshi.moshi)
     implementation(Moshi.moshiAdapters)
@@ -80,14 +80,14 @@ dependencies {
 
     implementation(Ulid.ulid)
 
-    implementation("no.nav.dagpenger:sts-klient:2023.11.27-13.50.d478414fd10d")
+    implementation("no.nav.dagpenger:sts-klient:2023.12.06-21.42.aa059e446730")
 
     implementation(Database.Flyway)
     implementation(Database.HikariCP)
     implementation(Database.Postgres)
     implementation(Database.Kotlinquery)
     implementation(Konfig.konfig)
-    implementation("org.slf4j:slf4j-api:2.0.7")
+    implementation("org.slf4j:slf4j-api:2.0.9")
     implementation(Database.VaultJdbc) {
         exclude(module = "slf4j-simple")
         exclude(module = "slf4j-api")
@@ -106,7 +106,7 @@ dependencies {
         exclude("org.jetbrains.kotlin", "kotlin-test-junit")
     }
 
-    testImplementation("no.nav.security:mock-oauth2-server:0.5.7")
+    testImplementation("no.nav.security:mock-oauth2-server:2.1.0")
     testImplementation(Ktor2.Client.library("mock"))
     testImplementation(Junit5.api)
     testImplementation(Junit5.params)
