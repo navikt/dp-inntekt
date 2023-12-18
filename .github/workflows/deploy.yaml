@@ -19,13 +19,22 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - uses: gradle/wrapper-validation-action@v1.1.0
       - uses: gradle/gradle-build-action@v2.9.0
+        id: build
+        env:
+          DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: compileClasspath|runtimeClasspath
+          ORG_GRADLE_PROJECT_githubUser: x-access-token
+          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
         with:
-          arguments: build
+          dependency-graph: generate-and-submit
+          arguments: --configuration-cache build
+
       - uses: nais/docker-build-push@v0
         name: docker-build-push
         id: docker-build-push
         with:
+          byosbom: dependency-graph-reports/build_and_deploy-build.json
           team: teamdagpenger
           tag: latest
           push_image: true # optional, default true

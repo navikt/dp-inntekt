@@ -17,6 +17,7 @@ fun migrate(config: InntektApiConfig): Int {
                     locations = config.database.flywayLocations,
                 )
             }
+
         else ->
             hikariDataSourceWithVaultIntegration(config, Role.ADMIN).use {
                 migrate(
@@ -59,7 +60,9 @@ fun migrate(
     dataSource: HikariDataSource,
     initSql: String = "",
     locations: List<String> = listOf("db/migration"),
-): Int = Flyway.configure().locations(*locations.toTypedArray()).dataSource(dataSource).initSql(initSql).load().migrate().migrations.size
+): Int =
+    Flyway.configure().validateMigrationNaming(true).locations(*locations.toTypedArray()).dataSource(dataSource)
+        .initSql(initSql).load().migrate().migrations.size
 
 fun clean(dataSource: HikariDataSource) =
     Flyway.configure().cleanDisabled(
