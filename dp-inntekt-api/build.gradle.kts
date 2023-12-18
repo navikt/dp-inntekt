@@ -5,7 +5,7 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCach
 plugins {
     id("common")
     application
-    id(Shadow.shadow) version Shadow.version
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     id("com.expediagroup.graphql") version "6.4.0"
     id("de.undercouch.download") version "5.5.0"
 }
@@ -21,100 +21,88 @@ application {
     mainClass.set("no.nav.dagpenger.inntekt.ApplicationKt")
 }
 
-val expediaGraphqlVersion = "6.4.0"
+val expediaGraphqlVersion = "7.0.2"
+val moshiVersion = "1.14.0"
+val log4j2Version = "2.20.0"
 
 dependencies {
 
     implementation("com.github.navikt:dagpenger-events:20231204.ee1cc3")
     implementation("com.github.navikt:dagpenger-streams:20230831.f3d785")
 
-    implementation(Ktor2.Server.library("netty"))
-    implementation(Ktor2.Server.library("auth"))
-    implementation(Ktor2.Server.library("auth-jwt"))
-    implementation(Ktor2.Server.library("status-pages"))
-    implementation(Ktor2.Server.library("call-id"))
-    implementation(Ktor2.Server.library("call-logging"))
-    implementation(Ktor2.Server.library("default-headers"))
-    implementation(Ktor2.Server.library("content-negotiation"))
-    implementation("io.ktor:ktor-serialization-jackson:${Ktor2.version}")
-    implementation(Ktor2.Server.library("metrics-micrometer"))
+    implementation(libs.bundles.ktor.server)
+    implementation("io.ktor:ktor-server-netty:${libs.versions.ktor.get()}")
+    implementation("io.ktor:ktor-server-default-headers:${libs.versions.ktor.get()}")
+    implementation("io.ktor:ktor-server-call-logging:${libs.versions.ktor.get()}")
+    implementation(libs.ktor.server.status.pages)
+    implementation(libs.ktor.server.auth)
+    implementation(libs.ktor.server.auth.jwt)
+    implementation(libs.ktor.server.metrics.micrometer)
 
-    implementation(Micrometer.prometheusRegistry)
+    implementation("io.micrometer:micrometer-registry-prometheus:1.10.1")
 
     implementation("com.expediagroup:graphql-kotlin-client:$expediaGraphqlVersion")
     implementation("com.expediagroup:graphql-kotlin-ktor-client:$expediaGraphqlVersion")
     implementation("com.expediagroup:graphql-kotlin-client-jackson:$expediaGraphqlVersion")
 
-    implementation(Ktor2.Client.library("logging-jvm"))
-    implementation(Ktor2.Client.library("apache"))
+    implementation(libs.ktor.client.logging.jvm)
+    implementation("io.ktor:ktor-client-apache:${libs.versions.ktor.get()}")
 
-    implementation(Jackson.core)
-    implementation(Jackson.kotlin)
-    implementation(Jackson.jsr310)
+    implementation(libs.bundles.jackson)
 
-    // unleash
-    implementation("io.getunleash:unleash-client-java:8.0.0")
+    implementation("com.squareup.moshi:moshi:$moshiVersion")
+    implementation("com.squareup.moshi:moshi-adapters:$moshiVersion")
+    implementation("com.squareup.moshi:moshi-kotlin:$moshiVersion")
 
-    implementation(Moshi.moshi)
-    implementation(Moshi.moshiAdapters)
-    implementation(Moshi.moshiKotlin)
+    implementation("org.apache.kafka:kafka-clients:3.6.1")
 
-    implementation(Kafka.clients)
+    implementation(libs.kotlin.logging)
 
-    implementation(Kotlin.Logging.kotlinLogging)
+    implementation("com.github.kittinunf.fuel:fuel:2.2.1")
+    implementation("com.github.kittinunf.fuel:fuel-moshi:2.2.1")
+    implementation("com.github.kittinunf.fuel:fuel-coroutines:2.2.1")
 
-    implementation(Fuel.fuel)
-    implementation(Fuel.fuelMoshi)
-    implementation(Fuel.library("coroutines"))
+    implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
+    implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
+    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4j2Version")
+    implementation("org.apache.logging.log4j:log4j-layout-template-json:$log4j2Version")
 
-    implementation(Log4j2.api)
-    implementation(Log4j2.core)
-    implementation(Log4j2.slf4j)
-    implementation(Log4j2.library("jul")) // The Apache Log4j implementation of java.util.logging. java.util.logging used by gprc
-    implementation(Log4j2.library("layout-template-json"))
+    implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.3.0")
 
-    implementation(Ulid.ulid)
+    implementation("no.nav.dagpenger:sts-klient:2023.12.13-22.05.4909146325c9")
 
-    implementation("no.nav.dagpenger:sts-klient:2023.11.27-13.50.d478414fd10d")
-
-    implementation(Database.Flyway)
-    implementation(Database.HikariCP)
-    implementation(Database.Postgres)
-    implementation(Database.Kotlinquery)
-    implementation(Konfig.konfig)
-    implementation("org.slf4j:slf4j-api:2.0.7")
-    implementation(Database.VaultJdbc) {
+    implementation(libs.bundles.postgres)
+    implementation(libs.konfig)
+    implementation("org.slf4j:slf4j-api:2.0.9")
+    implementation("no.nav:vault-jdbc:1.3.10") {
         exclude(module = "slf4j-simple")
         exclude(module = "slf4j-api")
     }
 
-    implementation(Prometheus.common)
-    implementation(Prometheus.hotspot)
-    implementation(Prometheus.log4j2)
-    implementation(Bekk.nocommons)
+    implementation("io.prometheus:simpleclient_common:0.16.0")
+    implementation("io.prometheus:simpleclient_hotspot:0.16.0")
+    implementation("io.prometheus:simpleclient_log4j2:0.16.0")
+    implementation("no.bekk.bekkopen:nocommons:0.9.0")
 
-    implementation(Kotlinx.bimap)
+    implementation("com.uchuhimo:kotlinx-bimap:1.2")
 
     testImplementation(kotlin("test"))
-    testImplementation(Ktor2.Server.library("test-host")) {
-        // https://youtrack.jetbrains.com/issue/KT-46090
-        exclude("org.jetbrains.kotlin", "kotlin-test-junit")
-    }
+    testImplementation(libs.ktor.server.test.host)
 
-    testImplementation("no.nav.security:mock-oauth2-server:0.5.7")
-    testImplementation(Ktor2.Client.library("mock"))
-    testImplementation(Junit5.api)
-    testImplementation(Junit5.params)
-    testRuntimeOnly(Junit5.engine)
-    testImplementation(Wiremock.standalone)
-    testImplementation(KoTest.library("assertions-json"))
-    testImplementation(KoTest.assertions)
-    testImplementation(KoTest.runner)
-    testImplementation(KoTest.property)
-    testImplementation(TestContainers.postgresql)
-    testImplementation(TestContainers.kafka)
-    testImplementation(Mockk.mockk)
-    testImplementation(JsonAssert.jsonassert)
+    testImplementation("no.nav.security:mock-oauth2-server:2.1.0")
+    testImplementation("io.ktor:ktor-client-mock:${libs.versions.ktor.get()}")
+
+    testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
+
+    testImplementation(libs.bundles.kotest.assertions)
+    testImplementation("io.kotest:kotest-property:${libs.versions.kotest.get()}")
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:${libs.versions.kotest.get()}")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-params:${libs.versions.junit.get()}")
+    testImplementation(libs.testcontainer.postgresql)
+    testImplementation("org.testcontainers:kafka:${libs.versions.testcontainer.get()}")
+    testImplementation(libs.mockk)
+    testImplementation("org.skyscreamer:jsonassert:1.5.0")
 }
 
 tasks.named("shadowJar") {
@@ -122,7 +110,6 @@ tasks.named("shadowJar") {
 }
 
 tasks.named("compileKotlin") {
-    dependsOn("spotlessCheck")
     dependsOn("graphqlGenerateClient")
 }
 

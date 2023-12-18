@@ -3,6 +3,7 @@ package no.nav.dagpenger.inntekt.v1
 import com.auth0.jwt.exceptions.JWTDecodeException
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.withCharset
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
@@ -192,7 +193,7 @@ fun Route.uklassifisertInntekt(
             withContext(Dispatchers.IO) {
                 call.respondText(
                     inntektKlassifiseringsKoderJsonAdapter.toJson(dataGrunnlagKlassifiseringToVerdikode.values),
-                    ContentType.Application.Json,
+                    ContentType.Application.Json.withCharset(Charsets.UTF_8),
                     HttpStatusCode.OK,
                 )
             }
@@ -202,9 +203,8 @@ fun Route.uklassifisertInntekt(
 
 private fun PipelineContext<Unit, ApplicationCall>.getSubject(): String {
     return runCatching {
-        call.authentication.principal?.let {
-            (it as JWTPrincipal).payload.subject
-        } ?: throw JWTDecodeException("Unable to get subject from JWT")
+        call.authentication.principal<JWTPrincipal>()?.payload?.subject
+            ?: throw JWTDecodeException("Unable to get subject from JWT")
     }.getOrElse {
         logger.error(it) { "Unable to get subject" }
         return@getOrElse "UNKNOWN"

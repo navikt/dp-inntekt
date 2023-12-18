@@ -8,7 +8,6 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
-import io.getunleash.util.UnleashConfig
 import no.nav.dagpenger.streams.Credential
 import no.nav.dagpenger.streams.KafkaAivenCredentials
 import java.net.InetAddress
@@ -36,7 +35,6 @@ internal object Config {
                 "api.secret" to "secret",
                 "api.keys" to "dp-datalaster-inntekt",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
-                "unleash.url" to "http://localhost/api/",
                 "pdl.url" to "http://localhost:4321",
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret",
             ),
@@ -55,7 +53,6 @@ internal object Config {
                 "application.profile" to "DEV",
                 "application.httpPort" to "8099",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
-                "unleash.url" to "https://unleash.nais.io/api/",
                 "pdl.url" to "https://pdl-api-q1.dev.intern.nav.no/graphql",
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret",
             ),
@@ -74,7 +71,6 @@ internal object Config {
                 "application.profile" to "PROD",
                 "application.httpPort" to "8099",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
-                "unleash.url" to "https://unleash.nais.io/api/",
                 "pdl.url" to "http://pdl-api.pdl.svc.nais.local/graphql",
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret",
             ),
@@ -132,12 +128,6 @@ internal object Config {
                 name = "dp-inntekt-api",
                 apiSecret = this[Key("api.secret", stringType)],
                 allowedApiKeys = this[Key("api.keys", stringType)].split(",").toList(),
-                unleashConfig =
-                    UnleashConfig.builder()
-                        .appName(this.getOrElse(Key("app.name", stringType), "dp-inntekt-api"))
-                        .instanceId(getHostname())
-                        .unleashAPI(this[Key("unleash.url", stringType)])
-                        .build(),
             )
     val Configuration.inntektApiConfig
         get() =
@@ -186,7 +176,6 @@ data class InntektApiConfig(
         val name: String,
         val apiSecret: String,
         val allowedApiKeys: List<String>,
-        val unleashConfig: UnleashConfig,
     )
 
     data class Pdl(
