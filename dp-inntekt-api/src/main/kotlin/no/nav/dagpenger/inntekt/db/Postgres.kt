@@ -74,5 +74,5 @@ private enum class Role {
     USER,
     ;
 
-    override fun toString() = name.toLowerCase()
+    override fun toString() = name.lowercase()
 }
