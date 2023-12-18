@@ -30,7 +30,7 @@ jobs:
           dependency-graph: generate-and-submit
           arguments: --configuration-cache build
 
-      - uses: nais/docker-build-push@v2
+      - uses: nais/docker-build-push@v0
         name: docker-build-push
         id: docker-build-push
         with:
@@ -53,9 +53,8 @@ jobs:
     environment: dev-fss
     steps:
       - uses: actions/checkout@v4
-      - uses: nais/deploy/actions/deploy@v1
+      - uses: nais/deploy/actions/deploy@v2
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
           RESOURCE: nais/dev/nais.yaml
           VARS: nais/vars.yaml
@@ -69,9 +68,8 @@ jobs:
     environment: prod-fss
     steps:
       - uses: actions/checkout@v4
-      - uses: nais/deploy/actions/deploy@v1
+      - uses: nais/deploy/actions/deploy@v2
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-fss
           RESOURCE: nais/prod/nais.yaml
           VARS: nais/vars.yaml
