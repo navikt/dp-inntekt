@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     permissions:
-      contents: "read"
+      contents: "write"
       id-token: "write"
     name: Build and publish Docker image
     runs-on: ubuntu-latest
@@ -30,7 +30,7 @@ jobs:
           dependency-graph: generate-and-submit
           arguments: --configuration-cache build
 
-      - uses: nais/docker-build-push@v0
+      - uses: nais/docker-build-push@v1
         name: docker-build-push
         id: docker-build-push
         with:
@@ -42,7 +42,6 @@ jobs:
           docker_context: . # optional, default .
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
-          tag_latest: true # optional, default false
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
 
