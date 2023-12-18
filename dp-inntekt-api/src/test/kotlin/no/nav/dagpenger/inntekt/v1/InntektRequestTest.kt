@@ -10,13 +10,14 @@ internal class InntektRequestTest {
     @Test
     fun ` Map to InntektkomponentenRequest`() {
         val opptjeningsperiode = Opptjeningsperiode(LocalDate.of(2019, 4, 3))
-        val person = Person(
-            fødselsnummer = "",
-            aktørId = "1234",
-            fornavn = "",
-            mellomnavn = null,
-            etternavn = ""
-        )
+        val person =
+            Person(
+                fødselsnummer = "",
+                aktørId = "1234",
+                fornavn = "",
+                mellomnavn = null,
+                etternavn = "",
+            )
         val inntektskomponentRequest = toInntektskomponentRequest(person, opptjeningsperiode)
 
         assertEquals("1234", inntektskomponentRequest.aktørId)

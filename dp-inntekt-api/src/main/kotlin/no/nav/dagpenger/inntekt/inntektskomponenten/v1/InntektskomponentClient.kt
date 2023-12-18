@@ -6,11 +6,11 @@ interface InntektskomponentClient {
     suspend fun getInntekt(
         request: InntektkomponentRequest,
         timeouts: ConnectionTimeout = ConnectionTimeout(),
-        callId: String? = null
+        callId: String? = null,
     ): InntektkomponentResponse
 
     data class ConnectionTimeout(
         val connectionTimeout: Duration = Duration.ofSeconds(15),
-        val readTimeout: Duration = Duration.ofSeconds(15)
+        val readTimeout: Duration = Duration.ofSeconds(15),
     )
 }

@@ -19,10 +19,11 @@ class NaisChecksTest {
     private val authApiKeyVerifier = AuthApiKeyVerifier(apiKeyVerifier, listOf("test-client"))
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
     private val personOppslagMock: PersonOppslag = mockk()
-    private val inntektStoreMock: InntektStore = mockk(
-        relaxed = true,
-        moreInterfaces = *arrayOf(HealthCheck::class)
-    )
+    private val inntektStoreMock: InntektStore =
+        mockk(
+            relaxed = true,
+            moreInterfaces = *arrayOf(HealthCheck::class),
+        )
     private val inntektStoreMockHealthCheck = inntektStoreMock as HealthCheck
 
     init {
@@ -47,10 +48,11 @@ class NaisChecksTest {
                 inntektStore = inntektStoreMock,
                 personOppslag = personOppslagMock,
                 apiAuthApiKeyVerifier = authApiKeyVerifier,
-                healthChecks = listOf(
-                    inntektStoreMockHealthCheck
-                )
-            )
+                healthChecks =
+                    listOf(
+                        inntektStoreMockHealthCheck,
+                    ),
+            ),
         ) { callback() }
     }
 }

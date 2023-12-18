@@ -17,10 +17,8 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 internal class UttrekkRouteTest {
-
     @Test
     fun `skal svare om dagpenger er med i inntektsgrunnlaget()`() {
-
         val uttrekk = mockk<KronetilleggUttrekk>()
         val id = ULID().nextULID()
         every {
@@ -49,11 +47,14 @@ internal class UttrekkRouteTest {
         }
     }
 
-    private fun testApp(uttrekk: KronetilleggUttrekk, callback: TestApplicationEngine.() -> Unit) {
+    private fun testApp(
+        uttrekk: KronetilleggUttrekk,
+        callback: TestApplicationEngine.() -> Unit,
+    ) {
         withTestApplication(
             mockInntektApi(
-                kronetilleggUttrekk = uttrekk
-            )
+                kronetilleggUttrekk = uttrekk,
+            ),
         ) { callback() }
     }
 }

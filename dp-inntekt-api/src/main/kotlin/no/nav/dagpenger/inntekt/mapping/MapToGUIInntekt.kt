@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 fun mapToGUIInntekt(
     inntekt: InntektkomponentResponse,
     opptjeningsPeriode: Opptjeningsperiode,
-    inntektsmottaker: Inntektsmottaker?
+    inntektsmottaker: Inntektsmottaker?,
 ) = GUIInntekt(
     null,
     LocalDateTime.now(),
@@ -17,27 +17,30 @@ fun mapToGUIInntekt(
         tilDato = opptjeningsPeriode.sisteAvsluttendeKalenderMåned,
         fraDato = opptjeningsPeriode.førsteMåned,
         arbeidsInntektMaaned = mapToArbeidsInntektMaaneder(inntekt.arbeidsInntektMaaned),
-        ident = inntekt.ident
+        ident = inntekt.ident,
     ),
     false,
     false,
-    inntektsmottaker
+    inntektsmottaker,
 )
 
-fun mapToGUIInntekt(storedInntekt: StoredInntekt, opptjeningsPeriode: Opptjeningsperiode, inntektsMottaker: Inntektsmottaker?) =
-    GUIInntekt(
-        storedInntekt.inntektId,
-        storedInntekt.timestamp,
-        GUIInntektsKomponentResponse(
-            tilDato = opptjeningsPeriode.sisteAvsluttendeKalenderMåned,
-            fraDato = opptjeningsPeriode.førsteMåned,
-            arbeidsInntektMaaned = mapToArbeidsInntektMaaneder(storedInntekt.inntekt.arbeidsInntektMaaned),
-            ident = storedInntekt.inntekt.ident
-        ),
-        storedInntekt.manueltRedigert,
-        storedInntekt.manueltRedigert,
-        inntektsmottaker = inntektsMottaker
-    )
+fun mapToGUIInntekt(
+    storedInntekt: StoredInntekt,
+    opptjeningsPeriode: Opptjeningsperiode,
+    inntektsMottaker: Inntektsmottaker?,
+) = GUIInntekt(
+    storedInntekt.inntektId,
+    storedInntekt.timestamp,
+    GUIInntektsKomponentResponse(
+        tilDato = opptjeningsPeriode.sisteAvsluttendeKalenderMåned,
+        fraDato = opptjeningsPeriode.førsteMåned,
+        arbeidsInntektMaaned = mapToArbeidsInntektMaaneder(storedInntekt.inntekt.arbeidsInntektMaaned),
+        ident = storedInntekt.inntekt.ident,
+    ),
+    storedInntekt.manueltRedigert,
+    storedInntekt.manueltRedigert,
+    inntektsmottaker = inntektsMottaker,
+)
 
 private fun mapToArbeidsInntektMaaneder(list: List<ArbeidsInntektMaaned>?) =
     list?.map { arbeidsInntektMaaned ->
@@ -67,15 +70,16 @@ private fun mapToArbeidsInntektMaaneder(list: List<ArbeidsInntektMaaned>?) =
                         informasjonsstatus = it.informasjonsstatus,
                         inntektType = it.inntektType,
                         tilleggsinformasjon = it.tilleggsinformasjon,
-                        verdikode = verdiKode(
-                            DatagrunnlagKlassifisering(
-                                it.inntektType,
-                                it.beskrivelse,
-                                it.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold
-                            )
-                        )
+                        verdikode =
+                            verdiKode(
+                                DatagrunnlagKlassifisering(
+                                    it.inntektType,
+                                    it.beskrivelse,
+                                    it.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold,
+                                ),
+                            ),
                     )
-                } ?: emptyList()
-            )
+                } ?: emptyList(),
+            ),
         )
     }

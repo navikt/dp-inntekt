@@ -17,9 +17,8 @@ import java.time.Duration
 
 class EnhetsregisterClient(
     private val baseUrl: String,
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
 ) {
-
     suspend fun hentEnhet(orgnummer: String): String {
         return withContext(Dispatchers.IO) {
             try {
@@ -35,7 +34,7 @@ class EnhetsregisterClient(
 }
 
 internal fun httpClient(
-    engine: HttpClientEngine = Apache.create { customizeClient { setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault())) } }
+    engine: HttpClientEngine = Apache.create { customizeClient { setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault())) } },
 ): HttpClient {
     return HttpClient(engine) {
         expectSuccess = true

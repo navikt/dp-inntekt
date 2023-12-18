@@ -91,36 +91,39 @@ internal fun Application.inntektApi(
     install(StatusPages) {
         exception<Throwable> { call, cause ->
             LOGGER.error("Request failed!", cause)
-            val error = Problem(
-                type = URI("urn:dp:error:inntekt"),
-                title = "Uhåndtert feil!",
-            )
+            val error =
+                Problem(
+                    type = URI("urn:dp:error:inntekt"),
+                    title = "Uhåndtert feil!",
+                )
             call.respond(HttpStatusCode.InternalServerError, error)
         }
         exception<InntektNotFoundException> { call, cause ->
             LOGGER.warn("Request failed!", cause)
-            val problem = Problem(
-                type = URI("urn:dp:error:inntekt"),
-                title = "Kunne ikke finne inntekt i databasen",
-                status = 404,
-                detail = cause.message,
-            )
+            val problem =
+                Problem(
+                    type = URI("urn:dp:error:inntekt"),
+                    title = "Kunne ikke finne inntekt i databasen",
+                    status = 404,
+                    detail = cause.message,
+                )
             call.respond(HttpStatusCode.NotFound, problem)
         }
         exception<IllegalInntektIdException> { call, cause ->
             LOGGER.warn("Request failed!", cause)
-            val problem = Problem(
-                type = URI("urn:dp:error:inntekt"),
-                title = "InntektsId må være en gyldig ULID",
-                detail = cause.message,
-                status = HttpStatusCode.BadRequest.value,
-            )
+            val problem =
+                Problem(
+                    type = URI("urn:dp:error:inntekt"),
+                    title = "InntektsId må være en gyldig ULID",
+                    detail = cause.message,
+                    status = HttpStatusCode.BadRequest.value,
+                )
             call.respond(HttpStatusCode.BadRequest, problem)
         }
         exception<InntektskomponentenHttpClientException> { call, cause ->
             val statusCode =
                 if (HttpStatusCode.fromValue(cause.status)
-                    .isSuccess()
+                        .isSuccess()
                 ) {
                     HttpStatusCode.InternalServerError
                 } else {
@@ -130,70 +133,77 @@ internal fun Application.inntektApi(
                 }
             sikkerLogg.error(cause) { "Request failed against inntektskomponenten" }
             LOGGER.error("Request failed against inntektskomponenten")
-            val error = Problem(
-                type = URI("urn:dp:error:inntektskomponenten"),
-                title = "Innhenting av inntekt mot a-inntekt feilet. Prøv igjen senere",
-                status = statusCode.value,
-                detail = cause.detail,
-            )
+            val error =
+                Problem(
+                    type = URI("urn:dp:error:inntektskomponenten"),
+                    title = "Innhenting av inntekt mot a-inntekt feilet. Prøv igjen senere",
+                    status = statusCode.value,
+                    detail = cause.detail,
+                )
             call.respond(statusCode, error)
         }
         exception<JsonEncodingException> { call, cause ->
             LOGGER.warn("Request was malformed", cause)
-            val error = Problem(
-                type = URI("urn:dp:error:inntekt:parameter"),
-                title = "Klarte ikke å lese parameterene",
-                status = 400,
-            )
+            val error =
+                Problem(
+                    type = URI("urn:dp:error:inntekt:parameter"),
+                    title = "Klarte ikke å lese parameterene",
+                    status = 400,
+                )
             call.respond(HttpStatusCode.BadRequest, error)
         }
         exception<JsonDataException> { call, cause ->
             LOGGER.warn("Request does not match expected json", cause)
-            val error = Problem(
-                type = URI("urn:dp:error:inntekt:parameter"),
-                title = "Parameteret er ikke gyldig, mangler obligatorisk felt: '${cause.message}'",
-                status = 400,
-            )
+            val error =
+                Problem(
+                    type = URI("urn:dp:error:inntekt:parameter"),
+                    title = "Parameteret er ikke gyldig, mangler obligatorisk felt: '${cause.message}'",
+                    status = 400,
+                )
             call.respond(HttpStatusCode.BadRequest, error)
         }
         exception<BadRequestException> { call, cause ->
             LOGGER.warn("Request does not match expected json", cause)
-            val error = Problem(
-                type = URI("urn:dp:error:inntekt:parameter"),
-                title = "Parameteret er ikke gyldig, mangler obligatorisk felt: '${cause.message}'",
-                status = 400,
-            )
+            val error =
+                Problem(
+                    type = URI("urn:dp:error:inntekt:parameter"),
+                    title = "Parameteret er ikke gyldig, mangler obligatorisk felt: '${cause.message}'",
+                    status = 400,
+                )
             call.respond(HttpStatusCode.BadRequest, error)
         }
         exception<IllegalArgumentException> { call, cause ->
             LOGGER.warn("Request does not match expected json", cause)
-            val error = Problem(
-                type = URI("urn:dp:error:inntekt:parameter"),
-                title = "Parameteret er ikke gyldig, mangler obligatorisk felt: '${cause.message}'",
-                status = 400,
-            )
+            val error =
+                Problem(
+                    type = URI("urn:dp:error:inntekt:parameter"),
+                    title = "Parameteret er ikke gyldig, mangler obligatorisk felt: '${cause.message}'",
+                    status = 400,
+                )
             call.respond(HttpStatusCode.BadRequest, error)
         }
 
         exception<PersonNotFoundException> { call, cause ->
             LOGGER.error("Could not find person", cause)
             sikkerLogg.error("Could not find person ${cause.ident}", cause)
-            val error = Problem(
-                type = URI("urn:dp:error:inntekt:person"),
-                title = "Kunne ikke finne inntekt for ukjent person",
-                status = 400,
-            )
+            val error =
+                Problem(
+                    type = URI("urn:dp:error:inntekt:person"),
+                    title = "Kunne ikke finne inntekt for ukjent person",
+                    status = 400,
+                )
             call.respond(HttpStatusCode.BadRequest, error)
         }
         exception<CookieNotSetException> { call, cause ->
             LOGGER.warn("Unauthorized call", cause)
             val statusCode = HttpStatusCode.Unauthorized
-            val error = Problem(
-                type = URI("urn:dp:error:inntekt:auth"),
-                title = "Ikke innlogget",
-                detail = "${cause.message}",
-                status = statusCode.value,
-            )
+            val error =
+                Problem(
+                    type = URI("urn:dp:error:inntekt:auth"),
+                    title = "Ikke innlogget",
+                    detail = "${cause.message}",
+                    status = statusCode.value,
+                )
             call.respond(statusCode, error)
         }
     }
@@ -251,4 +261,5 @@ internal data class AuthApiKeyVerifier(private val apiKeyVerifier: ApiKeyVerifie
 }
 
 private val ulid = ULID()
+
 private fun newRequestId(): String = "dp-inntekt-api-${ulid.nextULID()}"

@@ -19,7 +19,10 @@ class BehandlingsInntektsGetter(
     private val inntektskomponentClient: InntektskomponentClient,
     private val inntektStore: InntektStore,
 ) {
-    suspend fun getKlassifisertInntekt(inntektparametre: Inntektparametre, callId: String? = null): Inntekt {
+    suspend fun getKlassifisertInntekt(
+        inntektparametre: Inntektparametre,
+        callId: String? = null,
+    ): Inntekt {
         return klassifiserOgMapInntekt(getSpesifisertInntekt(inntektparametre, callId))
     }
 
@@ -27,7 +30,10 @@ class BehandlingsInntektsGetter(
         return klassifiserOgMapInntekt(inntektStore.getSpesifisertInntekt(inntektId))
     }
 
-    suspend fun getSpesifisertInntekt(inntektparametre: Inntektparametre, callId: String? = null): SpesifisertInntekt {
+    suspend fun getSpesifisertInntekt(
+        inntektparametre: Inntektparametre,
+        callId: String? = null,
+    ): SpesifisertInntekt {
         return mapToSpesifisertInntekt(
             getBehandlingsInntekt(inntektparametre, callId),
             inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned,
@@ -49,12 +55,13 @@ class BehandlingsInntektsGetter(
         inntektparametre: Inntektparametre,
         callId: String? = null,
     ): StoredInntekt {
-        val inntektkomponentRequest = InntektkomponentRequest(
-            aktørId = inntektparametre.aktørId,
-            fødselsnummer = inntektparametre.fødselsnummer,
-            månedFom = inntektparametre.opptjeningsperiode.førsteMåned,
-            månedTom = inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned,
-        )
+        val inntektkomponentRequest =
+            InntektkomponentRequest(
+                aktørId = inntektparametre.aktørId,
+                fødselsnummer = inntektparametre.fødselsnummer,
+                månedFom = inntektparametre.opptjeningsperiode.førsteMåned,
+                månedTom = inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned,
+            )
         return inntektStore.storeInntekt(
             StoreInntektCommand(
                 inntektparametre = inntektparametre,

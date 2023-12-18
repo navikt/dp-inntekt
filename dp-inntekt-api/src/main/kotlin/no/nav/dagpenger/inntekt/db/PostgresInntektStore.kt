@@ -21,17 +21,18 @@ import java.time.LocalDate
 import java.time.ZonedDateTime
 import javax.sql.DataSource
 
+@Suppress("ktlint:standard:max-line-length")
 internal class PostgresInntektStore(private val dataSource: DataSource) : InntektStore, HealthCheck {
-
     companion object {
         internal val adapter: JsonAdapter<InntektkomponentResponse> =
             moshiInstance.adapter(InntektkomponentResponse::class.java)
         private val ulidGenerator = ULID()
         private val LOGGER = KotlinLogging.logger {}
-        private val markerInntektTimer = Summary.build()
-            .name("marker_inntekt_brukt")
-            .help("Hvor lang tid det tar å markere en inntekt brukt (i sekunder")
-            .register()
+        private val markerInntektTimer =
+            Summary.build()
+                .name("marker_inntekt_brukt")
+                .help("Hvor lang tid det tar å markere en inntekt brukt (i sekunder")
+                .register()
     }
 
     override fun getManueltRedigert(inntektId: InntektId): ManueltRedigert? {
@@ -41,14 +42,14 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
             SELECT redigert_av
                 FROM inntekt_V1_manuelt_redigert
             WHERE inntekt_id = ?
-                            """.trimMargin()
+            """.trimMargin()
         try {
             return using(sessionOf(dataSource)) { session ->
                 session.run(
                     queryOf(statement, inntektId.id)
                         .map { row ->
                             ManueltRedigert(row.string(1))
-                        }.asSingle
+                        }.asSingle,
                 )
             }
         } catch (p: PSQLException) {
@@ -69,7 +70,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                 AND kontekstType = ?::kontekstTypeNavn
                 AND beregningsdato = ? 
                 ORDER BY timestamp DESC LIMIT 1
-        """.trimMargin()
+                """.trimMargin()
 
             return using(sessionOf(dataSource)) { session ->
                 session.run(
@@ -79,10 +80,10 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                         inntektparametre.fødselsnummer,
                         inntektparametre.regelkontekst.id,
                         inntektparametre.regelkontekst.type,
-                        inntektparametre.beregningsdato
+                        inntektparametre.beregningsdato,
                     ).map { row ->
                         InntektId(row.string("inntektId"))
-                    }.asSingle
+                    }.asSingle,
                 )
             }
         } catch (p: PSQLException) {
@@ -97,16 +98,16 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                (SELECT beregningsdato FROM inntekt_V1_person_mapping WHERE inntektId = :inntektId),
                (SELECT beregningsdato FROM temp_inntekt_V1_person_mapping WHERE inntektId = :inntektId)
            ) as beregningsdato
-                        """.trimMargin()
+            """.trimMargin()
 
         return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     statement,
-                    mapOf("inntektId" to inntektId.id)
+                    mapOf("inntektId" to inntektId.id),
                 ).map { row ->
                     row.localDateOrNull("beregningsdato")
-                }.asSingle
+                }.asSingle,
             ) ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
         }
     }
@@ -116,16 +117,16 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
             session.run(
                 queryOf(
                     """ SELECT id, inntekt, manuelt_redigert, timestamp from inntekt_V1 where id = ?""",
-                    inntektId.id
+                    inntektId.id,
                 ).map { row ->
                     StoredInntekt(
                         inntektId = InntektId(row.string("id")),
                         inntekt = adapter.fromJson(row.string("inntekt"))!!,
                         manueltRedigert = row.boolean("manuelt_redigert"),
-                        timestamp = row.zonedDateTime("timestamp").toLocalDateTime()
+                        timestamp = row.zonedDateTime("timestamp").toLocalDateTime(),
                     )
                 }
-                    .asSingle
+                    .asSingle,
             )
                 ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
         }
@@ -141,32 +142,32 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
             where inntekt.id = ?"""
                 .trimIndent()
 
-        val stored = using(sessionOf(dataSource)) { session ->
-            session.run(
-                queryOf(
-                    statement,
-                    inntektId.id
-                ).map { row ->
-                    StoredInntekt(
-                        inntektId = InntektId(row.string("id")),
-                        inntekt = adapter.fromJson(row.string("inntekt"))!!,
-                        manueltRedigert = row.boolean("manuelt_redigert"),
-                        timestamp = row.zonedDateTime("timestamp").toLocalDateTime()
-                    ) to row.localDate("beregningsdato")
-                }
-                    .asSingle
-            )
-                ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
-        }
+        val stored =
+            using(sessionOf(dataSource)) { session ->
+                session.run(
+                    queryOf(
+                        statement,
+                        inntektId.id,
+                    ).map { row ->
+                        StoredInntekt(
+                            inntektId = InntektId(row.string("id")),
+                            inntekt = adapter.fromJson(row.string("inntekt"))!!,
+                            manueltRedigert = row.boolean("manuelt_redigert"),
+                            timestamp = row.zonedDateTime("timestamp").toLocalDateTime(),
+                        ) to row.localDate("beregningsdato")
+                    }
+                        .asSingle,
+                )
+                    ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
+            }
         return mapToSpesifisertInntekt(stored.first, Opptjeningsperiode(stored.second).sisteAvsluttendeKalenderMåned)
     }
 
     override fun storeInntekt(
         command: StoreInntektCommand,
-        created: ZonedDateTime
+        created: ZonedDateTime,
     ): StoredInntekt {
         try {
-
             val inntektId = InntektId(ulidGenerator.nextULID())
             using(sessionOf(dataSource)) { session ->
                 session.transaction { tx ->
@@ -176,17 +177,17 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                             mapOf(
                                 "id" to inntektId.id,
                                 "created" to created,
-                                "data" to PGobject().apply {
-                                    type = "jsonb"
-                                    value = adapter.toJson(command.inntekt)
-                                },
+                                "data" to
+                                    PGobject().apply {
+                                        type = "jsonb"
+                                        value = adapter.toJson(command.inntekt)
+                                    },
                                 when (command.manueltRedigert) {
                                     null -> "manuelt" to false
                                     else -> "manuelt" to true
-                                }
-                            )
-
-                        ).asUpdate
+                                },
+                            ),
+                        ).asUpdate,
                     )
                     tx.run(
                         queryOf(
@@ -197,9 +198,9 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                                 "fnr" to command.inntektparametre.fødselsnummer,
                                 "kontekstId" to command.inntektparametre.regelkontekst.id,
                                 "kontekstType" to command.inntektparametre.regelkontekst.type,
-                                "beregningsdato" to command.inntektparametre.beregningsdato
-                            )
-                        ).asUpdate
+                                "beregningsdato" to command.inntektparametre.beregningsdato,
+                            ),
+                        ).asUpdate,
                     )
 
                     command.manueltRedigert?.let {
@@ -208,9 +209,9 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                                 "INSERT INTO inntekt_V1_manuelt_redigert VALUES(:id,:redigert)",
                                 mapOf(
                                     "id" to inntektId.id,
-                                    "redigert" to it.redigertAv
-                                )
-                            ).asUpdate
+                                    "redigert" to it.redigertAv,
+                                ),
+                            ).asUpdate,
                         )
                     }
                 }
@@ -229,10 +230,10 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                     tx.run(
                         queryOf(
                             """
-                                UPDATE inntekt_V1 SET brukt = true WHERE id = :id;
+                            UPDATE inntekt_V1 SET brukt = true WHERE id = :id;
                             """.trimIndent(),
-                            mapOf("id" to inntektId.id)
-                        ).asUpdate
+                            mapOf("id" to inntektId.id),
+                        ).asUpdate,
                     )
                 }
             }

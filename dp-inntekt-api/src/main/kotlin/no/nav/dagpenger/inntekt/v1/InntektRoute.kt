@@ -19,23 +19,27 @@ import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import java.time.LocalDate
 
-fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter, personOppslag: PersonOppslag) {
+fun Route.inntekt(
+    behandlingsInntektsGetter: BehandlingsInntektsGetter,
+    personOppslag: PersonOppslag,
+) {
     route("spesifisert") {
         post {
             withContext(IO) {
                 val request = call.receive<InntektRequestMedFnr>()
                 val person = personOppslag.hentPerson(request.ident)
 
-                val inntektparametre = Inntektparametre(
-                    aktørId = person.aktørId,
-                    regelkontekst = request.regelkontekst,
-                    beregningsdato = request.beregningsDato,
-                    fødselsnummer = person.fødselsnummer
-                )
+                val inntektparametre =
+                    Inntektparametre(
+                        aktørId = person.aktørId,
+                        regelkontekst = request.regelkontekst,
+                        beregningsdato = request.beregningsDato,
+                        fødselsnummer = person.fødselsnummer,
+                    )
                 val spesifisertInntekt =
                     behandlingsInntektsGetter.getSpesifisertInntekt(
                         inntektparametre,
-                        call.callId
+                        call.callId,
                     )
 
                 call.respond(HttpStatusCode.OK, spesifisertInntekt)
@@ -53,9 +57,9 @@ fun Route.inntekt(behandlingsInntektsGetter: BehandlingsInntektsGetter, personOp
                             aktørId = person.aktørId,
                             regelkontekst = request.regelkontekst,
                             beregningsdato = request.beregningsDato,
-                            fødselsnummer = person.fødselsnummer
+                            fødselsnummer = person.fødselsnummer,
                         ),
-                        call.callId
+                        call.callId,
                     )
                 call.respond(HttpStatusCode.OK, klassifisertInntekt)
             }
@@ -74,7 +78,7 @@ data class InntektRequestMedFnr(
     val aktørId: String?,
     val regelkontekst: RegelKontekst,
     val fødselsnummer: String? = null,
-    val beregningsDato: LocalDate
+    val beregningsDato: LocalDate,
 ) {
     init {
         require(aktørId != null || fødselsnummer !== null) {

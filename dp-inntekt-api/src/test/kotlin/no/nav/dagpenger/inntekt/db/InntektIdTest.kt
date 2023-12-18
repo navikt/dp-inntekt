@@ -7,7 +7,6 @@ import java.util.UUID
 import kotlin.test.assertTrue
 
 internal class InntektIdTest {
-
     @Test
     fun `Inntekt id should be in ULID format`() {
         val id = ULID().nextULID()

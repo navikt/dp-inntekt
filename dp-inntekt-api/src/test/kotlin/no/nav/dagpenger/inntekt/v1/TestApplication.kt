@@ -25,6 +25,7 @@ import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.security.mock.oauth2.MockOAuth2Server
 
+@Suppress("ktlint:standard:function-naming")
 internal object TestApplication {
     private const val ISSUER_ID = "default"
     val mockOAuth2Server: MockOAuth2Server by lazy {
@@ -39,14 +40,15 @@ internal object TestApplication {
         ).serialize()
     }
 
-    internal fun config(): Configuration {
-        return Config.config overriding ConfigurationMap(
-            mapOf(
-                "AZURE_OPENID_CONFIG_JWKS_URI" to mockOAuth2Server.jwksUrl(ISSUER_ID).toString(),
-                "AZURE_OPENID_CONFIG_ISSUER" to mockOAuth2Server.issuerUrl(ISSUER_ID).toString(),
-                "AZURE_APP_CLIENT_ID" to ISSUER_ID,
-            ),
-        )
+    private fun config(): Configuration {
+        return Config.config overriding
+            ConfigurationMap(
+                mapOf(
+                    "AZURE_OPENID_CONFIG_JWKS_URI" to mockOAuth2Server.jwksUrl(ISSUER_ID).toString(),
+                    "AZURE_OPENID_CONFIG_ISSUER" to mockOAuth2Server.issuerUrl(ISSUER_ID).toString(),
+                    "AZURE_APP_CLIENT_ID" to ISSUER_ID,
+                ),
+            )
     }
 
     internal fun mockInntektApi(
@@ -58,8 +60,8 @@ internal object TestApplication {
         enhetsregisterClient: EnhetsregisterClient = mockk(relaxed = true),
         kronetilleggUttrekk: KronetilleggUttrekk = mockk(relaxed = true),
         healthChecks: List<HealthCheck> = emptyList(),
-    ): Application.() -> Unit {
-        return fun Application.() {
+    ): Application.() -> Unit =
+        fun Application.() {
             inntektApi(
                 config = config(),
                 inntektskomponentHttpClient = inntektskomponentClient,
@@ -73,7 +75,6 @@ internal object TestApplication {
                 collectorRegistry = CollectorRegistry(true),
             )
         }
-    }
 
     internal fun withMockAuthServerAndTestApplication(
         moduleFunction: Application.() -> Unit = mockInntektApi(),

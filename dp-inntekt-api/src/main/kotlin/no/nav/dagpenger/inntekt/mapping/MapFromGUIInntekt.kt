@@ -15,24 +15,25 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetalj
 private val logg = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall.MapFromGUIInntekt")
 
-fun mapToStoredInntekt(guiInntekt: GUIInntekt): StoredInntekt = StoredInntekt(
-    guiInntekt.inntektId ?: InntektId(ULID().nextULID()),
-    InntektkomponentResponse(
-        mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)
-            ?: emptyList(),
-        guiInntekt.inntekt.ident
-    ),
-    guiInntekt.manueltRedigert
-)
+fun mapToStoredInntekt(guiInntekt: GUIInntekt): StoredInntekt =
+    StoredInntekt(
+        guiInntekt.inntektId ?: InntektId(ULID().nextULID()),
+        InntektkomponentResponse(
+            mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)
+                ?: emptyList(),
+            guiInntekt.inntekt.ident,
+        ),
+        guiInntekt.manueltRedigert,
+    )
 
 fun mapToDetachedInntekt(guiInntekt: GUIInntekt): DetachedInntekt =
     DetachedInntekt(
         InntektkomponentResponse(
             mapToArbeidsInntektMaaneder(guiInntekt.inntekt.arbeidsInntektMaaned)
                 ?: emptyList(),
-            guiInntekt.inntekt.ident
+            guiInntekt.inntekt.ident,
         ),
-        guiInntekt.manueltRedigert
+        guiInntekt.manueltRedigert,
     )
 
 private fun mapToArbeidsInntektMaaneder(arbeidsMaaneder: List<GUIArbeidsInntektMaaned>?): List<ArbeidsInntektMaaned>? {
@@ -68,13 +69,13 @@ private fun mapToArbeidsInntektMaaneder(arbeidsMaaneder: List<GUIArbeidsInntektM
                                 inntekt.tilleggsinformasjon?.kategori,
                                 TilleggInformasjonsDetaljer(
                                     inntekt.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.detaljerType,
-                                    it
-                                )
+                                    it,
+                                ),
                             )
-                        }
+                        },
                     )
-                } ?: emptyList()
-            )
+                } ?: emptyList(),
+            ),
         )
     }
 }

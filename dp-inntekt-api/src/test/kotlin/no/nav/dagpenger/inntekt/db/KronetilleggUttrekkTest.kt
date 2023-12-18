@@ -18,7 +18,6 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 internal class KronetilleggUttrekkTest {
-
     @Test
     fun `skal finne inntekter med dagpenger som grunnlag`() {
         val inntektMedOrdinæreDagpenger = storeInntektCommand(inntektMedOrdinæreDagpenger)
@@ -43,63 +42,73 @@ internal class KronetilleggUttrekkTest {
         }
     }
 
-    private val inntektMedOrdinæreDagpenger = Inntekt(
-        beloep = BigDecimal(2000),
-        fordel = "?",
-        beskrivelse = InntektBeskrivelse.DAGPENGER_VED_ARBEIDSLOESHET,
-        inntektskilde = "skatt",
-        inntektsstatus = "?",
-        inntektsperiodetype = "?",
-        inntektType = InntektType.YTELSE_FRA_OFFENTLIGE,
-        utbetaltIMaaned = YearMonth.now()
-    )
-    private val inntektMedOrdinæreDagpengerMedFiskeHyre = Inntekt(
-        beloep = BigDecimal(2000),
-        fordel = "?",
-        beskrivelse = InntektBeskrivelse.DAGPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE,
-        inntektskilde = "skatt",
-        inntektsstatus = "?",
-        inntektsperiodetype = "?",
-        inntektType = InntektType.YTELSE_FRA_OFFENTLIGE,
-        utbetaltIMaaned = YearMonth.now()
-    )
-
-    private val inntektMedFangstOgFiskDagpenger = Inntekt(
-        beloep = BigDecimal(2000),
-        fordel = "?",
-        beskrivelse = InntektBeskrivelse.DAGPENGER_TIL_FISKER,
-        inntektskilde = "skatt",
-        inntektsstatus = "?",
-        inntektsperiodetype = "?",
-        inntektType = InntektType.NAERINGSINNTEKT,
-        utbetaltIMaaned = YearMonth.now()
-    )
-
-    private val inntektUtenDagpenger = Inntekt(
-        beloep = BigDecimal(2000),
-        fordel = "?",
-        beskrivelse = InntektBeskrivelse.FASTLOENN,
-        inntektskilde = "skatt",
-        inntektsstatus = "?",
-        inntektsperiodetype = "?",
-        inntektType = InntektType.LOENNSINNTEKT,
-        utbetaltIMaaned = YearMonth.now()
-    )
-
-    private fun storeInntektCommand(inntekt: Inntekt) = StoreInntektCommand(
-        inntektparametre = Inntektparametre("1234", "1234", LocalDate.now(), RegelKontekst("1234", "vedtak")),
-        inntekt = InntektkomponentResponse(
-            ident = Aktoer(AktoerType.AKTOER_ID, "1235"),
-            arbeidsInntektMaaned = listOf(
-                ArbeidsInntektMaaned(
-                    aarMaaned = YearMonth.now(), emptyList(),
-                    arbeidsInntektInformasjon = ArbeidsInntektInformasjon(
-                        inntektListe = listOf(
-                            inntekt
-                        )
-                    )
-                )
-            )
+    private val inntektMedOrdinæreDagpenger =
+        Inntekt(
+            beloep = BigDecimal(2000),
+            fordel = "?",
+            beskrivelse = InntektBeskrivelse.DAGPENGER_VED_ARBEIDSLOESHET,
+            inntektskilde = "skatt",
+            inntektsstatus = "?",
+            inntektsperiodetype = "?",
+            inntektType = InntektType.YTELSE_FRA_OFFENTLIGE,
+            utbetaltIMaaned = YearMonth.now(),
         )
-    )
+    private val inntektMedOrdinæreDagpengerMedFiskeHyre =
+        Inntekt(
+            beloep = BigDecimal(2000),
+            fordel = "?",
+            beskrivelse = InntektBeskrivelse.DAGPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE,
+            inntektskilde = "skatt",
+            inntektsstatus = "?",
+            inntektsperiodetype = "?",
+            inntektType = InntektType.YTELSE_FRA_OFFENTLIGE,
+            utbetaltIMaaned = YearMonth.now(),
+        )
+
+    private val inntektMedFangstOgFiskDagpenger =
+        Inntekt(
+            beloep = BigDecimal(2000),
+            fordel = "?",
+            beskrivelse = InntektBeskrivelse.DAGPENGER_TIL_FISKER,
+            inntektskilde = "skatt",
+            inntektsstatus = "?",
+            inntektsperiodetype = "?",
+            inntektType = InntektType.NAERINGSINNTEKT,
+            utbetaltIMaaned = YearMonth.now(),
+        )
+
+    private val inntektUtenDagpenger =
+        Inntekt(
+            beloep = BigDecimal(2000),
+            fordel = "?",
+            beskrivelse = InntektBeskrivelse.FASTLOENN,
+            inntektskilde = "skatt",
+            inntektsstatus = "?",
+            inntektsperiodetype = "?",
+            inntektType = InntektType.LOENNSINNTEKT,
+            utbetaltIMaaned = YearMonth.now(),
+        )
+
+    private fun storeInntektCommand(inntekt: Inntekt) =
+        StoreInntektCommand(
+            inntektparametre = Inntektparametre("1234", "1234", LocalDate.now(), RegelKontekst("1234", "vedtak")),
+            inntekt =
+                InntektkomponentResponse(
+                    ident = Aktoer(AktoerType.AKTOER_ID, "1235"),
+                    arbeidsInntektMaaned =
+                        listOf(
+                            ArbeidsInntektMaaned(
+                                aarMaaned = YearMonth.now(),
+                                emptyList(),
+                                arbeidsInntektInformasjon =
+                                    ArbeidsInntektInformasjon(
+                                        inntektListe =
+                                            listOf(
+                                                inntekt,
+                                            ),
+                                    ),
+                            ),
+                        ),
+                ),
+        )
 }

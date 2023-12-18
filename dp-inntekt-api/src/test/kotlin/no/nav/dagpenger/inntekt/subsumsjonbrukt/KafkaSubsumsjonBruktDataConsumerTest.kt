@@ -41,32 +41,36 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
     }
 
     val inntektId = InntektId(ULID().nextULID())
-    private val bruktInntektMelding = mapOf(
-        "@event_name" to "brukt_inntekt",
-        "inntektsId" to inntektId.id,
-        "aktorId" to "12345678910",
-        "kontekst" to mapOf(
-            "id" to "2",
-            "type" to "vedtak"
+    private val bruktInntektMelding =
+        mapOf(
+            "@event_name" to "brukt_inntekt",
+            "inntektsId" to inntektId.id,
+            "aktorId" to "12345678910",
+            "kontekst" to
+                mapOf(
+                    "id" to "2",
+                    "type" to "vedtak",
+                ),
         )
-    )
-    private val bruktInntektMeldingManueltGrunnlag = mapOf(
-        "@event_name" to "brukt_inntekt",
-        "aktorId" to "12345678910",
-        "kontekst" to mapOf(
-            "id" to "1",
-            "type" to "vedtak"
+    private val bruktInntektMeldingManueltGrunnlag =
+        mapOf(
+            "@event_name" to "brukt_inntekt",
+            "aktorId" to "12345678910",
+            "kontekst" to
+                mapOf(
+                    "id" to "1",
+                    "type" to "vedtak",
+                ),
         )
-    )
     private val producer by lazy {
         KafkaProducer<String, String>(
             producerConfig(
                 clientId = "test",
-                bootstrapServers = Kafka.instance.bootstrapServers
+                bootstrapServers = Kafka.instance.bootstrapServers,
             ).also {
                 it[ProducerConfig.ACKS_CONFIG] = "all"
                 it[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
-            }
+            },
         )
     }
     private val adapter = moshiInstance.adapter<Map<String, Any?>>(Map::class.java).lenient()
@@ -76,12 +80,14 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
         runBlocking {
             val storeMock = mockk<InntektStore>(relaxed = false)
             coEvery { storeMock.markerInntektBrukt(inntektId) } returns 1
-            val config = Config.config.inntektApiConfig.run {
-                copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
-            }
-            val consumer = KafkaSubsumsjonBruktDataConsumer(config, storeMock).apply {
-                listen()
-            }
+            val config =
+                Config.config.inntektApiConfig.run {
+                    copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
+                }
+            val consumer =
+                KafkaSubsumsjonBruktDataConsumer(config, storeMock).apply {
+                    listen()
+                }
             val metaData =
                 producer.send(ProducerRecord(config.inntektBruktDataTopic, "test", adapter.toJson(bruktInntektMelding)))
                     .get(5, TimeUnit.SECONDS)
@@ -101,21 +107,24 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
     fun `Cannot mark inntekt id as used if not present in faktum`() {
         runBlocking {
             val storeMock = mockk<InntektStore>(relaxed = false)
-            val config = Config.config.inntektApiConfig.run {
-                copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
-            }
-            val consumer = KafkaSubsumsjonBruktDataConsumer(config, storeMock).apply {
-                listen()
-            }
+            val config =
+                Config.config.inntektApiConfig.run {
+                    copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
+                }
+            val consumer =
+                KafkaSubsumsjonBruktDataConsumer(config, storeMock).apply {
+                    listen()
+                }
             val bruktSubsumsjonData = mapOf("faktum" to mapOf("manueltGrunnlag" to "122212"))
-            val metaData = producer.send(
-                ProducerRecord(
-                    config.inntektBruktDataTopic,
-                    "test",
-                    adapter.toJson(bruktInntektMeldingManueltGrunnlag)
+            val metaData =
+                producer.send(
+                    ProducerRecord(
+                        config.inntektBruktDataTopic,
+                        "test",
+                        adapter.toJson(bruktInntektMeldingManueltGrunnlag),
+                    ),
                 )
-            )
-                .get(5, TimeUnit.SECONDS)
+                    .get(5, TimeUnit.SECONDS)
             LOGGER.info("Producer produced $bruktSubsumsjonData with meta $metaData")
 
             TimeUnit.MILLISECONDS.sleep(500)
@@ -135,16 +144,18 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
             val inntektId = InntektId(ULID().nextULID())
             val storeMock = mockk<InntektStore>(relaxed = false)
             coEvery { storeMock.markerInntektBrukt(inntektId) } throws SQLTransientConnectionException("BLÆ")
-            val config = Config.config.inntektApiConfig.run {
-                copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
-            }
-            val consumer = KafkaSubsumsjonBruktDataConsumer(
-                config = config,
-                inntektStore = storeMock,
-                graceDuration = Duration.ofMillis(1)
-            ).apply {
-                listen()
-            }
+            val config =
+                Config.config.inntektApiConfig.run {
+                    copy(application = application.copy(brokers = Kafka.instance.bootstrapServers, credential = null))
+                }
+            val consumer =
+                KafkaSubsumsjonBruktDataConsumer(
+                    config = config,
+                    inntektStore = storeMock,
+                    graceDuration = Duration.ofMillis(1),
+                ).apply {
+                    listen()
+                }
             val metaData =
                 producer.send(ProducerRecord(config.inntektBruktDataTopic, "test", adapter.toJson(bruktInntektMelding)))
                     .get(5, TimeUnit.SECONDS)

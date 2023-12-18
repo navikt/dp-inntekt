@@ -51,12 +51,12 @@ import java.util.Date
 import kotlin.test.assertEquals
 
 internal class InntektRouteSpec {
-
-    private val fnr = getFodselsnummerForDate(
-        Date.from(
-            LocalDate.now().minusYears(20).atStartOfDay(ZoneId.systemDefault()).toInstant(),
-        ),
-    ).personnummer
+    private val fnr =
+        getFodselsnummerForDate(
+            Date.from(
+                LocalDate.now().minusYears(20).atStartOfDay(ZoneId.systemDefault()).toInstant(),
+            ),
+        ).personnummer
     private val ulid = ULID().nextULID()
     private val aktørId = "1234"
     private val beregningsdato = LocalDate.of(2019, 1, 8)
@@ -87,27 +87,29 @@ internal class InntektRouteSpec {
         }
         """.trimIndent()
 
-    private val inntektParametre = Inntektparametre(
-        aktørId = "$aktørId",
-        fødselsnummer = "$fnr",
-        regelkontekst = RegelKontekst("1", "vedtak"),
-        beregningsdato = beregningsdato,
+    private val inntektParametre =
+        Inntektparametre(
+            aktørId = "$aktørId",
+            fødselsnummer = "$fnr",
+            regelkontekst = RegelKontekst("1", "vedtak"),
+            beregningsdato = beregningsdato,
+        )
 
-    )
+    private val vedtakIdUlidParametre =
+        Inntektparametre(
+            aktørId = aktørId,
+            fødselsnummer = fnr,
+            regelkontekst = RegelKontekst(ulid, "vedtak"),
+            beregningsdato = beregningsdato,
+        )
 
-    private val vedtakIdUlidParametre = Inntektparametre(
-        aktørId = aktørId,
-        fødselsnummer = fnr,
-        regelkontekst = RegelKontekst(ulid, "vedtak"),
-        beregningsdato = beregningsdato,
-    )
-
-    private val fnrParametre = Inntektparametre(
-        aktørId = aktørId,
-        regelkontekst = RegelKontekst(ulid, "vedtak"),
-        fødselsnummer = fnr,
-        beregningsdato = beregningsdato,
-    )
+    private val fnrParametre =
+        Inntektparametre(
+            aktørId = aktørId,
+            regelkontekst = RegelKontekst(ulid, "vedtak"),
+            fødselsnummer = fnr,
+            beregningsdato = beregningsdato,
+        )
 
     private val jsonMissingFields =
         """
@@ -127,38 +129,42 @@ internal class InntektRouteSpec {
 
     val uKjentInntektsId = ULID().nextULID()
     val kjentInntektsId = ULID().nextULID()
-    val kjentInntekt = no.nav.dagpenger.events.inntekt.v1.Inntekt(
-        kjentInntektsId,
-        sisteAvsluttendeKalenderMåned = YearMonth.of(2023, 10),
-        inntektsListe = listOf(
-            KlassifisertInntektMåned(
-                årMåned = YearMonth.of(2023, 10),
-                klassifiserteInntekter = listOf(
-                    KlassifisertInntekt(
-                        beløp = 1000.toBigDecimal(),
-                        inntektKlasse = InntektKlasse.ARBEIDSINNTEKT,
+    val kjentInntekt =
+        no.nav.dagpenger.events.inntekt.v1.Inntekt(
+            kjentInntektsId,
+            sisteAvsluttendeKalenderMåned = YearMonth.of(2023, 10),
+            inntektsListe =
+                listOf(
+                    KlassifisertInntektMåned(
+                        årMåned = YearMonth.of(2023, 10),
+                        klassifiserteInntekter =
+                            listOf(
+                                KlassifisertInntekt(
+                                    beløp = 1000.toBigDecimal(),
+                                    inntektKlasse = InntektKlasse.ARBEIDSINNTEKT,
+                                ),
+                            ),
                     ),
                 ),
-            ),
-        ),
-    )
+        )
 
     private val behandlingsInntektsGetterMock: BehandlingsInntektsGetter =
         spyk(BehandlingsInntektsGetter(mockk(relaxed = true), mockk(relaxed = true)))
 
-    private val personOppslagMock = mockk<PersonOppslag>().also {
-        val person = Person(
-            fødselsnummer = fnr,
-            aktørId = aktørId,
-            fornavn = "fornavn",
-            mellomnavn = null,
-            etternavn = "etternav",
-
-        )
-        coEvery { it.hentPerson(fnr) } returns person
-        coEvery { it.hentPerson(aktørId) } returns person
-        coEvery { it.hentPerson("ukjent") } throws PersonNotFoundException("ukjent")
-    }
+    private val personOppslagMock =
+        mockk<PersonOppslag>().also {
+            val person =
+                Person(
+                    fødselsnummer = fnr,
+                    aktørId = aktørId,
+                    fornavn = "fornavn",
+                    mellomnavn = null,
+                    etternavn = "etternav",
+                )
+            coEvery { it.hentPerson(fnr) } returns person
+            coEvery { it.hentPerson(aktørId) } returns person
+            coEvery { it.hentPerson("ukjent") } throws PersonNotFoundException("ukjent")
+        }
 
     private val spesifisertPath = "/inntekt/spesifisert"
     private val klassifisertPath = "/inntekt/klassifisert"
@@ -173,11 +179,12 @@ internal class InntektRouteSpec {
     private val inntektId = InntektId(ULID().nextULID())
     private val emptyInntekt = InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, "1234"))
 
-    private val storedInntekt = StoredInntekt(
-        inntektId,
-        emptyInntekt,
-        false,
-    )
+    private val storedInntekt =
+        StoredInntekt(
+            inntektId,
+            emptyInntekt,
+            false,
+        )
 
     init {
         coEvery {
@@ -195,207 +202,227 @@ internal class InntektRouteSpec {
 
     @ParameterizedTest
     @ValueSource(strings = ["/v2/inntekt/spesifisert", "/v2/inntekt/klassifisert"])
-    fun `skal ikke autentisere på v2 hvis ikke auth token er med `(endpoint: String) = testApp {
-        handleRequest(HttpMethod.Post, endpoint) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            setBody(validJson)
-        }.apply {
-            assertEquals(HttpStatusCode.Unauthorized, response.status())
+    fun `skal ikke autentisere på v2 hvis ikke auth token er med `(endpoint: String) =
+        testApp {
+            handleRequest(HttpMethod.Post, endpoint) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                setBody(validJson)
+            }.apply {
+                assertEquals(HttpStatusCode.Unauthorized, response.status())
+            }
         }
-    }
 
     @ParameterizedTest
     @ValueSource(strings = ["/v2/inntekt/spesifisert", "/v2/inntekt/klassifisert"])
-    fun `skal autentisere på v2 hvis auth token er med `(endpoint: String) = testApp {
-        handleAuthenticatedAzureAdRequest(HttpMethod.Post, endpoint) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            setBody(validJson)
-        }.apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-        }
-    }
-
-    @Test
-    fun `Spesifisert inntekt API specification test - Should match json field names and formats`() = testApp {
-        handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader("X-API-KEY", apiKey)
-            addHeader("X-Request-Id", callId)
-            setBody(validJson)
-        }.apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(inntektParametre, callId) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(inntektParametre, callId) }
-        }
-    }
-
-    @Test
-    fun `Klassifisert inntekt API specification test - Should match json field names and formats`() = testApp {
-        handleRequest(HttpMethod.Post, klassifisertInntektPathV1) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader("X-API-KEY", apiKey)
-            addHeader("X-Request-Id", callId)
-            setBody(validJson)
-        }.apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(inntektParametre, callId) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(inntektParametre, callId) }
-        }
-    }
-
-    @Test
-    fun `Spesifisert Requests with vedtakId as string works and does store data`() = testApp {
-        handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader("X-API-KEY", apiKey)
-            addHeader("X-Request-Id", callId)
-            setBody(validJsonWithVedtakIdAsUlid)
-        }.apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            coVerify(exactly = 1) {
-                behandlingsInntektsGetterMock.getBehandlingsInntekt(
-                    vedtakIdUlidParametre,
-                    callId,
-                )
-            }
-            coVerify(exactly = 1) {
-                behandlingsInntektsGetterMock.getSpesifisertInntekt(
-                    vedtakIdUlidParametre,
-                    callId,
-                )
+    fun `skal autentisere på v2 hvis auth token er med `(endpoint: String) =
+        testApp {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, endpoint) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                setBody(validJson)
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
             }
         }
-    }
 
     @Test
-    fun `Klassifisert Requests with fødselsnummer works and does store data`() = testApp {
-        handleRequest(HttpMethod.Post, klassifisertInntektPathV1) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader("X-API-KEY", apiKey)
-            addHeader("X-Request-Id", callId)
-            setBody(validJsonWithFnr)
-        }.apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(fnrParametre, callId) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(fnrParametre, callId) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(fnrParametre, callId) }
-        }
-    }
-
-    @Test
-    fun `Klassifisert Requests with vedtakId as string works and does store data`() = testApp {
-        handleRequest(HttpMethod.Post, klassifisertInntektPathV1) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader("X-API-KEY", apiKey)
-            addHeader("X-Request-Id", callId)
-            setBody(validJsonWithVedtakIdAsUlid)
-        }.apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            coVerify(exactly = 1) {
-                behandlingsInntektsGetterMock.getBehandlingsInntekt(
-                    vedtakIdUlidParametre,
-                    callId,
-                )
-            }
-            coVerify(exactly = 1) {
-                behandlingsInntektsGetterMock.getSpesifisertInntekt(
-                    vedtakIdUlidParametre,
-                    callId,
-                )
-            }
-            coVerify(exactly = 1) {
-                behandlingsInntektsGetterMock.getKlassifisertInntekt(
-                    vedtakIdUlidParametre,
-                    callId,
-                )
+    fun `Spesifisert inntekt API specification test - Should match json field names and formats`() =
+        testApp {
+            handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader("X-API-KEY", apiKey)
+                addHeader("X-Request-Id", callId)
+                setBody(validJson)
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(inntektParametre, callId) }
+                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(inntektParametre, callId) }
             }
         }
-    }
 
     @Test
-    fun `Spesifisert Requests with fødselsnummer works and does store data`() = testApp {
-        handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader("X-API-KEY", apiKey)
-            addHeader("X-Request-Id", callId)
-            setBody(validJsonWithFnr)
-        }.apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(fnrParametre, callId) }
-            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(fnrParametre, callId) }
+    fun `Klassifisert inntekt API specification test - Should match json field names and formats`() =
+        testApp {
+            handleRequest(HttpMethod.Post, klassifisertInntektPathV1) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader("X-API-KEY", apiKey)
+                addHeader("X-Request-Id", callId)
+                setBody(validJson)
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(inntektParametre, callId) }
+                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(inntektParametre, callId) }
+            }
         }
-    }
 
     @Test
-    fun `Spesifisert request fails on post request with missing fields`() = testApp {
-        handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader("X-API-KEY", apiKey)
-            setBody(jsonMissingFields)
-        }.apply {
-            assertEquals(HttpStatusCode.BadRequest, response.status())
+    fun `Spesifisert Requests with vedtakId as string works and does store data`() =
+        testApp {
+            handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader("X-API-KEY", apiKey)
+                addHeader("X-Request-Id", callId)
+                setBody(validJsonWithVedtakIdAsUlid)
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                coVerify(exactly = 1) {
+                    behandlingsInntektsGetterMock.getBehandlingsInntekt(
+                        vedtakIdUlidParametre,
+                        callId,
+                    )
+                }
+                coVerify(exactly = 1) {
+                    behandlingsInntektsGetterMock.getSpesifisertInntekt(
+                        vedtakIdUlidParametre,
+                        callId,
+                    )
+                }
+            }
         }
-    }
 
     @Test
-    fun `Klassifisert request fails on post request with missing fields`() = testApp {
-        handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader("X-API-KEY", apiKey)
-            setBody(jsonMissingFields)
-        }.apply {
-            assertEquals(HttpStatusCode.BadRequest, response.status())
+    fun `Klassifisert Requests with fødselsnummer works and does store data`() =
+        testApp {
+            handleRequest(HttpMethod.Post, klassifisertInntektPathV1) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader("X-API-KEY", apiKey)
+                addHeader("X-Request-Id", callId)
+                setBody(validJsonWithFnr)
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(fnrParametre, callId) }
+                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(fnrParametre, callId) }
+                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(fnrParametre, callId) }
+            }
         }
-    }
 
     @Test
-    fun `Spesifisert request fails on post request with unknown person `() = testApp {
-        handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader("X-API-KEY", apiKey)
-            setBody(jsonUkjentPerson)
-        }.apply {
-            assertEquals(HttpStatusCode.BadRequest, response.status())
+    fun `Klassifisert Requests with vedtakId as string works and does store data`() =
+        testApp {
+            handleRequest(HttpMethod.Post, klassifisertInntektPathV1) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader("X-API-KEY", apiKey)
+                addHeader("X-Request-Id", callId)
+                setBody(validJsonWithVedtakIdAsUlid)
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                coVerify(exactly = 1) {
+                    behandlingsInntektsGetterMock.getBehandlingsInntekt(
+                        vedtakIdUlidParametre,
+                        callId,
+                    )
+                }
+                coVerify(exactly = 1) {
+                    behandlingsInntektsGetterMock.getSpesifisertInntekt(
+                        vedtakIdUlidParametre,
+                        callId,
+                    )
+                }
+                coVerify(exactly = 1) {
+                    behandlingsInntektsGetterMock.getKlassifisertInntekt(
+                        vedtakIdUlidParametre,
+                        callId,
+                    )
+                }
+            }
         }
-    }
 
     @Test
-    fun `Klassifisert request fails on post request with unknownperson`() = testApp {
-        handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader("X-API-KEY", apiKey)
-            setBody(jsonUkjentPerson)
-        }.apply {
-            assertEquals(HttpStatusCode.BadRequest, response.status())
+    fun `Spesifisert Requests with fødselsnummer works and does store data`() =
+        testApp {
+            handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader("X-API-KEY", apiKey)
+                addHeader("X-Request-Id", callId)
+                setBody(validJsonWithFnr)
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(fnrParametre, callId) }
+                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(fnrParametre, callId) }
+            }
         }
-    }
 
     @Test
-    fun `Hente klassifisert inntekt basert på inntekt ID`() = withMockAuthServerAndTestApplication(mockInntektApi(behandlingsInntektsGetter = behandlingsInntektsGetterMock)) {
-        val kjentInntektIdresponse = client.get("/v2/inntekt/klassifisert/$kjentInntektsId") {
-            autentisert()
-        }
-        assertEquals(HttpStatusCode.OK, kjentInntektIdresponse.status)
-        kjentInntektIdresponse.status shouldBe HttpStatusCode.OK
-        val hentetInntekt = jacksonObjectMapper.readValue(kjentInntektIdresponse.bodyAsText(), no.nav.dagpenger.events.inntekt.v1.Inntekt::class.java)
-        assertSoftly {
-            hentetInntekt.inntektsId shouldBe kjentInntekt.inntektsId
-            hentetInntekt.sisteAvsluttendeKalenderMåned shouldBe kjentInntekt.sisteAvsluttendeKalenderMåned
-            hentetInntekt.inntektsListe shouldBe kjentInntekt.inntektsListe
-            hentetInntekt.manueltRedigert shouldBe kjentInntekt.manueltRedigert
-        }
-        val uKjentInntektIdresponse = client.get("/v2/inntekt/klassifisert/$uKjentInntektsId") {
-            autentisert()
+    fun `Spesifisert request fails on post request with missing fields`() =
+        testApp {
+            handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader("X-API-KEY", apiKey)
+                setBody(jsonMissingFields)
+            }.apply {
+                assertEquals(HttpStatusCode.BadRequest, response.status())
+            }
         }
 
-        uKjentInntektIdresponse.status shouldBe HttpStatusCode.NotFound
-
-        val ikkeInntektIdResponse = client.get("/v2/inntekt/klassifisert/123") {
-            autentisert()
+    @Test
+    fun `Klassifisert request fails on post request with missing fields`() =
+        testApp {
+            handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader("X-API-KEY", apiKey)
+                setBody(jsonMissingFields)
+            }.apply {
+                assertEquals(HttpStatusCode.BadRequest, response.status())
+            }
         }
 
-        ikkeInntektIdResponse.status shouldBe HttpStatusCode.BadRequest
-    }
+    @Test
+    fun `Spesifisert request fails on post request with unknown person `() =
+        testApp {
+            handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader("X-API-KEY", apiKey)
+                setBody(jsonUkjentPerson)
+            }.apply {
+                assertEquals(HttpStatusCode.BadRequest, response.status())
+            }
+        }
+
+    @Test
+    fun `Klassifisert request fails on post request with unknownperson`() =
+        testApp {
+            handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader("X-API-KEY", apiKey)
+                setBody(jsonUkjentPerson)
+            }.apply {
+                assertEquals(HttpStatusCode.BadRequest, response.status())
+            }
+        }
+
+    @Test
+    fun `Hente klassifisert inntekt basert på inntekt ID`() =
+        withMockAuthServerAndTestApplication(mockInntektApi(behandlingsInntektsGetter = behandlingsInntektsGetterMock)) {
+            val kjentInntektIdresponse =
+                client.get("/v2/inntekt/klassifisert/$kjentInntektsId") {
+                    autentisert()
+                }
+            assertEquals(HttpStatusCode.OK, kjentInntektIdresponse.status)
+            kjentInntektIdresponse.status shouldBe HttpStatusCode.OK
+            val hentetInntekt =
+                jacksonObjectMapper.readValue(
+                    kjentInntektIdresponse.bodyAsText(),
+                    no.nav.dagpenger.events.inntekt.v1.Inntekt::class.java,
+                )
+            assertSoftly {
+                hentetInntekt.inntektsId shouldBe kjentInntekt.inntektsId
+                hentetInntekt.sisteAvsluttendeKalenderMåned shouldBe kjentInntekt.sisteAvsluttendeKalenderMåned
+                hentetInntekt.inntektsListe shouldBe kjentInntekt.inntektsListe
+                hentetInntekt.manueltRedigert shouldBe kjentInntekt.manueltRedigert
+            }
+            val uKjentInntektIdresponse =
+                client.get("/v2/inntekt/klassifisert/$uKjentInntektsId") {
+                    autentisert()
+                }
+
+            uKjentInntektIdresponse.status shouldBe HttpStatusCode.NotFound
+
+            val ikkeInntektIdResponse =
+                client.get("/v2/inntekt/klassifisert/123") {
+                    autentisert()
+                }
+
+            ikkeInntektIdResponse.status shouldBe HttpStatusCode.BadRequest
+        }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication(

@@ -4,7 +4,6 @@ import no.nav.dagpenger.inntekt.Config.inntektApiConfig
 import org.junit.jupiter.api.Test
 
 class ConfigurationTest {
-
     @Test
     fun `Default configuration is LOCAL `() {
         with(Config.config.inntektApiConfig) {

@@ -14,8 +14,8 @@ import no.nav.dagpenger.inntekt.db.migrate
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.httpClient
-import no.nav.dagpenger.inntekt.oppslag.pdl.PdlGraphQLClientFactory
 import no.nav.dagpenger.inntekt.oppslag.pdl.PdlGraphQLRepository
+import no.nav.dagpenger.inntekt.oppslag.pdl.pdlGraphQLClientFactory
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.Vaktmester
 import no.nav.dagpenger.oidc.StsOidcClient
@@ -31,30 +31,36 @@ fun main() {
         migrate(config)
         DefaultExports.initialize()
         val dataSource = dataSourceFrom(config)
-        val authApiKeyVerifier = AuthApiKeyVerifier(
-            apiKeyVerifier = ApiKeyVerifier(config.application.apiSecret),
-            clients = config.application.allowedApiKeys,
-        )
+        val authApiKeyVerifier =
+            AuthApiKeyVerifier(
+                apiKeyVerifier = ApiKeyVerifier(config.application.apiSecret),
+                clients = config.application.allowedApiKeys,
+            )
         val postgresInntektStore = PostgresInntektStore(dataSource)
-        val stsOidcClient = StsOidcClient(
-            config.application.oicdStsUrl,
-            config.application.username,
-            config.application.password,
-        )
-        val pdlPersonOppslag = PdlGraphQLRepository(
-            client = PdlGraphQLClientFactory(
-                url = config.pdl.url,
-                oidcProvider = { runBlocking { stsOidcClient.oidcToken().access_token } },
-            ),
-        )
-        val enhetsregisterClient = EnhetsregisterClient(
-            baseUrl = config.enhetsregisteretUrl.url,
-            httpClient = httpClient(),
-        )
-        val inntektskomponentHttpClient = InntektskomponentHttpClient(
-            config.application.hentinntektListeUrl,
-            stsOidcClient,
-        )
+        val stsOidcClient =
+            StsOidcClient(
+                config.application.oicdStsUrl,
+                config.application.username,
+                config.application.password,
+            )
+        val pdlPersonOppslag =
+            PdlGraphQLRepository(
+                client =
+                    pdlGraphQLClientFactory(
+                        url = config.pdl.url,
+                        oidcProvider = { runBlocking { stsOidcClient.oidcToken().access_token } },
+                    ),
+            )
+        val enhetsregisterClient =
+            EnhetsregisterClient(
+                baseUrl = config.enhetsregisteretUrl.url,
+                httpClient = httpClient(),
+            )
+        val inntektskomponentHttpClient =
+            InntektskomponentHttpClient(
+                config.application.hentinntektListeUrl,
+                stsOidcClient,
+            )
         val cachedInntektsGetter = BehandlingsInntektsGetter(inntektskomponentHttpClient, postgresInntektStore)
         // Marks inntekt as used
         val subsumsjonBruktDataConsumer =

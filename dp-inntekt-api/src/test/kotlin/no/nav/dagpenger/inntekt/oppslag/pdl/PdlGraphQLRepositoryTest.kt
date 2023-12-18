@@ -19,78 +19,81 @@ import wiremock.com.google.common.net.HttpHeaders
 import kotlin.test.assertNotNull
 
 internal class PdlGraphQLRepositoryTest {
-
     @Test
-    fun `Hent person basert på aktør id `() = runBlocking {
-        wireMockServer.addPdlResponse(
-            matchingJsonPath("$.variables.ident", EqualToPattern("aktørId")),
-            WireMock.okJson(okResponse)
-        )
-
-        val pdl = PdlGraphQLRepository(
-            PdlGraphQLClientFactory(
-                url = "${wireMockServer.baseUrl()}/graphql",
-                oidcProvider = { TOKEN }
+    fun `Hent person basert på aktør id `() =
+        runBlocking {
+            wireMockServer.addPdlResponse(
+                matchingJsonPath("$.variables.ident", EqualToPattern("aktørId")),
+                WireMock.okJson(okResponse),
             )
-        )
 
-        val person = pdl.hentPerson("aktørId")
+            val pdl =
+                PdlGraphQLRepository(
+                    pdlGraphQLClientFactory(
+                        url = "${wireMockServer.baseUrl()}/graphql",
+                        oidcProvider = { TOKEN },
+                    ),
+                )
 
-        assertNotNull(person)
+            val person = pdl.hentPerson("aktørId")
 
-        person.fødselsnummer shouldBe "fødselsnummer"
-        person.fornavn shouldBe "Donald"
-        person.mellomnavn shouldBe "Pres"
-        person.etternavn shouldBe "Struts"
-        person.sammensattNavn() shouldBe "Struts, Donald Pres"
-    }
+            assertNotNull(person)
 
-    @Test
-    fun `Feil i respons skal føre til exception `() = runBlocking {
-        wireMockServer.addPdlResponse(
-            matchingJsonPath("$.variables.ident", EqualToPattern("queryFeilet")),
-            WireMock.okJson(error)
-        )
-
-        val pdl = PdlGraphQLRepository(
-            PdlGraphQLClientFactory(
-                url = "${wireMockServer.baseUrl()}/graphql",
-                oidcProvider = { TOKEN }
-            )
-        )
-        shouldThrow<PersonNotFoundException> {
-            pdl.hentPerson("queryFeilet")
+            person.fødselsnummer shouldBe "fødselsnummer"
+            person.fornavn shouldBe "Donald"
+            person.mellomnavn shouldBe "Pres"
+            person.etternavn shouldBe "Struts"
+            person.sammensattNavn() shouldBe "Struts, Donald Pres"
         }
-    }
+
+    @Test
+    fun `Feil i respons skal føre til exception `() =
+        runBlocking {
+            wireMockServer.addPdlResponse(
+                matchingJsonPath("$.variables.ident", EqualToPattern("queryFeilet")),
+                WireMock.okJson(error),
+            )
+
+            val pdl =
+                PdlGraphQLRepository(
+                    pdlGraphQLClientFactory(
+                        url = "${wireMockServer.baseUrl()}/graphql",
+                        oidcProvider = { TOKEN },
+                    ),
+                )
+            shouldThrow<PersonNotFoundException> {
+                pdl.hentPerson("queryFeilet")
+            }
+        }
 
     @Language("JSON")
     private val okResponse =
         """
-      {
-        "data": {
-          "hentIdenter": {
-            "identer": [
-              {
-                "ident": "fødselsnummer",
-                "gruppe": "FOLKEREGISTERIDENT"
-              },
-              {
-                "ident": "aktorid",
-                "gruppe": "AKTORID"
-              }
-            ]
-          },
-          "hentPerson": {
-            "navn": [
-              {
-                "fornavn": "Donald",
-                "mellomnavn": "Pres",
-                "etternavn": "Struts"
-              }
-            ]
+        {
+          "data": {
+            "hentIdenter": {
+              "identer": [
+                {
+                  "ident": "fødselsnummer",
+                  "gruppe": "FOLKEREGISTERIDENT"
+                },
+                {
+                  "ident": "aktorid",
+                  "gruppe": "AKTORID"
+                }
+              ]
+            },
+            "hentPerson": {
+              "navn": [
+                {
+                  "fornavn": "Donald",
+                  "mellomnavn": "Pres",
+                  "etternavn": "Struts"
+                }
+              ]
+            }
           }
         }
-      }
         """.trimIndent()
 
     @Language("JSON")
@@ -117,7 +120,10 @@ internal class PdlGraphQLRepositoryTest {
             wireMockServer.stop()
         }
 
-        fun WireMockServer.addPdlResponse(requestBody: ContentPattern<*>, response: ResponseDefinitionBuilder) {
+        fun WireMockServer.addPdlResponse(
+            requestBody: ContentPattern<*>,
+            response: ResponseDefinitionBuilder,
+        ) {
             this.addStubMapping(
                 WireMock.post(WireMock.urlEqualTo("/graphql"))
                     .withHeader(HttpHeaders.CONTENT_TYPE, WireMock.equalTo("application/json"))
@@ -127,7 +133,7 @@ internal class PdlGraphQLRepositoryTest {
                     .withHeader("Nav-Consumer-Token", WireMock.equalTo("Bearer $TOKEN"))
                     .withRequestBody(requestBody)
                     .willReturn(response)
-                    .build()
+                    .build(),
             )
         }
     }

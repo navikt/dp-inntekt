@@ -33,127 +33,133 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
 
-private val rawInntekt = InntektkomponentResponse(
-    listOf(
-        ArbeidsInntektMaaned(
-            YearMonth.of(2019, 5),
-            null,
-            ArbeidsInntektInformasjon(
-                listOf(
-                    Inntekt(
-                        BigDecimal.ONE,
-                        "fordel",
-                        InntektBeskrivelse.AKSJER_GRUNNFONDSBEVIS_TIL_UNDERKURS,
-                        "kilde",
-                        "status",
-                        "periodetype",
-                        inntektType = InntektType.LOENNSINNTEKT,
-                        utbetaltIMaaned = YearMonth.of(2019, 5)
-                    )
-                )
-            )
-        ),
-        ArbeidsInntektMaaned(
-            YearMonth.of(2019, 6),
-            null,
-            ArbeidsInntektInformasjon(
-                listOf(
-                    Inntekt(
-                        BigDecimal.ONE,
-                        "fordel",
-                        InntektBeskrivelse.FASTLOENN,
-                        "kilde",
-                        "status",
-                        "periodetype",
-                        inntektType = InntektType.LOENNSINNTEKT,
-                        utbetaltIMaaned = YearMonth.of(2019, 6)
+private val rawInntekt =
+    InntektkomponentResponse(
+        listOf(
+            ArbeidsInntektMaaned(
+                YearMonth.of(2019, 5),
+                null,
+                ArbeidsInntektInformasjon(
+                    listOf(
+                        Inntekt(
+                            BigDecimal.ONE,
+                            "fordel",
+                            InntektBeskrivelse.AKSJER_GRUNNFONDSBEVIS_TIL_UNDERKURS,
+                            "kilde",
+                            "status",
+                            "periodetype",
+                            inntektType = InntektType.LOENNSINNTEKT,
+                            utbetaltIMaaned = YearMonth.of(2019, 5),
+                        ),
                     ),
-                    Inntekt(
-                        BigDecimal.ONE,
-                        "fordel",
-                        InntektBeskrivelse.ANNET,
-                        "kilde",
-                        "status",
-                        "periodetype",
-                        inntektType = InntektType.LOENNSINNTEKT,
-                        utbetaltIMaaned = YearMonth.of(2019, 6),
-                        tilleggsinformasjon = TilleggInformasjon(
-                            "kategori",
-                            TilleggInformasjonsDetaljer(
-                                "detaljetyper",
-                                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
-                            )
-                        )
-
-                    )
-                )
-            )
-        )
-    ),
-    Aktoer(AktoerType.AKTOER_ID, "aktorId")
-)
+                ),
+            ),
+            ArbeidsInntektMaaned(
+                YearMonth.of(2019, 6),
+                null,
+                ArbeidsInntektInformasjon(
+                    listOf(
+                        Inntekt(
+                            BigDecimal.ONE,
+                            "fordel",
+                            InntektBeskrivelse.FASTLOENN,
+                            "kilde",
+                            "status",
+                            "periodetype",
+                            inntektType = InntektType.LOENNSINNTEKT,
+                            utbetaltIMaaned = YearMonth.of(2019, 6),
+                        ),
+                        Inntekt(
+                            BigDecimal.ONE,
+                            "fordel",
+                            InntektBeskrivelse.ANNET,
+                            "kilde",
+                            "status",
+                            "periodetype",
+                            inntektType = InntektType.LOENNSINNTEKT,
+                            utbetaltIMaaned = YearMonth.of(2019, 6),
+                            tilleggsinformasjon =
+                                TilleggInformasjon(
+                                    "kategori",
+                                    TilleggInformasjonsDetaljer(
+                                        "detaljetyper",
+                                        SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+                                    ),
+                                ),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+        Aktoer(AktoerType.AKTOER_ID, "aktorId"),
+    )
 
 private val inntektsmottaker = Inntektsmottaker("12345678912", "Navn Navnesen")
 
-private val inntektMedVerdikode = GUIArbeidsInntektInformasjon(
-    listOf(
-        InntektMedVerdikode(
-            BigDecimal.ONE,
-            "fordel",
-            InntektBeskrivelse.FASTLOENN,
-            "kilde",
-            "status",
-            "periodetype",
-            inntektType = InntektType.NAERINGSINNTEKT,
-            utbetaltIMaaned = YearMonth.of(2019, 6),
-            verdikode = "Hyre - Annet"
-        )
+private val inntektMedVerdikode =
+    GUIArbeidsInntektInformasjon(
+        listOf(
+            InntektMedVerdikode(
+                BigDecimal.ONE,
+                "fordel",
+                InntektBeskrivelse.FASTLOENN,
+                "kilde",
+                "status",
+                "periodetype",
+                inntektType = InntektType.NAERINGSINNTEKT,
+                utbetaltIMaaned = YearMonth.of(2019, 6),
+                verdikode = "Hyre - Annet",
+            ),
+        ),
     )
-)
 
+@Suppress("ktlint:standard:max-line-length")
 internal class KategoriseringTest {
-
     @Test
     fun `mapToGUIInntekt adds correct verdikode`() {
-        val storedInntekt = StoredInntekt(
-            InntektId(ULID().nextULID()),
-            rawInntekt,
-            false,
-            LocalDateTime.now()
-        )
+        val storedInntekt =
+            StoredInntekt(
+                InntektId(ULID().nextULID()),
+                rawInntekt,
+                false,
+                LocalDateTime.now(),
+            )
         val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), inntektsmottaker)
         assertEquals(
             "Aksjer/grunnfondsbevis til underkurs",
-            guiInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.verdikode
+            guiInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.verdikode,
         )
         assertEquals(
             "Fastlønn",
             guiInntekt.inntekt.arbeidsInntektMaaned?.first {
-                it.aarMaaned == YearMonth.of(
-                    2019,
-                    6
-                )
-            }?.arbeidsInntektInformasjon?.inntektListe?.first()?.verdikode
+                it.aarMaaned ==
+                    YearMonth.of(
+                        2019,
+                        6,
+                    )
+            }?.arbeidsInntektInformasjon?.inntektListe?.first()?.verdikode,
         )
         assertEquals(
             "Hyre - Annet",
             guiInntekt.inntekt.arbeidsInntektMaaned?.filter {
-                it.aarMaaned == YearMonth.of(
-                    2019,
-                    6
-                )
-            }?.first()?.arbeidsInntektInformasjon?.inntektListe?.last()?.verdikode
+                it.aarMaaned ==
+                    YearMonth.of(
+                        2019,
+                        6,
+                    )
+            }?.first()?.arbeidsInntektInformasjon?.inntektListe?.last()?.verdikode,
         )
     }
 
     @Test
     fun `Skal legger fra og til dato`() {
-        val storedInntekt = StoredInntekt(
-            InntektId(ULID().nextULID()),
-            rawInntekt,
-            false,
-            LocalDateTime.now()
-        )
+        val storedInntekt =
+            StoredInntekt(
+                InntektId(ULID().nextULID()),
+                rawInntekt,
+                false,
+                LocalDateTime.now(),
+            )
         val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), inntektsmottaker)
 
         assertNotNull(guiInntekt.inntekt.fraDato)
@@ -162,12 +168,13 @@ internal class KategoriseringTest {
 
     @Test
     fun `mapToGUIInntekt does not modify other fields than kategori`() {
-        val storedInntekt = StoredInntekt(
-            InntektId(ULID().nextULID()),
-            rawInntekt,
-            false,
-            LocalDateTime.now()
-        )
+        val storedInntekt =
+            StoredInntekt(
+                InntektId(ULID().nextULID()),
+                rawInntekt,
+                false,
+                LocalDateTime.now(),
+            )
         val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), inntektsmottaker)
 
         val beforeJson = moshiInstance.adapter(InntektkomponentResponse::class.java).toJson(rawInntekt)
@@ -179,62 +186,70 @@ internal class KategoriseringTest {
             AttributeIgnoringComparator(
                 JSONCompareMode.STRICT,
                 setOf("verdikode", "fraDato", "tilDato"),
-                Customization("") { _, _ -> true }
-            )
+                Customization("") { _, _ -> true },
+            ),
         )
     }
 
     @Test
     fun `mapFromGUIInntekt removes verdikode and updates to beskrivelse, type and tilleggsinformasjon correctly`() {
-        val guiInntekt = GUIInntekt(
-            InntektId(ULID().nextULID()),
-            LocalDateTime.now(),
-            GUIInntektsKomponentResponse(
-                YearMonth.now(),
-                YearMonth.now(),
-                listOf(
-                    GUIArbeidsInntektMaaned(
-                        YearMonth.of(2019, 6),
-                        listOf(Avvik(Aktoer(AktoerType.AKTOER_ID, "1111111"), Aktoer(AktoerType.AKTOER_ID, "2222222222"), null, YearMonth.of(2019, 6), "tekst")),
-                        inntektMedVerdikode
-                    )
+        val guiInntekt =
+            GUIInntekt(
+                InntektId(ULID().nextULID()),
+                LocalDateTime.now(),
+                GUIInntektsKomponentResponse(
+                    YearMonth.now(),
+                    YearMonth.now(),
+                    listOf(
+                        GUIArbeidsInntektMaaned(
+                            YearMonth.of(2019, 6),
+                            listOf(avvik()),
+                            inntektMedVerdikode,
+                        ),
+                    ),
+                    Aktoer(AktoerType.AKTOER_ID, "3333333333"),
                 ),
-                Aktoer(AktoerType.AKTOER_ID, "3333333333")
-            ),
-            false,
-            false
-        )
+                false,
+                false,
+            )
 
         val mappedInntekt = mapToStoredInntekt(guiInntekt)
 
-        assertEquals(InntektBeskrivelse.ANNET, mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.beskrivelse)
-        assertEquals(InntektType.LOENNSINNTEKT, mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.inntektType)
+        assertEquals(
+            InntektBeskrivelse.ANNET,
+            mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.beskrivelse,
+        )
+        assertEquals(
+            InntektType.LOENNSINNTEKT,
+            mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.inntektType,
+        )
         assertEquals(
             SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
-            mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold
+            mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold,
         )
     }
 
     @Test
     fun `mapFromGUIInntekt does not modify other fields than beskrivelse, type and tilleggsinformasjon`() {
-        val guiInntekt = GUIInntekt(
-            InntektId(ULID().nextULID()),
-            LocalDateTime.now(),
-            GUIInntektsKomponentResponse(
-                YearMonth.now(),
-                YearMonth.now(),
-                listOf(
-                    GUIArbeidsInntektMaaned(
-                        YearMonth.of(2019, 6),
-                        listOf(Avvik(Aktoer(AktoerType.AKTOER_ID, "1111111"), Aktoer(AktoerType.AKTOER_ID, "2222222222"), null, YearMonth.of(2019, 6), "tekst")),
-                        inntektMedVerdikode
-                    )
+        val guiInntekt =
+            GUIInntekt(
+                InntektId(ULID().nextULID()),
+                LocalDateTime.now(),
+                GUIInntektsKomponentResponse(
+                    YearMonth.now(),
+                    YearMonth.now(),
+                    listOf(
+                        GUIArbeidsInntektMaaned(
+                            YearMonth.of(2019, 6),
+                            listOf(avvik()),
+                            inntektMedVerdikode,
+                        ),
+                    ),
+                    Aktoer(AktoerType.AKTOER_ID, "3333333333"),
                 ),
-                Aktoer(AktoerType.AKTOER_ID, "3333333333")
-            ),
-            false,
-            false
-        )
+                false,
+                false,
+            )
 
         val mappedInntekt = mapToStoredInntekt(guiInntekt)
 
@@ -248,19 +263,29 @@ internal class KategoriseringTest {
                 JSONCompareMode.LENIENT,
                 setOf("verdikode", "fraDato", "tilDato"),
                 Customization("**.beskrivelse") { _, _ -> true },
-                Customization("**.inntektType") { _, _ -> true }
-            )
+                Customization("**.inntektType") { _, _ -> true },
+            ),
         )
     }
 
+    private fun avvik() =
+        Avvik(
+            Aktoer(AktoerType.AKTOER_ID, "1111111"),
+            Aktoer(AktoerType.AKTOER_ID, "2222222222"),
+            null,
+            YearMonth.of(2019, 6),
+            "tekst",
+        )
+
     @Test
     fun `map to and from GUIInntekt results in original inntekt`() {
-        val storedInntekt = StoredInntekt(
-            InntektId(ULID().nextULID()),
-            rawInntekt,
-            false,
-            LocalDateTime.now()
-        )
+        val storedInntekt =
+            StoredInntekt(
+                InntektId(ULID().nextULID()),
+                rawInntekt,
+                false,
+                LocalDateTime.now(),
+            )
 
         val mapFromGUIInntekt = mapToStoredInntekt(mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), null))
         assertEquals(storedInntekt.manueltRedigert, mapFromGUIInntekt.manueltRedigert)
@@ -275,16 +300,16 @@ internal class KategoriseringTest {
 class AttributeIgnoringComparator(
     mode: JSONCompareMode,
     var attributesToIgnore: Set<String>,
-    vararg customizations: Customization
+    vararg customizations: Customization,
 ) : CustomComparator(
-    mode,
-    *customizations
-) {
+        mode,
+        *customizations,
+    ) {
     override fun checkJsonObjectKeysExpectedInActual(
         prefix: String,
         expected: JSONObject,
         actual: JSONObject,
-        result: JSONCompareResult
+        result: JSONCompareResult,
     ) {
         val expectedKeys = getKeys(expected)
         expectedKeys.removeAll(attributesToIgnore)

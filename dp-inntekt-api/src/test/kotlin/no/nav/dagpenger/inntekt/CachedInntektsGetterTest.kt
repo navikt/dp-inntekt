@@ -21,29 +21,31 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 internal class CachedInntektsGetterTest {
-
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
     private val inntektStoreMock: InntektStore = mockk()
 
-    private val emptyInntektsKomponentResponse = InntektkomponentResponse(
-        emptyList(),
-        Aktoer(AktoerType.AKTOER_ID, "1234")
-    )
+    private val emptyInntektsKomponentResponse =
+        InntektkomponentResponse(
+            emptyList(),
+            Aktoer(AktoerType.AKTOER_ID, "1234"),
+        )
 
     @Test
     fun `Get cached inntekt for known behandlingsKey`() {
-        val parameters = Inntektparametre(
-            aktørId = "1234",
-            fødselsnummer = "1234",
-            regelkontekst = RegelKontekst("112233", "vedtak"),
-            beregningsdato = LocalDate.of(2019, 5, 6)
-        )
+        val parameters =
+            Inntektparametre(
+                aktørId = "1234",
+                fødselsnummer = "1234",
+                regelkontekst = RegelKontekst("112233", "vedtak"),
+                beregningsdato = LocalDate.of(2019, 5, 6),
+            )
 
-        val knownStoredInntekt = StoredInntekt(
-            InntektId("01DGPKY3CCN8H87WNTBK696TKV"),
-            emptyInntektsKomponentResponse,
-            false
-        )
+        val knownStoredInntekt =
+            StoredInntekt(
+                InntektId("01DGPKY3CCN8H87WNTBK696TKV"),
+                emptyInntektsKomponentResponse,
+                false,
+            )
 
         every {
             inntektStoreMock.getInntektId(parameters)
@@ -62,12 +64,13 @@ internal class CachedInntektsGetterTest {
 
     @Test
     fun `Get new inntekt for uknown behandlingsKey`() {
-        val parameters = Inntektparametre(
-            aktørId = "5678",
-            fødselsnummer = "5678",
-            regelkontekst = RegelKontekst("546787", "vedtak"),
-            beregningsdato = LocalDate.of(2019, 4, 26)
-        )
+        val parameters =
+            Inntektparametre(
+                aktørId = "5678",
+                fødselsnummer = "5678",
+                regelkontekst = RegelKontekst("546787", "vedtak"),
+                beregningsdato = LocalDate.of(2019, 4, 26),
+            )
 
         every {
             runBlocking {
@@ -76,8 +79,8 @@ internal class CachedInntektsGetterTest {
                         aktørId = "5678",
                         fødselsnummer = "5678",
                         månedFom = YearMonth.of(2016, 4),
-                        månedTom = YearMonth.of(2019, 3)
-                    )
+                        månedTom = YearMonth.of(2019, 3),
+                    ),
                 )
             }
         } returns emptyInntektsKomponentResponse
@@ -88,12 +91,13 @@ internal class CachedInntektsGetterTest {
 
         every {
             inntektStoreMock.storeInntekt(
-                command = StoreInntektCommand(
-                    inntektparametre = parameters,
-                    inntekt = emptyInntektsKomponentResponse,
-                    manueltRedigert = null
-                ),
-                created = any()
+                command =
+                    StoreInntektCommand(
+                        inntektparametre = parameters,
+                        inntekt = emptyInntektsKomponentResponse,
+                        manueltRedigert = null,
+                    ),
+                created = any(),
             )
         } returns StoredInntekt(InntektId("01DH179R2HW0FYEP1FABAXV150"), emptyInntektsKomponentResponse, false)
 

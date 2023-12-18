@@ -10,11 +10,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Aksjer_grunnfondsbevis til underkurs`() {
         val verdiKode = "Aksjer/grunnfondsbevis til underkurs"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.AKSJER_GRUNNFONDSBEVIS_TIL_UNDERKURS,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.AKSJER_GRUNNFONDSBEVIS_TIL_UNDERKURS,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -23,7 +24,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Annen arbeidsinntekt - Ikke skattepliktig`() {
         val verdiKode = "Annen arbeidsinntekt - Ikke skattepliktig"
-        val datagrunnlag = DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_OG_ANNEN_GODTGJOERELSE_SOM_IKKE_ER_SKATTEPLIKTIG)
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.ANNET,
+                SpesielleInntjeningsforhold.LOENN_OG_ANNEN_GODTGJOERELSE_SOM_IKKE_ER_SKATTEPLIKTIG,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -32,7 +38,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Annen arbeidsinntekt - Utlandet`() {
         val verdiKode = "Annen arbeidsinntekt - Utlandet"
-        val datagrunnlag = DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_UTBETALT_FRA_DEN_NORSKE_STAT_OPPTJENT_I_UTLANDET)
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.ANNET,
+                SpesielleInntjeningsforhold.LOENN_UTBETALT_FRA_DEN_NORSKE_STAT_OPPTJENT_I_UTLANDET,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -41,7 +52,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Annen arbeidsinntekt - Konkurs`() {
         val verdiKode = "Annen arbeidsinntekt - Konkurs"
-        val datagrunnlag = DatagrunnlagKlassifisering(InntektType.LOENNSINNTEKT, InntektBeskrivelse.ANNET, SpesielleInntjeningsforhold.LOENN_VED_KONKURS_ELLER_STATSGARANTI_OSV)
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.ANNET,
+                SpesielleInntjeningsforhold.LOENN_VED_KONKURS_ELLER_STATSGARANTI_OSV,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -99,11 +115,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Besøksreiser hjemmet kilometergodtgjørelse bil`() {
         val verdiKode = "Besøksreiser hjemmet kilometergodtgjørelse bil"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.BESOEKSREISER_HJEMMET_KILOMETERGODTGJOERELSE_BIL,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.BESOEKSREISER_HJEMMET_KILOMETERGODTGJOERELSE_BIL,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -236,11 +253,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Honorar, akkord, prosent eller provisjonslønn`() {
         val verdiKode = "Honorar, akkord, prosent eller provisjonslønn"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.HONORAR_AKKORD_PROSENT_PROVISJON,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.HONORAR_AKKORD_PROSENT_PROVISJON,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -249,11 +267,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Hyre - Honorar, akkord, prosent eller provisjonslønn`() {
         val verdiKode = "Hyre - Honorar, akkord, prosent eller provisjonslønn"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.HONORAR_AKKORD_PROSENT_PROVISJON,
-            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.HONORAR_AKKORD_PROSENT_PROVISJON,
+                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -271,11 +290,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Innbetaling til utenlandsk pensjonsordning`() {
         val verdiKode = "Innbetaling til utenlandsk pensjonsordning"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.INNBETALING_TIL_UTENLANDSK_PENSJONSORDNING,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.INNBETALING_TIL_UTENLANDSK_PENSJONSORDNING,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -294,11 +314,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Kommunal omsorgslønn og fosterhjemsgodtgjørelse`() {
         val verdiKode = "Kommunal omsorgslønn og fosterhjemsgodtgjørelse"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.KOMMUNAL_OMSORGSLOENN_OG_FOSTERHJEMSGODTGJOERELSE,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.KOMMUNAL_OMSORGSLOENN_OG_FOSTERHJEMSGODTGJOERELSE,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -344,11 +365,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Lønn mv som ikke er skattepliktig i Norge fra utenlandsk diplomatisk eller konsulær stasjon`() {
         val verdiKode = "Lønn mv som ikke er skattepliktig i Norge fra utenlandsk diplomatisk eller konsulær stasjon"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.IKKE_SKATTEPLIKTIG_LOENN_FRA_UTENLANDSK_DIPLOM_KONSUL_STASJON,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.IKKE_SKATTEPLIKTIG_LOENN_FRA_UTENLANDSK_DIPLOM_KONSUL_STASJON,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -357,11 +379,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Lønn og godtgjørelse til dagmamma eller praktikant som passer barn i barnets hjem`() {
         val verdiKode = "Lønn og godtgjørelse til dagmamma eller praktikant som passer barn i barnets hjem"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.LOENN_FOR_BARNEPASS_I_BARNETS_HJEM,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.LOENN_FOR_BARNEPASS_I_BARNETS_HJEM,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -370,11 +393,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Lønn og godtgjørelse til privatpersoner for arbeidsoppdrag i oppdragsgivers hjem`() {
         val verdiKode = "Lønn og godtgjørelse til privatpersoner for arbeidsoppdrag i oppdragsgivers hjem"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.LOENN_TIL_PRIVATPERSONER_FOR_ARBEID_I_HJEMMET,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.LOENN_TIL_PRIVATPERSONER_FOR_ARBEID_I_HJEMMET,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -383,11 +407,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Lønn og godtgjørelse utbetalt av veldedig eller allmennyttig institusjon eller organisasjon`() {
         val verdiKode = "Lønn og godtgjørelse utbetalt av veldedig eller allmennyttig institusjon eller organisasjon"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.LOENN_UTBETALT_AV_VELDEDIG_ELLER_ALLMENNYTTIG_INSTITUSJON_ELLER_ORGANISASJON,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.LOENN_UTBETALT_AV_VELDEDIG_ELLER_ALLMENNYTTIG_INSTITUSJON_ELLER_ORGANISASJON,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -396,11 +421,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Lønn til verge fra Fylkesmannen`() {
         val verdiKode = "Lønn til verge fra Fylkesmannen"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.LOENN_TIL_VERGE_FRA_FYLKESMANNEN,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.LOENN_TIL_VERGE_FRA_FYLKESMANNEN,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -465,11 +491,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Skattepliktig del av visse typer forsikringer`() {
         val verdiKode = "Skattepliktig del av visse typer forsikringer"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.SKATTEPLIKTIG_DEL_FORSIKRINGER,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.SKATTEPLIKTIG_DEL_FORSIKRINGER,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -505,11 +532,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Styrehonorar og godtgjørelse i forbindelse med verv`() {
         val verdiKode = "Styrehonorar og godtgjørelse i forbindelse med verv"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.STYREHONORAR_OG_GODTGJOERELSE_VERV,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.STYREHONORAR_OG_GODTGJOERELSE_VERV,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -547,11 +575,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Uregelmessige tillegg knyttet til arbeidet tid`() {
         val verdiKode = "Uregelmessige tillegg knyttet til arbeidet tid"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_ARBEIDET_TID,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_ARBEIDET_TID,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -560,11 +589,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Uregelmessige tillegg knyttet til ikke-arbeidet tid`() {
         val verdiKode = "Uregelmessige tillegg knyttet til ikke-arbeidet tid"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_IKKE_ARBEIDET_TID,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_IKKE_ARBEIDET_TID,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -573,11 +603,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Yrkesbil tjenestlig behov kilometer`() {
         val verdiKode = "Yrkesbil tjenestlig behov kilometer"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.YRKEBIL_TJENESTLIGBEHOV_KILOMETER,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.YRKEBIL_TJENESTLIGBEHOV_KILOMETER,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -586,11 +617,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Yrkesbil tjenestlig behov listepris`() {
         val verdiKode = "Yrkesbil tjenestlig behov listepris"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.YRKEBIL_TJENESTLIGBEHOV_LISTEPRIS,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.YRKEBIL_TJENESTLIGBEHOV_LISTEPRIS,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -599,11 +631,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Dagpenger ved arbeidsløshet`() {
         val verdiKode = "Dagpenger ved arbeidsløshet"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.YTELSE_FRA_OFFENTLIGE,
-            InntektBeskrivelse.DAGPENGER_VED_ARBEIDSLOESHET,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.YTELSE_FRA_OFFENTLIGE,
+                InntektBeskrivelse.DAGPENGER_VED_ARBEIDSLOESHET,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -622,11 +655,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Dagpenger til fisker som bare har hyre`() {
         val verdiKode = "Dagpenger til fisker som bare har hyre"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.YTELSE_FRA_OFFENTLIGE,
-            InntektBeskrivelse.DAGPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.YTELSE_FRA_OFFENTLIGE,
+                InntektBeskrivelse.DAGPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -645,11 +679,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Sykepenger til fisker som bare har hyre`() {
         val verdiKode = "Sykepenger til fisker som bare har hyre"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.YTELSE_FRA_OFFENTLIGE,
-            InntektBeskrivelse.SYKEPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE,
-            null
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.YTELSE_FRA_OFFENTLIGE,
+                InntektBeskrivelse.SYKEPENGER_TIL_FISKER_SOM_BARE_HAR_HYRE,
+                null,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -658,11 +693,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Hyre - Annet`() {
         val verdiKode = "Hyre - Annet"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.ANNET,
-            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.ANNET,
+                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -671,11 +707,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Hyre - Bonus`() {
         val verdiKode = "Hyre - Bonus"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.BONUS,
-            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.BONUS,
+                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -684,11 +721,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Hyre - Faste tillegg`() {
         val verdiKode = "Hyre - Faste tillegg"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.FAST_TILLEGG,
-            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.FAST_TILLEGG,
+                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -697,11 +735,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Hyre - Fastlønn`() {
         val verdiKode = "Hyre - Fastlønn"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.FASTLOENN,
-            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.FASTLOENN,
+                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -710,11 +749,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Hyre - Feriepenger`() {
         val verdiKode = "Hyre - Feriepenger"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.FERIEPENGER,
-            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.FERIEPENGER,
+                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -723,11 +763,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Hyre - Helligdagstillegg`() {
         val verdiKode = "Hyre - Helligdagstillegg"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.HELLIGDAGSTILLEGG,
-            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.HELLIGDAGSTILLEGG,
+                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -736,11 +777,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Hyre - Overtidsgodtgjørelse`() {
         val verdiKode = "Hyre - Overtidsgodtgjørelse"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.OVERTIDSGODTGJOERELSE,
-            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.OVERTIDSGODTGJOERELSE,
+                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -749,11 +791,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Hyre - Sluttvederlag`() {
         val verdiKode = "Hyre - Sluttvederlag"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.SLUTTVEDERLAG,
-            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.SLUTTVEDERLAG,
+                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -762,11 +805,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Hyre - Timelønn`() {
         val verdiKode = "Hyre - Timelønn"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.TIMELOENN,
-            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.TIMELOENN,
+                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -775,11 +819,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Hyre - Uregelmessige tillegg knyttet til arbeidet tid`() {
         val verdiKode = "Hyre - Uregelmessige tillegg knyttet til arbeidet tid"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_ARBEIDET_TID,
-            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_ARBEIDET_TID,
+                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -788,11 +833,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Hyre - Uregelmessige tillegg knyttet til ikke-arbeidet tid`() {
         val verdiKode = "Hyre - Uregelmessige tillegg knyttet til ikke-arbeidet tid"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_IKKE_ARBEIDET_TID,
-            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_IKKE_ARBEIDET_TID,
+                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -811,11 +857,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Hyre - Trekk i lønn for ferie`() {
         val verdiKode = "Hyre - Trekk i lønn for ferie"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.TREKK_I_LOENN_FOR_FERIE,
-            SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.TREKK_I_LOENN_FOR_FERIE,
+                SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -843,11 +890,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Tiltak - Annet`() {
         val verdiKode = "Tiltak - Annet"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.ANNET,
-            SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.ANNET,
+                SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -856,11 +904,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Tiltak - Bonus`() {
         val verdiKode = "Tiltak - Bonus"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.BONUS,
-            SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.BONUS,
+                SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -869,11 +918,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Tiltak - Faste tillegg`() {
         val verdiKode = "Tiltak - Faste tillegg"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.FAST_TILLEGG,
-            SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.FAST_TILLEGG,
+                SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -882,11 +932,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Tiltak - Fastlønn`() {
         val verdiKode = "Tiltak - Fastlønn"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.FASTLOENN,
-            SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.FASTLOENN,
+                SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -895,11 +946,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Tiltak - Feriepenger`() {
         val verdiKode = "Tiltak - Feriepenger"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.FERIEPENGER,
-            SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.FERIEPENGER,
+                SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -908,11 +960,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Tiltak - Helligdagstillegg`() {
         val verdiKode = "Tiltak - Helligdagstillegg"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.HELLIGDAGSTILLEGG,
-            SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.HELLIGDAGSTILLEGG,
+                SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -921,11 +974,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Tiltak - Overtidsgodtgjørelse`() {
         val verdiKode = "Tiltak - Overtidsgodtgjørelse"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.OVERTIDSGODTGJOERELSE,
-            SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.OVERTIDSGODTGJOERELSE,
+                SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -934,11 +988,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Tiltak - Sluttvederlag`() {
         val verdiKode = "Tiltak - Sluttvederlag"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.SLUTTVEDERLAG,
-            SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.SLUTTVEDERLAG,
+                SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -947,11 +1002,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Tiltak - Timelønn`() {
         val verdiKode = "Tiltak - Timelønn"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.TIMELOENN,
-            SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.TIMELOENN,
+                SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -960,11 +1016,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Tiltak - Uregelmessige tillegg knyttet til arbeidet tid`() {
         val verdiKode = "Tiltak - Uregelmessige tillegg knyttet til arbeidet tid"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_ARBEIDET_TID,
-            SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_ARBEIDET_TID,
+                SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -973,11 +1030,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Tiltak - Uregelmessige tillegg knyttet til ikke-arbeidet tid`() {
         val verdiKode = "Tiltak - Uregelmessige tillegg knyttet til ikke-arbeidet tid"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_IKKE_ARBEIDET_TID,
-            SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.UREGELMESSIGE_TILLEGG_KNYTTET_TIL_IKKE_ARBEIDET_TID,
+                SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))
@@ -986,11 +1044,12 @@ internal class VerdikodeTest {
     @Test
     fun `test verdikode-mapping for Trekk i lønn for ferie - Tiltak`() {
         val verdiKode = "Tiltak - Trekk i lønn for ferie"
-        val datagrunnlag = DatagrunnlagKlassifisering(
-            InntektType.LOENNSINNTEKT,
-            InntektBeskrivelse.TREKK_I_LOENN_FOR_FERIE,
-            SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK
-        )
+        val datagrunnlag =
+            DatagrunnlagKlassifisering(
+                InntektType.LOENNSINNTEKT,
+                InntektBeskrivelse.TREKK_I_LOENN_FOR_FERIE,
+                SpesielleInntjeningsforhold.LOENN_VED_ARBEIDSMARKEDSTILTAK,
+            )
 
         assertEquals(verdiKode, verdiKode(datagrunnlag))
         assertEquals(datagrunnlag, dataGrunnlag(verdiKode))

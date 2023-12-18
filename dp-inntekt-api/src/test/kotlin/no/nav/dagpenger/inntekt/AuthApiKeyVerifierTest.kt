@@ -5,10 +5,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 internal class AuthApiKeyVerifierTest {
-
     @Test
     fun `Verify known clients `() {
-
         val apiKeyVerifier = ApiKeyVerifier("secret")
 
         val clientVerifier = AuthApiKeyVerifier(apiKeyVerifier, listOf("client1-key", "client2-key"))
@@ -19,7 +17,6 @@ internal class AuthApiKeyVerifierTest {
 
     @Test
     fun `Do not verify unknown clients `() {
-
         val apiKeyVerifier = ApiKeyVerifier("secret")
 
         val clientVerifier = AuthApiKeyVerifier(apiKeyVerifier, listOf("client3-key", "client4-key"))
@@ -30,7 +27,6 @@ internal class AuthApiKeyVerifierTest {
 
     @Test
     fun `Do not verify  clients with another secret `() {
-
         val apiKeyVerifier = ApiKeyVerifier("secret")
         val anotherKeyVerifier = ApiKeyVerifier("anohter-secret")
 

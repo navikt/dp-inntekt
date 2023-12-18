@@ -18,25 +18,28 @@ import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
-val moshiInstance: Moshi = Moshi.Builder()
-    .add(YearMonthJsonAdapter())
-    .add(LocalDateJsonAdapter())
-    .add(LocalDateTimeJsonAdapter())
-    .add(KotlinJsonAdapterFactory())
-    .add(BigDecimalJsonAdapter())
-    .add(URIJsonAdapter())
-    .add(
-        SpesielleInntjeningsforhold::class.java,
-        EnumJsonAdapter.create(SpesielleInntjeningsforhold::class.java).withUnknownFallback(SpesielleInntjeningsforhold.UNKNOWN).nullSafe()
-    )
-    .build()!!
+val moshiInstance: Moshi =
+    Moshi.Builder()
+        .add(YearMonthJsonAdapter())
+        .add(LocalDateJsonAdapter())
+        .add(LocalDateTimeJsonAdapter())
+        .add(KotlinJsonAdapterFactory())
+        .add(BigDecimalJsonAdapter())
+        .add(URIJsonAdapter())
+        .add(
+            SpesielleInntjeningsforhold::class.java,
+            EnumJsonAdapter.create(SpesielleInntjeningsforhold::class.java)
+                .withUnknownFallback(SpesielleInntjeningsforhold.UNKNOWN).nullSafe(),
+        )
+        .build()!!
 
-val inntektKlassifiseringsKoderJsonAdapter: JsonAdapter<Set<String>> = moshiInstance.adapter<Set<String>>(
-    Types.newParameterizedType(
-        Set::class.java,
-        String::class.java
-    )
-).nullSafe()
+val inntektKlassifiseringsKoderJsonAdapter: JsonAdapter<Set<String>> =
+    moshiInstance.adapter<Set<String>>(
+        Types.newParameterizedType(
+            Set::class.java,
+            String::class.java,
+        ),
+    ).nullSafe()
 
 class YearMonthJsonAdapter {
     @ToJson
@@ -75,7 +78,6 @@ class LocalDateTimeJsonAdapter {
 }
 
 class BigDecimalJsonAdapter {
-
     @ToJson
     fun toJson(bigDecimal: BigDecimal): String {
         return bigDecimal.toString()
@@ -98,12 +100,15 @@ class URIJsonAdapter {
         return URI.create(json)
     }
 }
-internal fun <T : Any> moshiDeserializerOf(clazz: Class<T>) = object : ResponseDeserializable<T> {
-    override fun deserialize(content: String): T? = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
-        .adapter(clazz)
-        .fromJson(content)
-}
+
+internal fun <T : Any> moshiDeserializerOf(clazz: Class<T>) =
+    object : ResponseDeserializable<T> {
+        override fun deserialize(content: String): T? =
+            Moshi.Builder()
+                .add(KotlinJsonAdapterFactory())
+                .build()
+                .adapter(clazz)
+                .fromJson(content)
+    }
 
 internal inline fun <reified T : Any> Request.responseObject() = response(moshiDeserializerOf(T::class.java))

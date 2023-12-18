@@ -50,7 +50,8 @@ import java.time.YearMonth
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-internal class UklassifisertInntektApiTest {
+@Suppress("ktlint:standard:max-line-length")
+internal class UklassifisertInntektRouteTest {
     private val aktørId = "12345678912"
     private val fødselsnummer = "fnr"
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
@@ -71,19 +72,21 @@ internal class UklassifisertInntektApiTest {
             regelkontekst = RegelKontekst(aktørId, "VEDTAK"),
             beregningsdato = LocalDate.of(2019, 1, 8),
         )
-    private val inntektkomponentenFoundRequest = InntektkomponentRequest(
-        aktørId = aktørId,
-        fødselsnummer = fødselsnummer,
-        månedFom = YearMonth.of(2016, 1),
-        månedTom = YearMonth.of(2018, 12),
-    )
+    private val inntektkomponentenFoundRequest =
+        InntektkomponentRequest(
+            aktørId = aktørId,
+            fødselsnummer = fødselsnummer,
+            månedFom = YearMonth.of(2016, 1),
+            månedTom = YearMonth.of(2018, 12),
+        )
     private val personOppslagMock: PersonOppslag = mockk()
     private val emptyInntekt = InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, aktørId))
-    private val storedInntekt = StoredInntekt(
-        inntektId = inntektId,
-        inntekt = emptyInntekt,
-        manueltRedigert = false,
-    )
+    private val storedInntekt =
+        StoredInntekt(
+            inntektId = inntektId,
+            inntekt = emptyInntekt,
+            manueltRedigert = false,
+        )
     private val uklassifisertInntekt = "/v1/inntekt/uklassifisert"
 
     init {
@@ -97,34 +100,37 @@ internal class UklassifisertInntektApiTest {
 
         every {
             inntektStoreMock.storeInntekt(
-                command = StoreInntektCommand(
-                    inntektparametre = foundQuery,
-                    inntekt = storedInntekt.inntekt,
-                    manueltRedigert = null,
-                ),
+                command =
+                    StoreInntektCommand(
+                        inntektparametre = foundQuery,
+                        inntekt = storedInntekt.inntekt,
+                        manueltRedigert = null,
+                    ),
                 created = any(),
             )
         } returns storedInntekt
 
         every {
             inntektStoreMock.storeInntekt(
-                command = StoreInntektCommand(
-                    inntektparametre = foundQuery,
-                    inntekt = storedInntekt.inntekt,
-                    manueltRedigert = ManueltRedigert.from(true, "user"),
-                ),
+                command =
+                    StoreInntektCommand(
+                        inntektparametre = foundQuery,
+                        inntekt = storedInntekt.inntekt,
+                        manueltRedigert = ManueltRedigert.from(true, "user"),
+                    ),
                 created = any(),
             )
         } returns storedInntekt
 
         every {
             inntektStoreMock.getInntekt(inntektId)
-        } returns StoredInntekt(
-            inntektId,
-            InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
-            false,
-            LocalDateTime.now(),
-        )
+        } returns
+            StoredInntekt(
+                inntektId,
+                InntektkomponentResponse(emptyList(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
+                false,
+                LocalDateTime.now(),
+            )
 
         every {
             runBlocking { inntektskomponentClientMock.getInntekt(inntektkomponentenFoundRequest, callId = any()) }
@@ -132,249 +138,270 @@ internal class UklassifisertInntektApiTest {
 
         every {
             runBlocking { personOppslagMock.hentPerson(any()) }
-        } returns Person(
-            aktørId = aktørId,
-            fødselsnummer = fødselsnummer,
-            fornavn = "Navn",
-            etternavn = "Navnesen",
-            mellomnavn = null,
-        )
-    }
-
-    @Test
-    fun `GET unknown uklassifisert inntekt should return 404 not found`() = testApp {
-        handleRequest(
-            HttpMethod.Get,
-            "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}",
-        ) {
-            addHeader(HttpHeaders.Authorization, "Bearer $token")
-        }.apply {
-            assertEquals(HttpStatusCode.NotFound, response.status())
-            val problem = moshiInstance.adapter(Problem::class.java).fromJson(response.content!!)
-            assertEquals("Kunne ikke finne inntekt i databasen", problem?.title)
-            assertEquals("urn:dp:error:inntekt", problem?.type.toString())
-            assertEquals(404, problem?.status)
-            assertEquals(
-                "Inntekt with for InntektRequest(aktørId=$aktørId, kontekstId=1, kontekstType=VEDTAK, beregningsDato=2019-01-08) not found.",
-                problem?.detail,
+        } returns
+            Person(
+                aktørId = aktørId,
+                fødselsnummer = fødselsnummer,
+                fornavn = "Navn",
+                etternavn = "Navnesen",
+                mellomnavn = null,
             )
-        }
     }
 
     @Test
-    fun `GET uklassifisert without auth cookie should return 401 `() = testApp {
-        handleRequest(
-            HttpMethod.Get,
-            "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}",
-        ) {
-        }.apply {
-            Assertions.assertEquals(HttpStatusCode.Unauthorized, response.status())
+    fun `GET unknown uklassifisert inntekt should return 404 not found`() =
+        testApp {
+            handleRequest(
+                HttpMethod.Get,
+                "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}",
+            ) {
+                addHeader(HttpHeaders.Authorization, "Bearer $token")
+            }.apply {
+                assertEquals(HttpStatusCode.NotFound, response.status())
+                val problem = moshiInstance.adapter(Problem::class.java).fromJson(response.content!!)
+                assertEquals("Kunne ikke finne inntekt i databasen", problem?.title)
+                assertEquals("urn:dp:error:inntekt", problem?.type.toString())
+                assertEquals(404, problem?.status)
+                assertEquals(
+                    "Inntekt with for InntektRequest(aktørId=$aktørId, kontekstId=1, kontekstType=VEDTAK, beregningsDato=2019-01-08) not found.",
+                    problem?.detail,
+                )
+            }
         }
-    }
 
     @Test
-    fun `GET uklassifisert inntekt with malformed parameters should return bad request`() = testApp {
-        handleRequest(
-            HttpMethod.Get,
-            "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/blabla",
-        ) {
-            addHeader(HttpHeaders.Authorization, "Bearer $token")
-        }.apply {
-            assertEquals(HttpStatusCode.BadRequest, response.status())
+    fun `GET uklassifisert without auth cookie should return 401 `() =
+        testApp {
+            handleRequest(
+                HttpMethod.Get,
+                "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}",
+            ) {
+            }.apply {
+                Assertions.assertEquals(HttpStatusCode.Unauthorized, response.status())
+            }
         }
-    }
 
     @Test
-    fun `Get request for uklassifisert inntekt should return 200 ok`() = testApp {
-        handleRequest(
-            HttpMethod.Get,
-            "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-        ) {
-            addHeader(HttpHeaders.Authorization, "Bearer $token")
-        }.apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            val storedInntekt =
-                moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
-            assertEquals(storedInntekt.inntektId, inntektId)
+    fun `GET uklassifisert inntekt with malformed parameters should return bad request`() =
+        testApp {
+            handleRequest(
+                HttpMethod.Get,
+                "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/blabla",
+            ) {
+                addHeader(HttpHeaders.Authorization, "Bearer $token")
+            }.apply {
+                assertEquals(HttpStatusCode.BadRequest, response.status())
+            }
         }
-    }
 
     @Test
-    fun `Get request for uncached uklassifisert inntekt should return 200 ok`() = testApp {
-        handleRequest(
-            HttpMethod.Get,
-            "$uklassifisertInntekt/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-        ) {
-            addHeader(HttpHeaders.Authorization, "Bearer $token")
-        }.apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            val uncachedInntekt =
-                moshiInstance.adapter<DetachedInntekt>(DetachedInntekt::class.java).fromJson(response.content!!)!!
-            assertEquals(emptyInntekt.ident, uncachedInntekt.inntekt.ident)
+    fun `Get request for uklassifisert inntekt should return 200 ok`() =
+        testApp {
+            handleRequest(
+                HttpMethod.Get,
+                "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
+            ) {
+                addHeader(HttpHeaders.Authorization, "Bearer $token")
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                val storedInntekt =
+                    moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+                assertEquals(storedInntekt.inntektId, inntektId)
+            }
         }
-    }
 
     @Test
-    fun `Post uklassifisert inntekt should return 200 ok`() = testApp {
-        val guiInntekt = GUIInntekt(
-            inntektId = inntektId,
-            timestamp = null,
-            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
-            manueltRedigert = false,
-            redigertAvSaksbehandler = false,
-        )
-
-        handleRequest(
-            HttpMethod.Post,
-            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-        ) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader(HttpHeaders.Authorization, "Bearer $token")
-            setBody(moshiInstance.adapter(GUIInntekt::class.java).toJson(guiInntekt))
-        }.apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            val storedInntekt =
-                moshiInstance.adapter(StoredInntekt::class.java).fromJson(response.content!!)!!
-            assertEquals(storedInntekt.inntektId, inntektId)
+    fun `Get request for uncached uklassifisert inntekt should return 200 ok`() =
+        testApp {
+            handleRequest(
+                HttpMethod.Get,
+                "$uklassifisertInntekt/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
+            ) {
+                addHeader(HttpHeaders.Authorization, "Bearer $token")
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                val uncachedInntekt =
+                    moshiInstance.adapter<DetachedInntekt>(DetachedInntekt::class.java).fromJson(response.content!!)!!
+                assertEquals(emptyInntekt.ident, uncachedInntekt.inntekt.ident)
+            }
         }
-    }
 
     @Test
-    fun `Post uklassifisert inntekt redigert should return 200 ok`() = testApp {
-        val guiInntekt = GUIInntekt(
-            inntektId = inntektId,
-            timestamp = null,
-            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
-            manueltRedigert = false,
-            redigertAvSaksbehandler = true,
-        )
+    fun `Post uklassifisert inntekt should return 200 ok`() =
+        testApp {
+            val guiInntekt =
+                GUIInntekt(
+                    inntektId = inntektId,
+                    timestamp = null,
+                    inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
+                    manueltRedigert = false,
+                    redigertAvSaksbehandler = false,
+                )
 
-        handleRequest(
-            HttpMethod.Post,
-            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-        ) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader(HttpHeaders.Authorization, "Bearer $token")
-            setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
-        }.apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            val storedInntekt =
-                moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
-            assertEquals(storedInntekt.inntektId, inntektId)
-            shouldBeCounted(metricName = INNTEKT_KORRIGERING)
+            handleRequest(
+                HttpMethod.Post,
+                "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
+            ) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader(HttpHeaders.Authorization, "Bearer $token")
+                setBody(moshiInstance.adapter(GUIInntekt::class.java).toJson(guiInntekt))
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                val storedInntekt =
+                    moshiInstance.adapter(StoredInntekt::class.java).fromJson(response.content!!)!!
+                assertEquals(storedInntekt.inntektId, inntektId)
+            }
         }
-    }
 
     @Test
-    fun `Post uklassifisert inntekt med feil redigert should return 400 ok`() = testApp {
-        val guiInntekt = GUIInntekt(
-            inntektId = inntektId,
-            timestamp = null,
-            inntekt = GUIInntektsKomponentResponse(
-                fraDato = null,
-                tilDato = null,
-                arbeidsInntektMaaned = listOf(
-                    GUIArbeidsInntektMaaned(
-                        aarMaaned = YearMonth.of(2019, 1),
-                        avvikListe = listOf(),
-                        arbeidsInntektInformasjon = GUIArbeidsInntektInformasjon(
-                            inntektListe = listOf(
-                                InntektMedVerdikode(
-                                    beloep = BigDecimal(123),
-                                    inntektskilde = "",
-                                    verdikode = "Bolig",
-                                    utbetaltIMaaned = YearMonth.of(2019, 1),
-                                    beskrivelse = InntektBeskrivelse.BOLIG,
-                                    fordel = null,
-                                    inntektType = InntektType.LOENNSINNTEKT,
-                                    inntektsperiodetype = null,
-                                    inntektsstatus = null,
+    fun `Post uklassifisert inntekt redigert should return 200 ok`() =
+        testApp {
+            val guiInntekt =
+                GUIInntekt(
+                    inntektId = inntektId,
+                    timestamp = null,
+                    inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
+                    manueltRedigert = false,
+                    redigertAvSaksbehandler = true,
+                )
+
+            handleRequest(
+                HttpMethod.Post,
+                "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
+            ) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader(HttpHeaders.Authorization, "Bearer $token")
+                setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                val storedInntekt =
+                    moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+                assertEquals(storedInntekt.inntektId, inntektId)
+                shouldBeCounted(metricName = INNTEKT_KORRIGERING)
+            }
+        }
+
+    @Test
+    fun `Post uklassifisert inntekt med feil redigert should return 400 ok`() =
+        testApp {
+            val guiInntekt =
+                GUIInntekt(
+                    inntektId = inntektId,
+                    timestamp = null,
+                    inntekt =
+                        GUIInntektsKomponentResponse(
+                            fraDato = null,
+                            tilDato = null,
+                            arbeidsInntektMaaned =
+                                listOf(
+                                    GUIArbeidsInntektMaaned(
+                                        aarMaaned = YearMonth.of(2019, 1),
+                                        avvikListe = listOf(),
+                                        arbeidsInntektInformasjon =
+                                            GUIArbeidsInntektInformasjon(
+                                                inntektListe =
+                                                    listOf(
+                                                        InntektMedVerdikode(
+                                                            beloep = BigDecimal(123),
+                                                            inntektskilde = "",
+                                                            verdikode = "Bolig",
+                                                            utbetaltIMaaned = YearMonth.of(2019, 1),
+                                                            beskrivelse = InntektBeskrivelse.BOLIG,
+                                                            fordel = null,
+                                                            inntektType = InntektType.LOENNSINNTEKT,
+                                                            inntektsperiodetype = null,
+                                                            inntektsstatus = null,
+                                                        ),
+                                                    ),
+                                            ),
+                                    ),
                                 ),
-                            ),
+                            ident = Aktoer(AktoerType.AKTOER_ID, aktørId),
                         ),
-                    ),
-                ),
-                ident = Aktoer(AktoerType.AKTOER_ID, aktørId),
-            ),
-            manueltRedigert = false,
-            redigertAvSaksbehandler = true,
-        )
+                    manueltRedigert = false,
+                    redigertAvSaksbehandler = true,
+                )
 
-        handleRequest(
-            HttpMethod.Post,
-            "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-        ) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader(HttpHeaders.Authorization, "Bearer $token")
-            val body = moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt)
-            setBody(body.replace(oldValue = "123", newValue = ""))
-        }.apply {
-            assertEquals(HttpStatusCode.BadRequest, response.status())
+            handleRequest(
+                HttpMethod.Post,
+                "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
+            ) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader(HttpHeaders.Authorization, "Bearer $token")
+                val body = moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt)
+                setBody(body.replace(oldValue = "123", newValue = ""))
+            }.apply {
+                assertEquals(HttpStatusCode.BadRequest, response.status())
+            }
         }
-    }
 
     @Test
-    fun `Post uklassifisert uncached inntekt should return 200 ok`() = testApp {
-        val guiInntekt = GUIInntekt(
-            inntektId = null,
-            timestamp = null,
-            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
-            manueltRedigert = false,
-            redigertAvSaksbehandler = true,
-        )
+    fun `Post uklassifisert uncached inntekt should return 200 ok`() =
+        testApp {
+            val guiInntekt =
+                GUIInntekt(
+                    inntektId = null,
+                    timestamp = null,
+                    inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
+                    manueltRedigert = false,
+                    redigertAvSaksbehandler = true,
+                )
 
-        handleRequest(
-            HttpMethod.Post,
-            "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-        ) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader(HttpHeaders.Authorization, "Bearer $token")
-            setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
-        }.apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            val storedInntekt =
-                moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
-            assertEquals(storedInntekt.inntektId, inntektId)
-            shouldBeCounted(metricName = INNTEKT_OPPFRISKING_BRUKT)
+            handleRequest(
+                HttpMethod.Post,
+                "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
+            ) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader(HttpHeaders.Authorization, "Bearer $token")
+                setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                val storedInntekt =
+                    moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+                assertEquals(storedInntekt.inntektId, inntektId)
+                shouldBeCounted(metricName = INNTEKT_OPPFRISKING_BRUKT)
+            }
         }
-    }
 
     @Test
-    fun `Post uklassifisert uncached inntekt redigert should return 200 ok`() = testApp {
-        val guiInntekt = GUIInntekt(
-            inntektId = null,
-            timestamp = null,
-            inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
-            manueltRedigert = false,
-            redigertAvSaksbehandler = false,
-        )
+    fun `Post uklassifisert uncached inntekt redigert should return 200 ok`() =
+        testApp {
+            val guiInntekt =
+                GUIInntekt(
+                    inntektId = null,
+                    timestamp = null,
+                    inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
+                    manueltRedigert = false,
+                    redigertAvSaksbehandler = false,
+                )
 
-        handleRequest(
-            HttpMethod.Post,
-            "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-        ) {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            addHeader(HttpHeaders.Authorization, "Bearer $token")
-            setBody(moshiInstance.adapter(GUIInntekt::class.java).toJson(guiInntekt))
-        }.apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            val storedInntekt =
-                moshiInstance.adapter(StoredInntekt::class.java).fromJson(response.content!!)!!
-            assertEquals(storedInntekt.inntektId, inntektId)
-            shouldBeCounted(metricName = INNTEKT_OPPFRISKING_BRUKT)
+            handleRequest(
+                HttpMethod.Post,
+                "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
+            ) {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                addHeader(HttpHeaders.Authorization, "Bearer $token")
+                setBody(moshiInstance.adapter(GUIInntekt::class.java).toJson(guiInntekt))
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                val storedInntekt =
+                    moshiInstance.adapter(StoredInntekt::class.java).fromJson(response.content!!)!!
+                assertEquals(storedInntekt.inntektId, inntektId)
+                shouldBeCounted(metricName = INNTEKT_OPPFRISKING_BRUKT)
+            }
         }
-    }
 
     @Test
-    fun `Should get verdikode mapping`() = testApp {
-        handleRequest(HttpMethod.Get, "v1/inntekt/verdikoder") {
-            addHeader(HttpHeaders.ContentType, "application/json")
-        }.apply {
-            assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
-            assertEquals(HttpStatusCode.OK, response.status())
-            assertTrue(runCatching { inntektKlassifiseringsKoderJsonAdapter.fromJson(response.content!!) }.isSuccess)
+    fun `Should get verdikode mapping`() =
+        testApp {
+            handleRequest(HttpMethod.Get, "v1/inntekt/verdikoder") {
+                addHeader(HttpHeaders.ContentType, "application/json")
+            }.apply {
+                assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertTrue(runCatching { inntektKlassifiseringsKoderJsonAdapter.fromJson(response.content!!) }.isSuccess)
+            }
         }
-    }
 
     private fun testApp(
         moduleFunction: Application.() -> Unit =

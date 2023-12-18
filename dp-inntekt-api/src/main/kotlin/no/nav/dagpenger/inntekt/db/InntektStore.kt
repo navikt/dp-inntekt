@@ -11,15 +11,20 @@ import java.time.ZonedDateTime
 
 interface InntektStore {
     fun getInntekt(inntektId: InntektId): StoredInntekt
+
     fun getSpesifisertInntekt(inntektId: InntektId): SpesifisertInntekt
+
     fun getInntektId(inntektparametre: Inntektparametre): InntektId?
+
     fun getBeregningsdato(inntektId: InntektId): LocalDate
+
     fun storeInntekt(
         command: StoreInntektCommand,
-        created: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
+        created: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC),
     ): StoredInntekt
 
     fun getManueltRedigert(inntektId: InntektId): ManueltRedigert?
+
     fun markerInntektBrukt(inntektId: InntektId): Int
 }
 
@@ -30,6 +35,7 @@ data class Inntektparametre(
     val regelkontekst: RegelKontekst,
 ) {
     val opptjeningsperiode: Opptjeningsperiode = Opptjeningsperiode(beregningsdato)
+
     fun toDebugString(): String {
         return "Inntektparametre(aktørId='$aktørId', beregningsdato=$beregningsdato, regelkontekst=$regelkontekst)"
     }
@@ -40,12 +46,15 @@ data class RegelKontekst(val id: String, val type: String)
 data class StoreInntektCommand(
     val inntektparametre: Inntektparametre,
     val inntekt: InntektkomponentResponse,
-    val manueltRedigert: ManueltRedigert? = null
+    val manueltRedigert: ManueltRedigert? = null,
 )
 
 data class ManueltRedigert(val redigertAv: String) {
     companion object {
-        fun from(bool: Boolean, redigertAv: String) = when (bool) {
+        fun from(
+            bool: Boolean,
+            redigertAv: String,
+        ) = when (bool) {
             true -> ManueltRedigert(redigertAv)
             false -> null
         }
@@ -56,7 +65,7 @@ data class StoredInntekt(
     val inntektId: InntektId,
     val inntekt: InntektkomponentResponse,
     val manueltRedigert: Boolean,
-    val timestamp: LocalDateTime? = null
+    val timestamp: LocalDateTime? = null,
 )
 
 data class DetachedInntekt(val inntekt: InntektkomponentResponse, val manueltRedigert: Boolean)

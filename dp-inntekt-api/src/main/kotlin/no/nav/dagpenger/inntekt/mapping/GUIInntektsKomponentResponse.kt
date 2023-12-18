@@ -17,8 +17,7 @@ data class GUIInntekt(
     val inntekt: GUIInntektsKomponentResponse,
     val manueltRedigert: Boolean,
     val redigertAvSaksbehandler: Boolean,
-    val inntektsmottaker: Inntektsmottaker? = null
-
+    val inntektsmottaker: Inntektsmottaker? = null,
 )
 
 data class Inntektsmottaker(val pnr: String?, val navn: String?)
@@ -27,17 +26,17 @@ data class GUIInntektsKomponentResponse(
     val fraDato: YearMonth?,
     val tilDato: YearMonth?,
     val arbeidsInntektMaaned: List<GUIArbeidsInntektMaaned>?,
-    val ident: Aktoer
+    val ident: Aktoer,
 )
 
 data class GUIArbeidsInntektMaaned(
     val aarMaaned: YearMonth,
     val avvikListe: List<Avvik>?,
-    val arbeidsInntektInformasjon: GUIArbeidsInntektInformasjon?
+    val arbeidsInntektInformasjon: GUIArbeidsInntektInformasjon?,
 )
 
 data class GUIArbeidsInntektInformasjon(
-    val inntektListe: List<InntektMedVerdikode>?
+    val inntektListe: List<InntektMedVerdikode>?,
 )
 
 data class InntektMedVerdikode(
@@ -61,5 +60,5 @@ data class InntektMedVerdikode(
     val informasjonsstatus: String? = null,
     val inntektType: InntektType?,
     val tilleggsinformasjon: TilleggInformasjon? = null,
-    val verdikode: String
+    val verdikode: String,
 )

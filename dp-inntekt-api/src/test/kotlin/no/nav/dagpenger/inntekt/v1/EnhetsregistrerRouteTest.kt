@@ -12,15 +12,14 @@ import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
 import org.junit.Test
 
 internal class EnhetsregistrerRouteTest {
-
     @Test
     fun `hent organisasjon `() {
         val enhetsregisterClient: EnhetsregisterClient = mockk()
         coEvery { enhetsregisterClient.hentEnhet("123456789") } returns "{}"
         withTestApplication(
             mockInntektApi(
-                enhetsregisterClient = enhetsregisterClient
-            )
+                enhetsregisterClient = enhetsregisterClient,
+            ),
         ) {
             handleRequest(HttpMethod.Get, "v1/enhetsregisteret/enhet/123456789") {
             }.apply {
@@ -36,8 +35,8 @@ internal class EnhetsregistrerRouteTest {
         coEvery { enhetsregisterClient.hentEnhet("123456789") } throws RuntimeException("Feilet")
         withTestApplication(
             mockInntektApi(
-                enhetsregisterClient = enhetsregisterClient
-            )
+                enhetsregisterClient = enhetsregisterClient,
+            ),
         ) {
             handleRequest(HttpMethod.Get, "v1/enhetsregisteret/enhet/123456789") {
             }.apply {

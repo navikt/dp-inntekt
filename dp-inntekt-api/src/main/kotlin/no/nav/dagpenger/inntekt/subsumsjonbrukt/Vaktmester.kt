@@ -7,13 +7,13 @@ import kotliquery.using
 import javax.sql.DataSource
 
 const val INNTEKT_SLETTET = "inntekt_slettet"
-private val deleteCounter = Counter.build()
-    .name(INNTEKT_SLETTET)
-    .help("Antall inntektsett slettet fra databasen")
-    .register()
+private val deleteCounter =
+    Counter.build()
+        .name(INNTEKT_SLETTET)
+        .help("Antall inntektsett slettet fra databasen")
+        .register()
 
 class Vaktmester(private val dataSource: DataSource, private val lifeSpanInDays: Int = 180) {
-
     fun rydd() {
         val rowCount =
             using(sessionOf(dataSource)) { session ->
@@ -24,9 +24,9 @@ class Vaktmester(private val dataSource: DataSource, private val lifeSpanInDays:
                             DELETE FROM inntekt_v1 WHERE brukt = false AND timestamp  < (now() - (make_interval(days := :days)))
                             """.trimIndent(),
                             mapOf(
-                                "days" to lifeSpanInDays
-                            )
-                        ).asUpdate
+                                "days" to lifeSpanInDays,
+                            ),
+                        ).asUpdate,
                     )
                 }
             }

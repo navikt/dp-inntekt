@@ -25,9 +25,8 @@ import kotlin.coroutines.CoroutineContext
 internal class KafkaSubsumsjonBruktDataConsumer(
     private val config: InntektApiConfig,
     private val inntektStore: InntektStore,
-    private val graceDuration: Duration = Duration.ofHours(3)
+    private val graceDuration: Duration = Duration.ofHours(3),
 ) : CoroutineScope, HealthCheck {
-
     private val logger = KotlinLogging.logger { }
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
@@ -42,38 +41,38 @@ internal class KafkaSubsumsjonBruktDataConsumer(
 
     fun listen() {
         launch(coroutineContext) {
-
             logger.info { "Starting ${config.application.id}" }
 
             KafkaConsumer<String, Packet>(
                 consumerConfig(
                     groupId = config.application.id,
                     bootstrapServerUrl = config.application.brokers,
-                    credential = config.application.credential
+                    credential = config.application.credential,
                 ).also {
                     it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = PacketDeserializer::class.java
                     it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
                     it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = "false"
                     it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
-                }
+                },
             ).use { consumer ->
                 try {
                     consumer.subscribe(listOf(config.inntektBruktDataTopic))
                     while (job.isActive) {
                         val records = consumer.poll(Duration.ofMillis(100))
-                        val ids = records.asSequence()
-                            .map { record -> record.value() }
-                            .filter { packet ->
-                                packet.hasFields(
-                                    "@event_name",
-                                    "aktorId",
-                                    "inntektsId",
-                                    "kontekst"
-                                ) &&
-                                    packet.getStringValue("@event_name") == "brukt_inntekt"
-                            }
-                            .map { packet -> InntektId(packet.getStringValue("inntektsId")) }
-                            .toList()
+                        val ids =
+                            records.asSequence()
+                                .map { record -> record.value() }
+                                .filter { packet ->
+                                    packet.hasFields(
+                                        "@event_name",
+                                        "aktorId",
+                                        "inntektsId",
+                                        "kontekst",
+                                    ) &&
+                                        packet.getStringValue("@event_name") == "brukt_inntekt"
+                                }
+                                .map { packet -> InntektId(packet.getStringValue("inntektsId")) }
+                                .toList()
 
                         try {
                             ids.forEach { id ->
@@ -89,7 +88,13 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                         }
                     }
                 } catch (e: Exception) {
-                    logger.error("Unexpected exception while consuming messages. Stopping consumer, grace period ${grace.duration.seconds / 60} minutes", e)
+                    logger.error(
+                        """
+                        "Unexpected exception while consuming messages. 
+                         Stopping consumer, grace period ${grace.duration.seconds / 60} minutes"
+                        """.trimIndent(),
+                        e,
+                    )
                     stop()
                 }
             }
@@ -97,7 +102,9 @@ internal class KafkaSubsumsjonBruktDataConsumer(
     }
 
     override fun status(): HealthStatus {
-        return if (job.isActive) HealthStatus.UP else {
+        return if (job.isActive) {
+            HealthStatus.UP
+        } else {
             return if (grace.expired()) {
                 HealthStatus.DOWN
             } else {
@@ -113,9 +120,10 @@ internal class KafkaSubsumsjonBruktDataConsumer(
 
     data class Grace(
         val duration: Duration = Duration.ofHours(3),
-        val from: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
+        val from: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC),
     ) {
         private val expires = from.plus(duration)
+
         fun expired() = ZonedDateTime.now(ZoneOffset.UTC).isAfter(expires)
     }
 }

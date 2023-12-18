@@ -35,7 +35,7 @@ class OpptjeningsperiodeRouteSpec {
                       "beregningsdato": "2019-02-27",
                       "inntektsId": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
                     }
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())

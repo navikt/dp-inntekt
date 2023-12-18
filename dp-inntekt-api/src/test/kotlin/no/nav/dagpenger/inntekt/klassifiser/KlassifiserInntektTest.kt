@@ -19,23 +19,23 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-internal class klassifiserOgMapInntektTest {
-
+internal class KlassifiserOgMapInntektTest {
     companion object {
         val spesifisertInntektJsonAdapter = moshiInstance.adapter(SpesifisertInntekt::class.java)
     }
 
     @Test
     fun `Klassifiserer tom inntekt`() {
-        val spesifisertInntekt = SpesifisertInntekt(
-            inntektId = InntektId("01DMNAADXVEZXGJRQJTZ6DWWNV"),
-            avvik = emptyList(),
-            posteringer = emptyList(),
-            ident = Aktør(AktørType.AKTOER_ID, "12345"),
-            manueltRedigert = false,
-            timestamp = LocalDateTime.of(2019, 3, 5, 1, 1),
-            sisteAvsluttendeKalenderMåned = YearMonth.of(2019, 4)
-        )
+        val spesifisertInntekt =
+            SpesifisertInntekt(
+                inntektId = InntektId("01DMNAADXVEZXGJRQJTZ6DWWNV"),
+                avvik = emptyList(),
+                posteringer = emptyList(),
+                ident = Aktør(AktørType.AKTOER_ID, "12345"),
+                manueltRedigert = false,
+                timestamp = LocalDateTime.of(2019, 3, 5, 1, 1),
+                sisteAvsluttendeKalenderMåned = YearMonth.of(2019, 4),
+            )
 
         val klassifisertInntekt = klassifiserOgMapInntekt(spesifisertInntekt)
 
@@ -43,15 +43,16 @@ internal class klassifiserOgMapInntektTest {
         assertEquals(spesifisertInntekt.manueltRedigert, klassifisertInntekt.manueltRedigert)
         assertEquals(
             spesifisertInntekt.sisteAvsluttendeKalenderMåned,
-            klassifisertInntekt.sisteAvsluttendeKalenderMåned
+            klassifisertInntekt.sisteAvsluttendeKalenderMåned,
         )
         assertEquals(0, klassifisertInntekt.inntektsListe.size)
     }
 
     @Test
     fun `Ta med alle måneder med inntekter`() {
-        val testDataJson = klassifiserOgMapInntektTest::class.java
-            .getResource("/test-data/spesifisert-inntekt-mange-posteringer.json").readText()
+        val testDataJson =
+            KlassifiserOgMapInntektTest::class.java
+                .getResource("/test-data/spesifisert-inntekt-mange-posteringer.json").readText()
         val spesifisertInntekt = spesifisertInntektJsonAdapter.fromJson(testDataJson)!!
 
         val sum = spesifisertInntekt.posteringer.fold(BigDecimal.ZERO) { acc, postering -> acc + postering.beløp }
@@ -61,9 +62,10 @@ internal class klassifiserOgMapInntektTest {
 
         val klassifisertSum =
             klassifisertInntekt.inntektsListe.fold(BigDecimal.ZERO) { total, klassifisertInntektMåned ->
-                total + klassifisertInntektMåned.klassifiserteInntekter.fold(BigDecimal.ZERO) { totalMåned, klassifisertInntekt ->
-                    totalMåned + klassifisertInntekt.beløp
-                }
+                total +
+                    klassifisertInntektMåned.klassifiserteInntekter.fold(BigDecimal.ZERO) { totalMåned, klassifisertInntekt ->
+                        totalMåned + klassifisertInntekt.beløp
+                    }
             }
 
         val klassifiserteMåneder = klassifisertInntekt.inntektsListe.map { it.årMåned }.toSet()
@@ -74,8 +76,9 @@ internal class klassifiserOgMapInntektTest {
 
     @Test
     fun `Inntekt grupperes riktig i måneder`() {
-        val testDataJson = klassifiserOgMapInntektTest::class.java
-            .getResource("/test-data/spesifisert-inntekt-flere-klasser.json").readText()
+        val testDataJson =
+            KlassifiserOgMapInntektTest::class.java
+                .getResource("/test-data/spesifisert-inntekt-flere-klasser.json").readText()
         val spesifisertInntekt = spesifisertInntektJsonAdapter.fromJson(testDataJson)!!
 
         val klassifisertInntekt = klassifiserOgMapInntekt(spesifisertInntekt)
@@ -86,75 +89,79 @@ internal class klassifiserOgMapInntektTest {
 
         firstMonth.klassifiserteInntekter.size shouldBe 6
         inntektsKlasser.size shouldBe 6
-        inntektsKlasser shouldBe setOf(
-            InntektKlasse.ARBEIDSINNTEKT,
-            InntektKlasse.DAGPENGER,
-            InntektKlasse.SYKEPENGER,
-            InntektKlasse.PLEIEPENGER,
-            InntektKlasse.OMSORGSPENGER,
-            InntektKlasse.OPPLÆRINGSPENGER,
-        )
+        inntektsKlasser shouldBe
+            setOf(
+                InntektKlasse.ARBEIDSINNTEKT,
+                InntektKlasse.DAGPENGER,
+                InntektKlasse.SYKEPENGER,
+                InntektKlasse.PLEIEPENGER,
+                InntektKlasse.OMSORGSPENGER,
+                InntektKlasse.OPPLÆRINGSPENGER,
+            )
     }
 
     @Test
     fun `Ta med avvik`() {
-        val posteringer = listOf(
-            Postering(
-                posteringsMåned = YearMonth.of(2019, 3),
-                beløp = BigDecimal(102),
-                fordel = "fordel",
-                inntektskilde = "kilde",
-                inntektsstatus = "status",
-                inntektsperiodetype = "periodetype",
-                utbetaltIMåned = YearMonth.of(2019, 3),
-                posteringsType = PosteringsType.L_TIMELØNN
-            ),
-            Postering(
-                posteringsMåned = YearMonth.of(2019, 4),
-                beløp = BigDecimal(300),
-                fordel = "fordel",
-                inntektskilde = "kilde",
-                inntektsstatus = "status",
-                inntektsperiodetype = "periodetype",
-                utbetaltIMåned = YearMonth.of(2019, 4),
-                posteringsType = PosteringsType.L_TIMELØNN
-            ),
-            Postering(
-                posteringsMåned = YearMonth.of(2019, 5),
-                beløp = BigDecimal(550),
-                fordel = "fordel",
-                inntektskilde = "kilde",
-                inntektsstatus = "status",
-                inntektsperiodetype = "periodetype",
-                utbetaltIMåned = YearMonth.of(2019, 5),
-                posteringsType = PosteringsType.L_TIMELØNN
+        val posteringer =
+            listOf(
+                Postering(
+                    posteringsMåned = YearMonth.of(2019, 3),
+                    beløp = BigDecimal(102),
+                    fordel = "fordel",
+                    inntektskilde = "kilde",
+                    inntektsstatus = "status",
+                    inntektsperiodetype = "periodetype",
+                    utbetaltIMåned = YearMonth.of(2019, 3),
+                    posteringsType = PosteringsType.L_TIMELØNN,
+                ),
+                Postering(
+                    posteringsMåned = YearMonth.of(2019, 4),
+                    beløp = BigDecimal(300),
+                    fordel = "fordel",
+                    inntektskilde = "kilde",
+                    inntektsstatus = "status",
+                    inntektsperiodetype = "periodetype",
+                    utbetaltIMåned = YearMonth.of(2019, 4),
+                    posteringsType = PosteringsType.L_TIMELØNN,
+                ),
+                Postering(
+                    posteringsMåned = YearMonth.of(2019, 5),
+                    beløp = BigDecimal(550),
+                    fordel = "fordel",
+                    inntektskilde = "kilde",
+                    inntektsstatus = "status",
+                    inntektsperiodetype = "periodetype",
+                    utbetaltIMåned = YearMonth.of(2019, 5),
+                    posteringsType = PosteringsType.L_TIMELØNN,
+                ),
             )
-        )
 
-        val avvik = listOf(
-            Avvik(
-                ident = Aktør(AktørType.AKTOER_ID, "12345"),
-                opplysningspliktig = Aktør(AktørType.AKTOER_ID, "12345"),
-                avvikPeriode = YearMonth.of(2019, 4),
-                tekst = "avvik"
-            ),
-            Avvik(
-                ident = Aktør(AktørType.AKTOER_ID, "12345"),
-                opplysningspliktig = Aktør(AktørType.AKTOER_ID, "12345"),
-                avvikPeriode = YearMonth.of(2019, 5),
-                tekst = "avvik"
+        val avvik =
+            listOf(
+                Avvik(
+                    ident = Aktør(AktørType.AKTOER_ID, "12345"),
+                    opplysningspliktig = Aktør(AktørType.AKTOER_ID, "12345"),
+                    avvikPeriode = YearMonth.of(2019, 4),
+                    tekst = "avvik",
+                ),
+                Avvik(
+                    ident = Aktør(AktørType.AKTOER_ID, "12345"),
+                    opplysningspliktig = Aktør(AktørType.AKTOER_ID, "12345"),
+                    avvikPeriode = YearMonth.of(2019, 5),
+                    tekst = "avvik",
+                ),
             )
-        )
 
-        val spesifisertInntekt = SpesifisertInntekt(
-            inntektId = InntektId("01DMNAADXVEZXGJRQJTZ6DWWNV"),
-            avvik = avvik,
-            posteringer = posteringer,
-            ident = Aktør(AktørType.AKTOER_ID, "12345"),
-            manueltRedigert = false,
-            timestamp = LocalDateTime.of(2019, 3, 5, 1, 1),
-            sisteAvsluttendeKalenderMåned = YearMonth.of(2019, 5)
-        )
+        val spesifisertInntekt =
+            SpesifisertInntekt(
+                inntektId = InntektId("01DMNAADXVEZXGJRQJTZ6DWWNV"),
+                avvik = avvik,
+                posteringer = posteringer,
+                ident = Aktør(AktørType.AKTOER_ID, "12345"),
+                manueltRedigert = false,
+                timestamp = LocalDateTime.of(2019, 3, 5, 1, 1),
+                sisteAvsluttendeKalenderMåned = YearMonth.of(2019, 5),
+            )
 
         val klassifisertInntekt = klassifiserOgMapInntekt(spesifisertInntekt)
 
@@ -167,18 +174,19 @@ internal class klassifiserOgMapInntektTest {
 }
 
 fun createTestSpesifisertInntekt(posteringsTyper: List<PosteringsType>): SpesifisertInntekt {
-    val posteringer = posteringsTyper.map {
-        Postering(
-            posteringsMåned = YearMonth.of(2019, 3),
-            beløp = BigDecimal(102),
-            fordel = "fordel",
-            inntektskilde = "kilde",
-            inntektsstatus = "status",
-            inntektsperiodetype = "periodetype",
-            utbetaltIMåned = YearMonth.of(2019, 5),
-            posteringsType = it
-        )
-    }
+    val posteringer =
+        posteringsTyper.map {
+            Postering(
+                posteringsMåned = YearMonth.of(2019, 3),
+                beløp = BigDecimal(102),
+                fordel = "fordel",
+                inntektskilde = "kilde",
+                inntektsstatus = "status",
+                inntektsperiodetype = "periodetype",
+                utbetaltIMåned = YearMonth.of(2019, 5),
+                posteringsType = it,
+            )
+        }
 
     return SpesifisertInntekt(
         inntektId = InntektId("01DMNAADXVEZXGJRQJTZ6DWWNV"),
@@ -187,6 +195,6 @@ fun createTestSpesifisertInntekt(posteringsTyper: List<PosteringsType>): Spesifi
         ident = Aktør(AktørType.AKTOER_ID, "12345"),
         manueltRedigert = false,
         timestamp = LocalDateTime.of(2019, 3, 5, 1, 1),
-        sisteAvsluttendeKalenderMåned = YearMonth.of(2019, 4)
+        sisteAvsluttendeKalenderMåned = YearMonth.of(2019, 4),
     )
 }

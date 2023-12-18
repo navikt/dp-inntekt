@@ -10,7 +10,6 @@ import java.security.interfaces.RSAPublicKey
 import java.util.Base64
 
 class JwtStub(private val issuer: String = "test issuer") {
-
     private val privateKey: RSAPrivateKey
     private val publicKey: RSAPublicKey
 
@@ -42,8 +41,8 @@ class JwtStub(private val issuer: String = "test issuer") {
                 keyId, "RSA", "RS256", "sig", listOf(), null, null, null,
                 mapOf(
                     "e" to String(Base64.getEncoder().encode(publicKey.publicExponent.toByteArray())),
-                    "n" to String(Base64.getEncoder().encode(publicKey.modulus.toByteArray()))
-                )
+                    "n" to String(Base64.getEncoder().encode(publicKey.modulus.toByteArray())),
+                ),
             )
         }
     }

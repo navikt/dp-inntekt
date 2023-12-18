@@ -10,33 +10,38 @@ import org.flywaydb.core.internal.configuration.ConfigUtils
 
 fun migrate(config: InntektApiConfig): Int {
     return when (config.application.profile) {
-        Profile.LOCAL -> HikariDataSource(hikariConfigFrom(config)).use {
-            migrate(
-                dataSource = it,
-                locations = config.database.flywayLocations
-            )
-        }
-        else -> hikariDataSourceWithVaultIntegration(config, Role.ADMIN).use {
-            migrate(
-                dataSource = it,
-                initSql = "SET ROLE \"${config.database.name}-${Role.ADMIN}\"",
-                locations = config.database.flywayLocations
-            )
-        }
+        Profile.LOCAL ->
+            HikariDataSource(hikariConfigFrom(config)).use {
+                migrate(
+                    dataSource = it,
+                    locations = config.database.flywayLocations,
+                )
+            }
+        else ->
+            hikariDataSourceWithVaultIntegration(config, Role.ADMIN).use {
+                migrate(
+                    dataSource = it,
+                    initSql = "SET ROLE \"${config.database.name}-${Role.ADMIN}\"",
+                    locations = config.database.flywayLocations,
+                )
+            }
     }
 }
 
-private fun hikariDataSourceWithVaultIntegration(config: InntektApiConfig, role: Role = Role.USER) =
-    HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration(
-        hikariConfigFrom(config),
-        config.vault.mountPath,
-        "${config.database.name}-$role"
-    )
+private fun hikariDataSourceWithVaultIntegration(
+    config: InntektApiConfig,
+    role: Role = Role.USER,
+) = HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration(
+    hikariConfigFrom(config),
+    config.vault.mountPath,
+    "${config.database.name}-$role",
+)
 
-fun dataSourceFrom(config: InntektApiConfig): HikariDataSource = when (config.application.profile) {
-    Profile.LOCAL -> HikariDataSource(hikariConfigFrom(config))
-    else -> hikariDataSourceWithVaultIntegration(config)
-}
+fun dataSourceFrom(config: InntektApiConfig): HikariDataSource =
+    when (config.application.profile) {
+        Profile.LOCAL -> HikariDataSource(hikariConfigFrom(config))
+        else -> hikariDataSourceWithVaultIntegration(config)
+    }
 
 fun hikariConfigFrom(config: InntektApiConfig) =
     HikariConfig().apply {
@@ -50,15 +55,21 @@ fun hikariConfigFrom(config: InntektApiConfig) =
         config.database.password?.let { password = it }
     }
 
-fun migrate(dataSource: HikariDataSource, initSql: String = "", locations: List<String> = listOf("db/migration")): Int =
-    Flyway.configure().locations(*locations.toTypedArray()).dataSource(dataSource).initSql(initSql).load().migrate().migrations.size
+fun migrate(
+    dataSource: HikariDataSource,
+    initSql: String = "",
+    locations: List<String> = listOf("db/migration"),
+): Int = Flyway.configure().locations(*locations.toTypedArray()).dataSource(dataSource).initSql(initSql).load().migrate().migrations.size
 
-fun clean(dataSource: HikariDataSource) = Flyway.configure().cleanDisabled(
-    System.getProperty(ConfigUtils.CLEAN_DISABLED)?.toBooleanStrict() ?: true
-).dataSource(dataSource).load().clean()
+fun clean(dataSource: HikariDataSource) =
+    Flyway.configure().cleanDisabled(
+        System.getProperty(ConfigUtils.CLEAN_DISABLED)?.toBooleanStrict() ?: true,
+    ).dataSource(dataSource).load().clean()
 
 private enum class Role {
-    ADMIN, USER;
+    ADMIN,
+    USER,
+    ;
 
     override fun toString() = name.toLowerCase()
 }

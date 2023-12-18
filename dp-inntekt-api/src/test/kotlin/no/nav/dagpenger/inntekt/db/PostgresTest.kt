@@ -30,7 +30,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 internal class PostgresTest {
-
     @Test
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
@@ -73,17 +72,19 @@ internal class PostgresInntektStoreTest {
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
                 val parameters = Inntektparametre("1234", "1234", LocalDate.now(), RegelKontekst("1234", "vedtak"))
-                val hentInntektListeResponse = InntektkomponentResponse(
-                    emptyList(),
-                    Aktoer(AktoerType.AKTOER_ID, "1234")
-                )
-
-                val storedInntekt = storeInntekt(
-                    StoreInntektCommand(
-                        inntektparametre = parameters,
-                        inntekt = hentInntektListeResponse
+                val hentInntektListeResponse =
+                    InntektkomponentResponse(
+                        emptyList(),
+                        Aktoer(AktoerType.AKTOER_ID, "1234"),
                     )
-                )
+
+                val storedInntekt =
+                    storeInntekt(
+                        StoreInntektCommand(
+                            inntektparametre = parameters,
+                            inntekt = hentInntektListeResponse,
+                        ),
+                    )
                 assertNotNull(storedInntekt.inntektId)
                 assertTrue("Inntekstliste should be in the same state") { hentInntektListeResponse == storedInntekt.inntekt }
 
@@ -97,46 +98,45 @@ internal class PostgresInntektStoreTest {
 
     @Test
     fun ` Should insert different inntekt based on different aktørid and same vedtak id `() {
-
         val ident1 = "1234"
         val ident2 = "5678"
 
         withMigratedDb {
-
             with(PostgresInntektStore(DataSource.instance)) {
-
                 val aktør1 =
                     Inntektparametre(
                         aktørId = ident1,
                         fødselsnummer = ident1,
                         beregningsdato = LocalDate.now(),
-                        regelkontekst = RegelKontekst("1234", "vedtak")
+                        regelkontekst = RegelKontekst("1234", "vedtak"),
                     )
                 val aktør2 =
                     Inntektparametre(
                         aktørId = ident2,
                         fødselsnummer = ident2,
                         beregningsdato = LocalDate.now(),
-                        regelkontekst = RegelKontekst("1234", "vedtak")
+                        regelkontekst = RegelKontekst("1234", "vedtak"),
                     )
                 storeInntekt(
                     StoreInntektCommand(
                         inntektparametre = aktør1,
-                        inntekt = InntektkomponentResponse(
-                            emptyList(),
-                            Aktoer(AktoerType.AKTOER_ID, ident1)
-                        )
-                    )
+                        inntekt =
+                            InntektkomponentResponse(
+                                emptyList(),
+                                Aktoer(AktoerType.AKTOER_ID, ident1),
+                            ),
+                    ),
                 )
 
                 storeInntekt(
                     StoreInntektCommand(
                         inntektparametre = aktør2,
-                        inntekt = InntektkomponentResponse(
-                            emptyList(),
-                            Aktoer(AktoerType.AKTOER_ID, ident1)
-                        )
-                    )
+                        inntekt =
+                            InntektkomponentResponse(
+                                emptyList(),
+                                Aktoer(AktoerType.AKTOER_ID, ident1),
+                            ),
+                    ),
                 )
 
                 assertSoftly {
@@ -148,16 +148,16 @@ internal class PostgresInntektStoreTest {
                             aktørId = ident1,
                             fødselsnummer = ident1,
                             beregningsdato = LocalDate.now(),
-                            regelkontekst = RegelKontekst("464664", "vedtak")
-                        )
+                            regelkontekst = RegelKontekst("464664", "vedtak"),
+                        ),
                     ) shouldBe null
                     getInntektId(
                         Inntektparametre(
                             aktørId = "3535535335",
                             fødselsnummer = "3535535335",
                             beregningsdato = LocalDate.now(),
-                            regelkontekst = RegelKontekst("1234", "vedtak")
-                        )
+                            regelkontekst = RegelKontekst("1234", "vedtak"),
+                        ),
                     ) shouldBe null
                 }
             }
@@ -166,45 +166,44 @@ internal class PostgresInntektStoreTest {
 
     @Test
     fun ` Should fetch different inntekt based on different konteksttype and same vedtak id and same aktørid`() {
-
         val ident1 = "1234"
 
         withMigratedDb {
-
             with(PostgresInntektStore(DataSource.instance)) {
-
                 val aktør1 =
                     Inntektparametre(
                         aktørId = ident1,
                         fødselsnummer = ident1,
                         beregningsdato = LocalDate.now(),
-                        regelkontekst = RegelKontekst("1234", "veiledning")
+                        regelkontekst = RegelKontekst("1234", "veiledning"),
                     )
                 val aktør2 =
                     Inntektparametre(
                         aktørId = ident1,
                         fødselsnummer = ident1,
                         beregningsdato = LocalDate.now(),
-                        regelkontekst = RegelKontekst("1234", "saksbehandling")
+                        regelkontekst = RegelKontekst("1234", "saksbehandling"),
                     )
                 storeInntekt(
                     StoreInntektCommand(
                         inntektparametre = aktør1,
-                        inntekt = InntektkomponentResponse(
-                            emptyList(),
-                            Aktoer(AktoerType.AKTOER_ID, ident1)
-                        )
-                    )
+                        inntekt =
+                            InntektkomponentResponse(
+                                emptyList(),
+                                Aktoer(AktoerType.AKTOER_ID, ident1),
+                            ),
+                    ),
                 )
 
                 storeInntekt(
                     StoreInntektCommand(
                         inntektparametre = aktør2,
-                        inntekt = InntektkomponentResponse(
-                            emptyList(),
-                            Aktoer(AktoerType.AKTOER_ID, ident1)
-                        )
-                    )
+                        inntekt =
+                            InntektkomponentResponse(
+                                emptyList(),
+                                Aktoer(AktoerType.AKTOER_ID, ident1),
+                            ),
+                    ),
                 )
 
                 assertSoftly {
@@ -221,19 +220,21 @@ internal class PostgresInntektStoreTest {
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
                 val parameters = Inntektparametre("1234", "1234", LocalDate.now(), RegelKontekst("1234", "vedtak"))
-                val hentInntektListeResponse = InntektkomponentResponse(
-                    emptyList(),
-                    Aktoer(AktoerType.AKTOER_ID, "1234")
-                )
+                val hentInntektListeResponse =
+                    InntektkomponentResponse(
+                        emptyList(),
+                        Aktoer(AktoerType.AKTOER_ID, "1234"),
+                    )
                 val manueltRedigert = ManueltRedigert("user")
 
-                val storedInntekt = storeInntekt(
-                    StoreInntektCommand(
-                        inntektparametre = parameters,
-                        inntekt = hentInntektListeResponse,
-                        manueltRedigert = manueltRedigert
+                val storedInntekt =
+                    storeInntekt(
+                        StoreInntektCommand(
+                            inntektparametre = parameters,
+                            inntekt = hentInntektListeResponse,
+                            manueltRedigert = manueltRedigert,
+                        ),
                     )
-                )
                 assertTrue(storedInntekt.manueltRedigert)
 
                 val storedInntektByRequest = getInntekt(storedInntekt.inntektId)
@@ -248,24 +249,25 @@ internal class PostgresInntektStoreTest {
 
     @Test
     fun ` Sucessfully get inntekter`() {
-
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
-                val hentInntektListeResponse = InntektkomponentResponse(
-                    emptyList(),
-                    Aktoer(AktoerType.AKTOER_ID, "1234")
-                )
+                val hentInntektListeResponse =
+                    InntektkomponentResponse(
+                        emptyList(),
+                        Aktoer(AktoerType.AKTOER_ID, "1234"),
+                    )
 
                 storeInntekt(
                     StoreInntektCommand(
-                        inntektparametre = Inntektparametre(
-                            aktørId = "1234",
-                            fødselsnummer = "1234",
-                            beregningsdato = LocalDate.now(),
-                            regelkontekst = RegelKontekst("12345", "vedtak")
-                        ),
-                        inntekt = hentInntektListeResponse
-                    )
+                        inntektparametre =
+                            Inntektparametre(
+                                aktørId = "1234",
+                                fødselsnummer = "1234",
+                                beregningsdato = LocalDate.now(),
+                                regelkontekst = RegelKontekst("12345", "vedtak"),
+                            ),
+                        inntekt = hentInntektListeResponse,
+                    ),
                 )
 
                 val inntektId =
@@ -280,7 +282,6 @@ internal class PostgresInntektStoreTest {
 
     @Test
     fun ` Inntekt not present should give null StoredInntekt`() {
-
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
                 val inntektId =
@@ -294,20 +295,22 @@ internal class PostgresInntektStoreTest {
     fun `getInntektId should return latest InntektId`() {
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
-                val hentInntektListeResponse = InntektkomponentResponse(
-                    emptyList(),
-                    Aktoer(AktoerType.AKTOER_ID, "1234")
-                )
+                val hentInntektListeResponse =
+                    InntektkomponentResponse(
+                        emptyList(),
+                        Aktoer(AktoerType.AKTOER_ID, "1234"),
+                    )
 
                 val parameters = Inntektparametre("1234", "1234", LocalDate.now(), RegelKontekst("12345", "vedtak"))
 
                 storeInntekt(StoreInntektCommand(inntektparametre = parameters, inntekt = hentInntektListeResponse))
-                val lastStoredInntekt = storeInntekt(
-                    StoreInntektCommand(
-                        inntektparametre = parameters,
-                        inntekt = hentInntektListeResponse
+                val lastStoredInntekt =
+                    storeInntekt(
+                        StoreInntektCommand(
+                            inntektparametre = parameters,
+                            inntekt = hentInntektListeResponse,
+                        ),
                     )
-                )
 
                 val latestInntektId = getInntektId(parameters)
 
@@ -320,19 +323,21 @@ internal class PostgresInntektStoreTest {
     fun `Should get spesifisert inntekt`() {
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
-                val hentInntektListeResponse = InntektkomponentResponse(
-                    emptyList(),
-                    Aktoer(AktoerType.AKTOER_ID, "1234")
-                )
+                val hentInntektListeResponse =
+                    InntektkomponentResponse(
+                        emptyList(),
+                        Aktoer(AktoerType.AKTOER_ID, "1234"),
+                    )
 
                 val parameters = Inntektparametre("1234", "1234", LocalDate.now(), RegelKontekst("12345", "vedtak"))
 
-                val lastStoredInntekt = storeInntekt(
-                    StoreInntektCommand(
-                        inntektparametre = parameters,
-                        inntekt = hentInntektListeResponse
+                val lastStoredInntekt =
+                    storeInntekt(
+                        StoreInntektCommand(
+                            inntektparametre = parameters,
+                            inntekt = hentInntektListeResponse,
+                        ),
                     )
-                )
 
                 val spesifisertInntekt = getSpesifisertInntekt(lastStoredInntekt.inntektId)
                 spesifisertInntekt.inntektId.id shouldBe lastStoredInntekt.inntektId.id
@@ -342,25 +347,27 @@ internal class PostgresInntektStoreTest {
 
     @Test
     fun ` Sucessfully get beregningsdato`() {
-
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
-                val hentInntektListeResponse = InntektkomponentResponse(
-                    emptyList(),
-                    Aktoer(AktoerType.AKTOER_ID, "1234")
-                )
-
-                val inntekt = storeInntekt(
-                    StoreInntektCommand(
-                        inntektparametre = Inntektparametre(
-                            "1234",
-                            "1234",
-                            LocalDate.of(2019, 4, 14),
-                            RegelKontekst("12345", "vedtak")
-                        ),
-                        inntekt = hentInntektListeResponse
+                val hentInntektListeResponse =
+                    InntektkomponentResponse(
+                        emptyList(),
+                        Aktoer(AktoerType.AKTOER_ID, "1234"),
                     )
-                )
+
+                val inntekt =
+                    storeInntekt(
+                        StoreInntektCommand(
+                            inntektparametre =
+                                Inntektparametre(
+                                    "1234",
+                                    "1234",
+                                    LocalDate.of(2019, 4, 14),
+                                    RegelKontekst("12345", "vedtak"),
+                                ),
+                            inntekt = hentInntektListeResponse,
+                        ),
+                    )
 
                 val beregningsdato = getBeregningsdato(inntekt.inntektId)
 
@@ -393,14 +400,15 @@ internal class PostgresInntektStoreTest {
             migrate(DataSource.instance, locations = listOf("db/migration", "unit-testdata"))
 
             with(PostgresInntektStore(DataSource.instance)) {
-                val inntektsid = getInntektId(
-                    Inntektparametre(
-                        "AKTØR_ID",
-                        "fnr",
-                        LocalDate.of(2019, 1, 1),
-                        RegelKontekst("-1337", "forskudd")
+                val inntektsid =
+                    getInntektId(
+                        Inntektparametre(
+                            "AKTØR_ID",
+                            "fnr",
+                            LocalDate.of(2019, 1, 1),
+                            RegelKontekst("-1337", "forskudd"),
+                        ),
                     )
-                )
                 assertNotNull(inntektsid)
             }
         }
@@ -410,9 +418,10 @@ internal class PostgresInntektStoreTest {
     fun ` Getting beregningsdato for unknown inntektId should throw error`() {
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
-                val result = runCatching {
-                    getBeregningsdato(InntektId("12ARZ3NDEKTSV4RRFFQ69G5FBY"))
-                }
+                val result =
+                    runCatching {
+                        getBeregningsdato(InntektId("12ARZ3NDEKTSV4RRFFQ69G5FBY"))
+                    }
                 assertTrue("Result is not failure") { result.isFailure }
                 assertTrue("Result is $result") { result.exceptionOrNull() is InntektNotFoundException }
             }
@@ -423,22 +432,25 @@ internal class PostgresInntektStoreTest {
     fun ` Should mark an inntekt as used `() {
         withMigratedDb {
             with(PostgresInntektStore(DataSource.instance)) {
-                val hentInntektListeResponse = InntektkomponentResponse(
-                    emptyList(),
-                    Aktoer(AktoerType.AKTOER_ID, "1234")
-                )
-
-                val storedInntekt = storeInntekt(
-                    StoreInntektCommand(
-                        inntektparametre = Inntektparametre(
-                            "1234",
-                            "1234",
-                            LocalDate.now(),
-                            RegelKontekst("12345", "vedtak")
-                        ),
-                        inntekt = hentInntektListeResponse
+                val hentInntektListeResponse =
+                    InntektkomponentResponse(
+                        emptyList(),
+                        Aktoer(AktoerType.AKTOER_ID, "1234"),
                     )
-                )
+
+                val storedInntekt =
+                    storeInntekt(
+                        StoreInntektCommand(
+                            inntektparametre =
+                                Inntektparametre(
+                                    "1234",
+                                    "1234",
+                                    LocalDate.now(),
+                                    RegelKontekst("12345", "vedtak"),
+                                ),
+                            inntekt = hentInntektListeResponse,
+                        ),
+                    )
                 val updated = markerInntektBrukt(storedInntekt.inntektId)
                 updated shouldBe 1
             }
@@ -447,7 +459,6 @@ internal class PostgresInntektStoreTest {
 }
 
 internal class InntektsStorePropertyTest : StringSpec() {
-
     init {
         withMigratedDb {
             val store = PostgresInntektStore(DataSource.instance)
@@ -468,38 +479,45 @@ internal class InntektsStorePropertyTest : StringSpec() {
         }
     }
 
-    private val storeInntekCommandGenerator = arbitrary {
-        val aktørId = Arb.string(10, 11)
-        val kontekstId = Arb.string(5, 40)
-        StoreInntektCommand(
-            inntektparametre = Inntektparametre(
-                aktørId = aktørId.next(it),
-                regelkontekst = RegelKontekst(kontekstId.next(it), "vedtak"),
-                fødselsnummer = aktørId.next(it),
-                beregningsdato = Arb.localDateTime(minYear = 2010, maxYear = LocalDate.now().year).next(it)
-                    .toLocalDate()
-            ),
-            inntekt = InntektkomponentResponse(
-                arbeidsInntektMaaned = emptyList(),
-                ident = Aktoer(AktoerType.AKTOER_ID, "1234")
+    private val storeInntekCommandGenerator =
+        arbitrary {
+            val aktørId = Arb.string(10, 11)
+            val kontekstId = Arb.string(5, 40)
+            StoreInntektCommand(
+                inntektparametre =
+                    Inntektparametre(
+                        aktørId = aktørId.next(it),
+                        regelkontekst = RegelKontekst(kontekstId.next(it), "vedtak"),
+                        fødselsnummer = aktørId.next(it),
+                        beregningsdato =
+                            Arb.localDateTime(minYear = 2010, maxYear = LocalDate.now().year).next(it)
+                                .toLocalDate(),
+                    ),
+                inntekt =
+                    InntektkomponentResponse(
+                        arbeidsInntektMaaned = emptyList(),
+                        ident = Aktoer(AktoerType.AKTOER_ID, "1234"),
+                    ),
             )
-        )
-    }
+        }
 
-    private val storeInntektCommandGeneratorWithSameVedtakidAndBeregningsDato = arbitrary {
-        val stringArb = Arb.string(10, 11)
-        val kontekstId = Arb.string(5, 40)
-        StoreInntektCommand(
-            inntektparametre = Inntektparametre(
-                aktørId = stringArb.next(it),
-                regelkontekst = RegelKontekst(kontekstId.next(it), "vedtak"),
-                fødselsnummer = stringArb.next(it),
-                beregningsdato = LocalDate.now()
-            ),
-            inntekt = InntektkomponentResponse(
-                arbeidsInntektMaaned = emptyList(),
-                ident = Aktoer(AktoerType.AKTOER_ID, "1234")
+    private val storeInntektCommandGeneratorWithSameVedtakidAndBeregningsDato =
+        arbitrary {
+            val stringArb = Arb.string(10, 11)
+            val kontekstId = Arb.string(5, 40)
+            StoreInntektCommand(
+                inntektparametre =
+                    Inntektparametre(
+                        aktørId = stringArb.next(it),
+                        regelkontekst = RegelKontekst(kontekstId.next(it), "vedtak"),
+                        fødselsnummer = stringArb.next(it),
+                        beregningsdato = LocalDate.now(),
+                    ),
+                inntekt =
+                    InntektkomponentResponse(
+                        arbeidsInntektMaaned = emptyList(),
+                        ident = Aktoer(AktoerType.AKTOER_ID, "1234"),
+                    ),
             )
-        )
-    }
+        }
 }

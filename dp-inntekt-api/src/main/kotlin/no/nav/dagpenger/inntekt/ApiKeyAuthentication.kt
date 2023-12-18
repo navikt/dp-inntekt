@@ -19,18 +19,19 @@ import javax.crypto.spec.SecretKeySpec
 
 enum class ApiKeyLocation(val location: String) {
     QUERY("query"),
-    HEADER("header")
+    HEADER("header"),
 }
 
 fun ApplicationRequest.apiKeyAuthenticationCredentials(
     apiKeyName: String,
-    apiKeyLocation: ApiKeyLocation
+    apiKeyLocation: ApiKeyLocation,
 ): ApiKeyCredential? {
     return when (
-        val value: String? = when (apiKeyLocation) {
-            ApiKeyLocation.QUERY -> this.queryParameters[apiKeyName]
-            ApiKeyLocation.HEADER -> this.headers[apiKeyName]
-        }
+        val value: String? =
+            when (apiKeyLocation) {
+                ApiKeyLocation.QUERY -> this.queryParameters[apiKeyName]
+                ApiKeyLocation.HEADER -> this.headers[apiKeyName]
+            }
     ) {
         null -> null
         else -> ApiKeyCredential(value)
@@ -38,10 +39,10 @@ fun ApplicationRequest.apiKeyAuthenticationCredentials(
 }
 
 data class ApiKeyCredential(val value: String) : Credential
+
 data class ApiPrincipal(val apiKeyCredential: ApiKeyCredential?) : Principal
 
 class ApiKeyAuthenticationProvider internal constructor(config: Configuration) : AuthenticationProvider(config) {
-
     private var apiKeyName: String = config.apiKeyName
     private var apiKeyLocation: ApiKeyLocation = config.apiKeyLocation
     private val authenticationFunction = config.authenticationFunction
@@ -65,11 +66,12 @@ class ApiKeyAuthenticationProvider internal constructor(config: Configuration) :
         val credential = call.request.apiKeyAuthenticationCredentials(apiKeyName, apiKeyLocation)
         val principal = credential?.let { authenticationFunction(call, it) }
 
-        val cause = when {
-            credential == null -> AuthenticationFailedCause.NoCredentials
-            principal == null -> AuthenticationFailedCause.InvalidCredentials
-            else -> null
-        }
+        val cause =
+            when {
+                credential == null -> AuthenticationFailedCause.NoCredentials
+                principal == null -> AuthenticationFailedCause.InvalidCredentials
+                else -> null
+            }
 
         if (cause != null) {
             context.challenge(apiKeyName, cause) { challenge, call ->
@@ -78,9 +80,9 @@ class ApiKeyAuthenticationProvider internal constructor(config: Configuration) :
                         HttpAuthHeader.Parameterized(
                             "API_KEY",
                             mapOf("key" to apiKeyName),
-                            HeaderValueEncoding.QUOTED_ALWAYS
-                        )
-                    )
+                            HeaderValueEncoding.QUOTED_ALWAYS,
+                        ),
+                    ),
                 )
                 challenge.complete()
             }
@@ -94,17 +96,19 @@ class ApiKeyAuthenticationProvider internal constructor(config: Configuration) :
 
 fun AuthenticationConfig.apiKeyAuth(
     name: String? = null,
-    configure: ApiKeyAuthenticationProvider.Configuration.() -> Unit
+    configure: ApiKeyAuthenticationProvider.Configuration.() -> Unit,
 ) {
     val provider = ApiKeyAuthenticationProvider.Configuration(name).apply(configure).build()
     register(provider)
 }
 
 internal class ApiKeyVerifier(private val secret: String) {
-
     private val algorithm = "HmacSHA256"
 
-    fun verify(apiKey: String, expectedApiKey: String): Boolean {
+    fun verify(
+        apiKey: String,
+        expectedApiKey: String,
+    ): Boolean {
         return apiKey == generate(expectedApiKey)
     }
 

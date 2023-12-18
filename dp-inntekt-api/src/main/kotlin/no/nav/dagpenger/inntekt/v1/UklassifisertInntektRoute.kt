@@ -91,17 +91,19 @@ fun Route.uklassifisertInntekt(
                         mapToStoredInntekt(guiInntekt).let {
                             inntektStore.storeInntekt(
                                 StoreInntektCommand(
-                                    inntektparametre = Inntektparametre(
-                                        aktørId = person.aktørId,
-                                        fødselsnummer = person.fødselsnummer,
-                                        regelkontekst = RegelKontekst(this.kontekstId, this.kontekstType),
-                                        beregningsdato = this.beregningsDato,
-                                    ),
+                                    inntektparametre =
+                                        Inntektparametre(
+                                            aktørId = person.aktørId,
+                                            fødselsnummer = person.fødselsnummer,
+                                            regelkontekst = RegelKontekst(this.kontekstId, this.kontekstType),
+                                            beregningsdato = this.beregningsDato,
+                                        ),
                                     inntekt = it.inntekt,
-                                    manueltRedigert = ManueltRedigert.from(
-                                        guiInntekt.redigertAvSaksbehandler,
-                                        getSubject(),
-                                    ),
+                                    manueltRedigert =
+                                        ManueltRedigert.from(
+                                            guiInntekt.redigertAvSaksbehandler,
+                                            getSubject(),
+                                        ),
                                 ),
                             )
                         }.let {
@@ -153,17 +155,19 @@ fun Route.uklassifisertInntekt(
                         mapToDetachedInntekt(guiInntekt).let {
                             inntektStore.storeInntekt(
                                 StoreInntektCommand(
-                                    inntektparametre = Inntektparametre(
-                                        aktørId = person.aktørId,
-                                        fødselsnummer = person.fødselsnummer,
-                                        regelkontekst = RegelKontekst(this.kontekstId, this.kontekstType),
-                                        beregningsdato = this.beregningsDato,
-                                    ),
+                                    inntektparametre =
+                                        Inntektparametre(
+                                            aktørId = person.aktørId,
+                                            fødselsnummer = person.fødselsnummer,
+                                            regelkontekst = RegelKontekst(this.kontekstId, this.kontekstType),
+                                            beregningsdato = this.beregningsDato,
+                                        ),
                                     inntekt = it.inntekt,
-                                    manueltRedigert = ManueltRedigert.from(
-                                        guiInntekt.redigertAvSaksbehandler,
-                                        getSubject(),
-                                    ),
+                                    manueltRedigert =
+                                        ManueltRedigert.from(
+                                            guiInntekt.redigertAvSaksbehandler,
+                                            getSubject(),
+                                        ),
                                 ),
                             )
                         }.let {
@@ -211,14 +215,15 @@ private inline fun PipelineContext<Unit, ApplicationCall>.withInntektRequest(
     route: String,
     block: InntektRequest.() -> Unit,
 ) {
-    val inntektRequest = runCatching {
-        InntektRequest(
-            aktørId = call.parameters["aktørId"]!!,
-            kontekstId = call.parameters["kontekstId"]!!,
-            kontekstType = call.parameters["kontekstType"]!!,
-            beregningsDato = LocalDate.parse(call.parameters["beregningsDato"]!!),
-        )
-    }.getOrElse { t -> throw IllegalArgumentException("Failed to parse parameters", t) }
+    val inntektRequest =
+        runCatching {
+            InntektRequest(
+                aktørId = call.parameters["aktørId"]!!,
+                kontekstId = call.parameters["kontekstId"]!!,
+                kontekstType = call.parameters["kontekstType"]!!,
+                beregningsDato = LocalDate.parse(call.parameters["beregningsDato"]!!),
+            )
+        }.getOrElse { t -> throw IllegalArgumentException("Failed to parse parameters", t) }
 
     withLoggingContext(
         "route" to route,

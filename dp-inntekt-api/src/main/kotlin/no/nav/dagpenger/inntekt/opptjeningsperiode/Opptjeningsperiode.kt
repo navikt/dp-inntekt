@@ -10,10 +10,11 @@ data class Opptjeningsperiode(val beregningsdato: LocalDate) {
     private val antattRapporteringsFrist = LocalDate.of(beregningsdato.year, beregningsdato.month, 5)
     private val reellRapporteringsFrist: LocalDate =
         finnFørsteArbeidsdagEtterRapporterteringsFrist(antattRapporteringsFrist)
-    private val månedSubtraksjon: Long = when {
-        beregningsdato.isBefore(reellRapporteringsFrist) || beregningsdato.isEqual(reellRapporteringsFrist) -> 2
-        else -> 1
-    }
+    private val månedSubtraksjon: Long =
+        when {
+            beregningsdato.isBefore(reellRapporteringsFrist) || beregningsdato.isEqual(reellRapporteringsFrist) -> 2
+            else -> 1
+        }
 
     val sisteAvsluttendeKalenderMåned: YearMonth = beregningsdato.minusMonths(månedSubtraksjon).toYearMonth()
     val førsteMåned: YearMonth = sisteAvsluttendeKalenderMåned.minusMonths(35)
@@ -22,9 +23,13 @@ data class Opptjeningsperiode(val beregningsdato: LocalDate) {
         this.sisteAvsluttendeKalenderMåned == other.sisteAvsluttendeKalenderMåned
 
     private tailrec fun finnFørsteArbeidsdagEtterRapporterteringsFrist(rapporteringsFrist: LocalDate): LocalDate {
-        return if (rapporteringsFrist.erArbeidsdag()) rapporteringsFrist else finnFørsteArbeidsdagEtterRapporterteringsFrist(
-            rapporteringsFrist.plusDays(1)
-        )
+        return if (rapporteringsFrist.erArbeidsdag()) {
+            rapporteringsFrist
+        } else {
+            finnFørsteArbeidsdagEtterRapporterteringsFrist(
+                rapporteringsFrist.plusDays(1),
+            )
+        }
     }
 
     private fun LocalDate.erArbeidsdag(): Boolean =

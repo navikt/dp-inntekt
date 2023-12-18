@@ -23,12 +23,14 @@ fun klassifiserOgMapInntekt(spesifisertInntekt: SpesifisertInntekt): Inntekt {
     )
 }
 
-private fun mapTilKlassifisertInntektMåneder(klassifisertePosteringer: List<KlassifisertPostering>, avvikMåneder: Map<YearMonth, List<Avvik>>) =
-    klassifisertePosteringer
-        .groupBy { klassifisertPostering -> klassifisertPostering.postering.posteringsMåned }
-        .map { (årmåned, klassifisertePosteringerForMåned) ->
-            mapTilKlassifisertInntektMåned(årmåned, klassifisertePosteringerForMåned, avvikMåneder)
-        }
+private fun mapTilKlassifisertInntektMåneder(
+    klassifisertePosteringer: List<KlassifisertPostering>,
+    avvikMåneder: Map<YearMonth, List<Avvik>>,
+) = klassifisertePosteringer
+    .groupBy { klassifisertPostering -> klassifisertPostering.postering.posteringsMåned }
+    .map { (årmåned, klassifisertePosteringerForMåned) ->
+        mapTilKlassifisertInntektMåned(årmåned, klassifisertePosteringerForMåned, avvikMåneder)
+    }
 
 private fun mapTilKlassifisertInntektMåned(
     årmåned: YearMonth,
@@ -37,12 +39,13 @@ private fun mapTilKlassifisertInntektMåned(
 ) = KlassifisertInntektMåned(
     årMåned = årmåned,
     harAvvik = avvikMåneder.containsKey(årmåned),
-    klassifiserteInntekter = klassifisertePosteringer
-        .groupBy { (_, inntektKlasse) -> inntektKlasse }
-        .map { (klasse, klassifisertePosteringerForKlasse) ->
-            KlassifisertInntekt(
-                beløp = klassifisertePosteringerForKlasse.fold(BigDecimal.ZERO) { sum, postering -> sum + postering.postering.beløp },
-                inntektKlasse = klasse,
-            )
-        },
+    klassifiserteInntekter =
+        klassifisertePosteringer
+            .groupBy { (_, inntektKlasse) -> inntektKlasse }
+            .map { (klasse, klassifisertePosteringerForKlasse) ->
+                KlassifisertInntekt(
+                    beløp = klassifisertePosteringerForKlasse.fold(BigDecimal.ZERO) { sum, postering -> sum + postering.postering.beløp },
+                    inntektKlasse = klasse,
+                )
+            },
 )

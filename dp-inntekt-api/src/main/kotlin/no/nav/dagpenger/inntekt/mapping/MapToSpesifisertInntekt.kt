@@ -13,18 +13,22 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
 import java.time.LocalDateTime
 import java.time.YearMonth
 
-fun mapToSpesifisertInntekt(storedInntekt: StoredInntekt, sisteAvsluttendeKalenderMåned: YearMonth): SpesifisertInntekt =
+fun mapToSpesifisertInntekt(
+    storedInntekt: StoredInntekt,
+    sisteAvsluttendeKalenderMåned: YearMonth,
+): SpesifisertInntekt =
     SpesifisertInntekt(
         inntektId = InntektId(storedInntekt.inntektId.id),
-        ident = Aktør(
-            AktørType.valueOf(storedInntekt.inntekt.ident.aktoerType.toString()),
-            storedInntekt.inntekt.ident.identifikator
-        ),
+        ident =
+            Aktør(
+                AktørType.valueOf(storedInntekt.inntekt.ident.aktoerType.toString()),
+                storedInntekt.inntekt.ident.identifikator,
+            ),
         avvik = mapAvvik(storedInntekt.inntekt.arbeidsInntektMaaned),
         posteringer = mapToPosteringer(storedInntekt.inntekt.arbeidsInntektMaaned),
         manueltRedigert = storedInntekt.manueltRedigert,
         timestamp = storedInntekt.timestamp ?: LocalDateTime.now(),
-        sisteAvsluttendeKalenderMåned = sisteAvsluttendeKalenderMåned
+        sisteAvsluttendeKalenderMåned = sisteAvsluttendeKalenderMåned,
     )
 
 private fun mapAvvik(list: List<ArbeidsInntektMaaned>?) =
@@ -35,7 +39,7 @@ private fun mapAvvik(list: List<ArbeidsInntektMaaned>?) =
                 opplysningspliktig = aktoerToAktør(it.opplysningspliktig),
                 virksomhet = nullableAktoerToAktør(it.virksomhet),
                 avvikPeriode = it.avvikPeriode,
-                tekst = it.tekst
+                tekst = it.tekst,
             )
         } ?: emptyList()
 
@@ -51,9 +55,10 @@ private fun mapToPosteringer(list: List<ArbeidsInntektMaaned>?) =
                 inntektsperiodetype = it.inntektsperiodetype,
                 leveringstidspunkt = it.leveringstidspunkt,
                 opptjeningsland = it.opptjeningsland,
-                opptjeningsperiode = it.opptjeningsperiode?.let { periode ->
-                    Periode(periode.startDato, periode.sluttDato)
-                },
+                opptjeningsperiode =
+                    it.opptjeningsperiode?.let { periode ->
+                        Periode(periode.startDato, periode.sluttDato)
+                    },
                 skattemessigBosattLand = it.skattemessigBosattLand,
                 utbetaltIMåned = it.utbetaltIMaaned,
                 opplysningspliktig = nullableAktoerToAktør(it.opplysningspliktig),
@@ -63,13 +68,14 @@ private fun mapToPosteringer(list: List<ArbeidsInntektMaaned>?) =
                 inngårIGrunnlagForTrekk = it.inngaarIGrunnlagForTrekk,
                 utløserArbeidsgiveravgift = it.utloeserArbeidsgiveravgift,
                 informasjonsstatus = it.informasjonsstatus,
-                posteringsType = toPosteringsType(
-                    PosteringsTypeGrunnlag(
-                        it.inntektType,
-                        it.beskrivelse,
-                        it.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold
-                    )
-                )
+                posteringsType =
+                    toPosteringsType(
+                        PosteringsTypeGrunnlag(
+                            it.inntektType,
+                            it.beskrivelse,
+                            it.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold,
+                        ),
+                    ),
             )
         } ?: emptyList()
     } ?: emptyList()
@@ -79,5 +85,4 @@ private fun nullableAktoerToAktør(aktoer: Aktoer?): Aktør? =
         Aktør(AktørType.valueOf(aktoer.aktoerType.toString()), aktoer.identifikator)
     }
 
-private fun aktoerToAktør(aktoer: Aktoer): Aktør =
-    Aktør(AktørType.valueOf(aktoer.aktoerType.toString()), aktoer.identifikator)
+private fun aktoerToAktør(aktoer: Aktoer): Aktør = Aktør(AktørType.valueOf(aktoer.aktoerType.toString()), aktoer.identifikator)

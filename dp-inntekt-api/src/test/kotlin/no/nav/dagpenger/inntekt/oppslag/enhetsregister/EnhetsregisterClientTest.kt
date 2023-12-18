@@ -12,48 +12,55 @@ import org.junit.jupiter.api.Test
 
 internal class EnhetsregisterClientTest {
     @Test
-    fun ` Hvis orgnummer ikke er underenhet `() = runBlocking {
-        val response = EnhetsregisterClient(
-            "http://localhost/enhetsregisteret",
-            httpClient(
-                engine = MockEngine { request ->
-                    request.method shouldBe HttpMethod.Get
-                    request.url.toString() shouldBe "http://localhost/enhetsregisteret/api/enheter/123456789"
-                    respondOk(
-                        enhetOkResposne
-                    )
-                }
+    fun ` Hvis orgnummer ikke er underenhet `() =
+        runBlocking {
+            val response =
+                EnhetsregisterClient(
+                    "http://localhost/enhetsregisteret",
+                    httpClient(
+                        engine =
+                            MockEngine { request ->
+                                request.method shouldBe HttpMethod.Get
+                                request.url.toString() shouldBe "http://localhost/enhetsregisteret/api/enheter/123456789"
+                                respondOk(
+                                    enhetOkResposne,
+                                )
+                            },
+                    ),
+                ).hentEnhet("123456789")
 
-            )
-        ).hentEnhet("123456789")
-
-        response shouldBe enhetOkResposne
-    }
+            response shouldBe enhetOkResposne
+        }
 
     @Test
-    fun ` Hvis orgnummer er underenhet `() = runBlocking {
-        val response = EnhetsregisterClient(
-            "http://localhost/enhetsregisteret",
-            httpClient(
-                engine = MockEngine { request ->
-                    when (request.url.toString()) {
-                        "http://localhost/enhetsregisteret/api/enheter/123456789" -> respondError(
-                            HttpStatusCode.NotFound
-                        )
-                        "http://localhost/enhetsregisteret/api/underenheter/123456789" -> respondOk(
-                            enhetOkResposne
-                        )
-                        else -> respondError(
-                            HttpStatusCode.InternalServerError
-                        )
-                    }
-                }
+    fun ` Hvis orgnummer er underenhet `() =
+        runBlocking {
+            val response =
+                EnhetsregisterClient(
+                    "http://localhost/enhetsregisteret",
+                    httpClient(
+                        engine =
+                            MockEngine { request ->
+                                when (request.url.toString()) {
+                                    "http://localhost/enhetsregisteret/api/enheter/123456789" ->
+                                        respondError(
+                                            HttpStatusCode.NotFound,
+                                        )
+                                    "http://localhost/enhetsregisteret/api/underenheter/123456789" ->
+                                        respondOk(
+                                            enhetOkResposne,
+                                        )
+                                    else ->
+                                        respondError(
+                                            HttpStatusCode.InternalServerError,
+                                        )
+                                }
+                            },
+                    ),
+                ).hentEnhet("123456789")
 
-            )
-        ).hentEnhet("123456789")
-
-        response shouldBe enhetOkResposne
-    }
+            response shouldBe enhetOkResposne
+        }
 
     @Language("json")
     private val enhetOkResposne =

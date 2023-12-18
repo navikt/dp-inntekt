@@ -25,9 +25,8 @@ private val log = KotlinLogging.logger { }
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 class PdlGraphQLRepository(
-    private val client: GraphQLKtorClient
+    private val client: GraphQLKtorClient,
 ) : PersonOppslag {
-
     override suspend fun hentPerson(ident: String): Person {
         val query = HentPerson(HentPerson.Variables(ident = ident))
         val result = client.execute(query)
@@ -55,7 +54,7 @@ class PdlGraphQLRepository(
                         aktørId = aktørId,
                         etternavn = navn.etternavn,
                         mellomnavn = navn.mellomnavn,
-                        fornavn = navn.fornavn
+                        fornavn = navn.fornavn,
                     )
                 }
             }
@@ -63,31 +62,33 @@ class PdlGraphQLRepository(
     }
 }
 
-fun PdlGraphQLClientFactory(
+fun pdlGraphQLClientFactory(
     url: String,
-    oidcProvider: () -> String
+    oidcProvider: () -> String,
 ): GraphQLKtorClient {
-    val client = HttpClient(engineFactory = CIO) {
-        install(Logging) {
-            logger = object : Logger {
-                override fun log(message: String) = sikkerlogg.info { message }
+    val client =
+        HttpClient(engineFactory = CIO) {
+            install(Logging) {
+                logger =
+                    object : Logger {
+                        override fun log(message: String) = sikkerlogg.info { message }
+                    }
+
+                level = LogLevel.HEADERS
             }
 
-            level = LogLevel.HEADERS
-        }
+            defaultRequest {
+                oidcProvider().also {
+                    header(HttpHeaders.Authorization, "Bearer $it")
+                    header("Nav-Consumer-Token", "Bearer $it")
+                }
 
-        defaultRequest {
-            oidcProvider().also {
-                header(HttpHeaders.Authorization, "Bearer $it")
-                header("Nav-Consumer-Token", "Bearer $it")
+                header(HttpHeaders.UserAgent, "dp-inntekt-api")
+                header(HttpHeaders.Accept, "application/json")
+                header("Tema", "DAG")
+                header("Nav-Call-Id", UUID.randomUUID())
             }
-
-            header(HttpHeaders.UserAgent, "dp-inntekt-api")
-            header(HttpHeaders.Accept, "application/json")
-            header("Tema", "DAG")
-            header("Nav-Call-Id", UUID.randomUUID())
         }
-    }
 
     return GraphQLKtorClient(url = URL(url), httpClient = client, serializer = GraphQLClientJacksonSerializer())
 }

@@ -11,9 +11,10 @@ import no.nav.dagpenger.inntekt.db.KronetilleggUttrekk
 internal fun Route.uttrekk(kronetilleggUttrekk: KronetilleggUttrekk) {
     route("{inntektID}") {
         get("harDagpenger") {
-            val inntektId = InntektId(
-                this.call.parameters["inntektID"] ?: throw IllegalArgumentException("inntektID mangler i parameter")
-            )
+            val inntektId =
+                InntektId(
+                    this.call.parameters["inntektID"] ?: throw IllegalArgumentException("inntektID mangler i parameter"),
+                )
             val uttrekk = kronetilleggUttrekk.utrekkFra(inntektId)
             call.respond(uttrekk)
         }

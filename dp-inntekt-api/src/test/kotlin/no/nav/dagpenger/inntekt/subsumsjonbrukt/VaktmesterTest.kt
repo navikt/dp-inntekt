@@ -24,31 +24,31 @@ import java.time.YearMonth
 import java.time.ZonedDateTime
 
 internal class VaktmesterTest {
+    private val parameters =
+        Inntektparametre(
+            aktørId = "1234",
+            fødselsnummer = "1234",
+            regelkontekst = RegelKontekst("1234", "vedtak"),
+            beregningsdato = LocalDate.now(),
+        )
 
-    private val parameters = Inntektparametre(
-        aktørId = "1234",
-        fødselsnummer = "1234",
-        regelkontekst = RegelKontekst("1234", "vedtak"),
-        beregningsdato = LocalDate.now()
-    )
-
-    private val inntekter = InntektkomponentResponse(
-        ident = Aktoer(AktoerType.AKTOER_ID, parameters.aktørId!!),
-        arbeidsInntektMaaned = emptyList()
-    )
+    private val inntekter =
+        InntektkomponentResponse(
+            ident = Aktoer(AktoerType.AKTOER_ID, parameters.aktørId!!),
+            arbeidsInntektMaaned = emptyList(),
+        )
 
     @Test
     fun `Skal ikke slette brukte inntekter`() {
-
         withMigratedDb {
             val inntektStore = PostgresInntektStore(DataSource.instance)
-            val bruktInntekt = inntektStore.storeInntekt(
-                StoreInntektCommand(
-                    inntektparametre = parameters,
-                    inntekt = inntekter
+            val bruktInntekt =
+                inntektStore.storeInntekt(
+                    StoreInntektCommand(
+                        inntektparametre = parameters,
+                        inntekt = inntekter,
+                    ),
                 )
-
-            )
             inntektStore.markerInntektBrukt(bruktInntekt.inntektId)
             val vaktmester = Vaktmester(DataSource.instance)
             vaktmester.rydd()
@@ -57,34 +57,36 @@ internal class VaktmesterTest {
     }
 
     @Test
+    @Suppress("ktlint:standard:max-line-length")
     fun `Skal kun slette inntekt som ikke er brukt selvom det er referrert til samme behandlingsnøkler som en annen inntekt som er brukt`() {
         withMigratedDb {
             val inntektStore = PostgresInntektStore(DataSource.instance)
-            val ubruktInntekt = inntektStore.storeInntekt(
-                StoreInntektCommand(
-                    inntektparametre = parameters,
-                    inntekt = inntekter
-
-                ),
-                created = ZonedDateTime.now().minusMonths(7)
-
-            )
-            val bruktInntekt = inntektStore.storeInntekt(
-                StoreInntektCommand(
-                    inntektparametre = parameters,
-                    inntekt = inntekter.copy(
-                        arbeidsInntektMaaned = listOf(
-                            ArbeidsInntektMaaned(
-                                aarMaaned = YearMonth.now(),
-                                arbeidsInntektInformasjon = ArbeidsInntektInformasjon(emptyList()),
-                                avvikListe = emptyList()
-                            )
-                        )
-                    )
-
-                ),
-                created = ZonedDateTime.now().minusMonths(7)
-            )
+            val ubruktInntekt =
+                inntektStore.storeInntekt(
+                    StoreInntektCommand(
+                        inntektparametre = parameters,
+                        inntekt = inntekter,
+                    ),
+                    created = ZonedDateTime.now().minusMonths(7),
+                )
+            val bruktInntekt =
+                inntektStore.storeInntekt(
+                    StoreInntektCommand(
+                        inntektparametre = parameters,
+                        inntekt =
+                            inntekter.copy(
+                                arbeidsInntektMaaned =
+                                    listOf(
+                                        ArbeidsInntektMaaned(
+                                            aarMaaned = YearMonth.now(),
+                                            arbeidsInntektInformasjon = ArbeidsInntektInformasjon(emptyList()),
+                                            avvikListe = emptyList(),
+                                        ),
+                                    ),
+                            ),
+                    ),
+                    created = ZonedDateTime.now().minusMonths(7),
+                )
             inntektStore.markerInntektBrukt(bruktInntekt.inntektId)
             val vaktmester = Vaktmester(DataSource.instance)
             vaktmester.rydd()
@@ -97,20 +99,23 @@ internal class VaktmesterTest {
     fun `Skal kun slette ubrukte inntekter som er eldre enn 180 dager`() {
         withMigratedDb {
             val inntektStore = PostgresInntektStore(DataSource.instance)
-            val ubruktEldreEnn180Dager = inntektStore.storeInntekt(
-                command = StoreInntektCommand(
-                    inntektparametre = parameters,
-                    inntekt = inntekter
-                ),
-                created = ZonedDateTime.now().minusMonths(7)
-
-            )
-            val ubruktYngreEnn180Dager = inntektStore.storeInntekt(
-                command = StoreInntektCommand(
-                    inntektparametre = parameters,
-                    inntekt = inntekter
+            val ubruktEldreEnn180Dager =
+                inntektStore.storeInntekt(
+                    command =
+                        StoreInntektCommand(
+                            inntektparametre = parameters,
+                            inntekt = inntekter,
+                        ),
+                    created = ZonedDateTime.now().minusMonths(7),
                 )
-            )
+            val ubruktYngreEnn180Dager =
+                inntektStore.storeInntekt(
+                    command =
+                        StoreInntektCommand(
+                            inntektparametre = parameters,
+                            inntekt = inntekter,
+                        ),
+                )
 
             val vaktmester = Vaktmester(DataSource.instance)
             vaktmester.rydd()
@@ -128,17 +133,19 @@ internal class VaktmesterTest {
     fun `Skal kun slette manuelt redigerte, ubrukte inntekter som er eldre enn 180 dager`() {
         withMigratedDb {
             val inntektStore = PostgresInntektStore(DataSource.instance)
-            val ubruktEldreEnn90Dager = inntektStore.storeInntekt(
-
-                command = StoreInntektCommand(
-                    inntektparametre = parameters,
-                    inntekt = inntekter,
-                    manueltRedigert = ManueltRedigert(
-                        redigertAv = "test"
-                    )
-                ),
-                created = ZonedDateTime.now().minusMonths(7)
-            )
+            val ubruktEldreEnn90Dager =
+                inntektStore.storeInntekt(
+                    command =
+                        StoreInntektCommand(
+                            inntektparametre = parameters,
+                            inntekt = inntekter,
+                            manueltRedigert =
+                                ManueltRedigert(
+                                    redigertAv = "test",
+                                ),
+                        ),
+                    created = ZonedDateTime.now().minusMonths(7),
+                )
 
             val vaktmester = Vaktmester(DataSource.instance)
             vaktmester.rydd()

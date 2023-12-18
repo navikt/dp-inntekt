@@ -11,56 +11,57 @@ import java.time.LocalDate
 import javax.sql.DataSource
 
 internal class KronetilleggUttrekk(private val dataSource: DataSource) {
-
-    fun utrekkFra(inntektId: InntektId): Uttrekk = hentInntekt(inntektId).let { kronetilleggInntekt ->
-        val opptjeningsperiode = Opptjeningsperiode(kronetilleggInntekt.beregningsdato)
-        val klassifisertDbInntekt = klassifiserOgMapInntekt(
-            mapToSpesifisertInntekt(
-                kronetilleggInntekt.inntekt,
-                opptjeningsperiode.sisteAvsluttendeKalenderMåned
-            )
-        )
-        return if (klassifisertDbInntekt.inntektsListe.any { inntekt ->
-            inntekt.klassifiserteInntekter.any {
-                it.inntektKlasse == InntektKlasse.DAGPENGER ||
-                    it.inntektKlasse == InntektKlasse.DAGPENGER_FANGST_FISKE
+    fun utrekkFra(inntektId: InntektId): Uttrekk =
+        hentInntekt(inntektId).let { kronetilleggInntekt ->
+            val opptjeningsperiode = Opptjeningsperiode(kronetilleggInntekt.beregningsdato)
+            val klassifisertDbInntekt =
+                klassifiserOgMapInntekt(
+                    mapToSpesifisertInntekt(
+                        kronetilleggInntekt.inntekt,
+                        opptjeningsperiode.sisteAvsluttendeKalenderMåned,
+                    ),
+                )
+            return if (klassifisertDbInntekt.inntektsListe.any { inntekt ->
+                    inntekt.klassifiserteInntekter.any {
+                        it.inntektKlasse == InntektKlasse.DAGPENGER ||
+                            it.inntektKlasse == InntektKlasse.DAGPENGER_FANGST_FISKE
+                    }
+                }
+            ) {
+                Uttrekk(inntektId.id, true)
+            } else {
+                Uttrekk(inntektId.id, false)
             }
         }
-        ) {
-            Uttrekk(inntektId.id, true)
-        } else {
-            Uttrekk(inntektId.id, false)
-        }
-    }
 
-    private fun hentInntekt(
-        inntektId: InntektId
-    ) = using(sessionOf(dataSource)) { session ->
-        session.run(
-            // language=PostgreSQL
-            queryOf(
-                """
-                SELECT id, inntekt.inntekt, manuelt_redigert, beregningsdato, kontekstid
-                FROM inntekt_v1_person_mapping
-                    JOIN inntekt_v1 inntekt on inntekt.id = inntekt_v1_person_mapping.inntektid
-                WHERE inntektid = :inntektId;
-                """.trimIndent(),
-                mapOf(
-                    "inntektId" to inntektId.id,
-                )
-            ).map {
-                KronetilleggInntekt(
-                    beregningsdato = it.localDate("beregningsdato"),
-                    inntekt = StoredInntekt(
-                        inntektId = InntektId(inntektId.id),
-                        inntekt = PostgresInntektStore.adapter.fromJson(it.string("inntekt"))!!,
-                        manueltRedigert = it.boolean("manuelt_redigert")
+    private fun hentInntekt(inntektId: InntektId) =
+        using(sessionOf(dataSource)) { session ->
+            session.run(
+                // language=PostgreSQL
+                queryOf(
+                    """
+                    SELECT id, inntekt.inntekt, manuelt_redigert, beregningsdato, kontekstid
+                    FROM inntekt_v1_person_mapping
+                        JOIN inntekt_v1 inntekt on inntekt.id = inntekt_v1_person_mapping.inntektid
+                    WHERE inntektid = :inntektId;
+                    """.trimIndent(),
+                    mapOf(
+                        "inntektId" to inntektId.id,
                     ),
-                    vedtakId = it.int("kontekstid"),
-                )
-            }.asSingle
-        ) ?: throw InntektNotFoundException("Inntekt with id ${inntektId.id} not found.")
-    }
+                ).map {
+                    KronetilleggInntekt(
+                        beregningsdato = it.localDate("beregningsdato"),
+                        inntekt =
+                            StoredInntekt(
+                                inntektId = InntektId(inntektId.id),
+                                inntekt = PostgresInntektStore.adapter.fromJson(it.string("inntekt"))!!,
+                                manueltRedigert = it.boolean("manuelt_redigert"),
+                            ),
+                        vedtakId = it.int("kontekstid"),
+                    )
+                }.asSingle,
+            ) ?: throw InntektNotFoundException("Inntekt with id ${inntektId.id} not found.")
+        }
 }
 
 private data class KronetilleggInntekt(

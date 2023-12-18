@@ -24,11 +24,12 @@ fun Route.opptjeningsperiodeApi(inntektStore: InntektStore) {
 
                 val gammelBeregningsdato = inntektStore.getBeregningsdato(InntektId(parametere.inntektsId))
 
-                val resultat = Opptjeningsperiode(gammelBeregningsdato).sammeOpptjeningsPeriode(
-                    Opptjeningsperiode(
-                        LocalDate.parse(parametere.beregningsdato)
+                val resultat =
+                    Opptjeningsperiode(gammelBeregningsdato).sammeOpptjeningsPeriode(
+                        Opptjeningsperiode(
+                            LocalDate.parse(parametere.beregningsdato),
+                        ),
                     )
-                )
                 val response = InntjeningsperiodeResultat(sammeInntjeningsPeriode = resultat)
                 call.respond(HttpStatusCode.OK, response)
             }
