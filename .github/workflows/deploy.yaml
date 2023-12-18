@@ -30,7 +30,7 @@ jobs:
           dependency-graph: generate-and-submit
           arguments: --configuration-cache build
 
-      - uses: nais/docker-build-push@v1
+      - uses: nais/docker-build-push@v2
         name: docker-build-push
         id: docker-build-push
         with:
