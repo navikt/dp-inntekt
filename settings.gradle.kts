@@ -8,9 +8,4 @@
  */
 
 rootProject.name = "dp-inntekt"
-
-var jitpack: Boolean = System.getenv("JITPACK")?.toBoolean() ?: false
-
-if (!jitpack) { // skip jitpack build of dp-inntekt-api
-    include("dp-inntekt-api")
-}
+include("dp-inntekt-api")
