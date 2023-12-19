@@ -1,8 +1,6 @@
 package no.nav.dagpenger.inntekt
 
 import com.natpryce.konfig.Configuration
-import com.squareup.moshi.JsonDataException
-import com.squareup.moshi.JsonEncodingException
 import de.huxhorn.sulky.ulid.ULID
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -143,26 +141,26 @@ internal fun Application.inntektApi(
                 )
             call.respond(statusCode, error)
         }
-        exception<JsonEncodingException> { call, cause ->
-            LOGGER.warn("Request was malformed", cause)
-            val error =
-                Problem(
-                    type = URI("urn:dp:error:inntekt:parameter"),
-                    title = "Klarte ikke å lese parameterene",
-                    status = 400,
-                )
-            call.respond(HttpStatusCode.BadRequest, error)
-        }
-        exception<JsonDataException> { call, cause ->
-            LOGGER.warn("Request does not match expected json", cause)
-            val error =
-                Problem(
-                    type = URI("urn:dp:error:inntekt:parameter"),
-                    title = "Parameteret er ikke gyldig, mangler obligatorisk felt: '${cause.message}'",
-                    status = 400,
-                )
-            call.respond(HttpStatusCode.BadRequest, error)
-        }
+//        exception<JsonEncodingException> { call, cause ->
+//            LOGGER.warn("Request was malformed", cause)
+//            val error =
+//                Problem(
+//                    type = URI("urn:dp:error:inntekt:parameter"),
+//                    title = "Klarte ikke å lese parameterene",
+//                    status = 400,
+//                )
+//            call.respond(HttpStatusCode.BadRequest, error)
+//        }
+//        exception<JsonDataException> { call, cause ->
+//            LOGGER.warn("Request does not match expected json", cause)
+//            val error =
+//                Problem(
+//                    type = URI("urn:dp:error:inntekt:parameter"),
+//                    title = "Parameteret er ikke gyldig, mangler obligatorisk felt: '${cause.message}'",
+//                    status = 400,
+//                )
+//            call.respond(HttpStatusCode.BadRequest, error)
+//        }
         exception<BadRequestException> { call, cause ->
             LOGGER.warn("Request does not match expected json", cause)
             val error =

@@ -7,12 +7,12 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
-import no.nav.dagpenger.events.moshiInstance
 import no.nav.dagpenger.inntekt.Config
 import no.nav.dagpenger.inntekt.Config.inntektApiConfig
 import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import no.nav.dagpenger.plain.producerConfig
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -73,7 +73,6 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
             },
         )
     }
-    private val adapter = moshiInstance.adapter<Map<String, Any?>>(Map::class.java).lenient()
 
     @Test
     fun `Should mark inntekt id as used`() {
@@ -89,7 +88,9 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     listen()
                 }
             val metaData =
-                producer.send(ProducerRecord(config.inntektBruktDataTopic, "test", adapter.toJson(bruktInntektMelding)))
+                producer.send(
+                    ProducerRecord(config.inntektBruktDataTopic, "test", jacksonObjectMapper.writeValueAsString(bruktInntektMelding)),
+                )
                     .get(5, TimeUnit.SECONDS)
             LOGGER.info("Producer produced $bruktInntektMelding with meta $metaData")
 
@@ -121,7 +122,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     ProducerRecord(
                         config.inntektBruktDataTopic,
                         "test",
-                        adapter.toJson(bruktInntektMeldingManueltGrunnlag),
+                        jacksonObjectMapper.writeValueAsString(bruktInntektMeldingManueltGrunnlag),
                     ),
                 )
                     .get(5, TimeUnit.SECONDS)
@@ -157,7 +158,9 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     listen()
                 }
             val metaData =
-                producer.send(ProducerRecord(config.inntektBruktDataTopic, "test", adapter.toJson(bruktInntektMelding)))
+                producer.send(
+                    ProducerRecord(config.inntektBruktDataTopic, "test", jacksonObjectMapper.writeValueAsString(bruktInntektMelding)),
+                )
                     .get(5, TimeUnit.SECONDS)
             LOGGER.info("Producer produced $bruktInntektMelding with meta $metaData + should fail")
 

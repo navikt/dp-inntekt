@@ -1,6 +1,5 @@
 package no.nav.dagpenger.inntekt.db
 
-import com.squareup.moshi.JsonAdapter
 import de.huxhorn.sulky.ulid.ULID
 import io.prometheus.client.Summary
 import kotliquery.queryOf
@@ -12,8 +11,8 @@ import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.mapping.mapToSpesifisertInntekt
-import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
+import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
@@ -24,8 +23,6 @@ import javax.sql.DataSource
 @Suppress("ktlint:standard:max-line-length")
 internal class PostgresInntektStore(private val dataSource: DataSource) : InntektStore, HealthCheck {
     companion object {
-        internal val adapter: JsonAdapter<InntektkomponentResponse> =
-            moshiInstance.adapter(InntektkomponentResponse::class.java)
         private val ulidGenerator = ULID()
         private val LOGGER = KotlinLogging.logger {}
         private val markerInntektTimer =
@@ -121,7 +118,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                 ).map { row ->
                     StoredInntekt(
                         inntektId = InntektId(row.string("id")),
-                        inntekt = adapter.fromJson(row.string("inntekt"))!!,
+                        inntekt = jacksonObjectMapper.readValue(row.string("inntekt"), InntektkomponentResponse::class.java)!!,
                         manueltRedigert = row.boolean("manuelt_redigert"),
                         timestamp = row.zonedDateTime("timestamp").toLocalDateTime(),
                     )
@@ -151,7 +148,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                     ).map { row ->
                         StoredInntekt(
                             inntektId = InntektId(row.string("id")),
-                            inntekt = adapter.fromJson(row.string("inntekt"))!!,
+                            inntekt = jacksonObjectMapper.readValue(row.string("inntekt"), InntektkomponentResponse::class.java)!!,
                             manueltRedigert = row.boolean("manuelt_redigert"),
                             timestamp = row.zonedDateTime("timestamp").toLocalDateTime(),
                         ) to row.localDate("beregningsdato")
@@ -180,7 +177,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                                 "data" to
                                     PGobject().apply {
                                         type = "jsonb"
-                                        value = adapter.toJson(command.inntekt)
+                                        value = jacksonObjectMapper.writeValueAsString(command.inntekt)
                                     },
                                 when (command.manueltRedigert) {
                                     null -> "manuelt" to false

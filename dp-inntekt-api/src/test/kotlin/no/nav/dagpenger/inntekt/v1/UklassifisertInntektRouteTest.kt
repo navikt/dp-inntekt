@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.v1
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import de.huxhorn.sulky.ulid.ULID
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.shouldNotBe
@@ -24,7 +25,6 @@ import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.db.StoredInntekt
-import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
@@ -37,9 +37,9 @@ import no.nav.dagpenger.inntekt.mapping.GUIArbeidsInntektMaaned
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
 import no.nav.dagpenger.inntekt.mapping.GUIInntektsKomponentResponse
 import no.nav.dagpenger.inntekt.mapping.InntektMedVerdikode
-import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
+import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -158,13 +158,13 @@ internal class UklassifisertInntektRouteTest {
                 addHeader(HttpHeaders.Authorization, "Bearer $token")
             }.apply {
                 assertEquals(HttpStatusCode.NotFound, response.status())
-                val problem = moshiInstance.adapter(Problem::class.java).fromJson(response.content!!)
-                assertEquals("Kunne ikke finne inntekt i databasen", problem?.title)
-                assertEquals("urn:dp:error:inntekt", problem?.type.toString())
-                assertEquals(404, problem?.status)
+                val problem = jacksonObjectMapper.readValue<Problem>(response.content!!)
+                assertEquals("Kunne ikke finne inntekt i databasen", problem.title)
+                assertEquals("urn:dp:error:inntekt", problem.type.toString())
+                assertEquals(404, problem.status)
                 assertEquals(
                     "Inntekt with for InntektRequest(aktørId=$aktørId, kontekstId=1, kontekstType=VEDTAK, beregningsDato=2019-01-08) not found.",
-                    problem?.detail,
+                    problem.detail,
                 )
             }
         }
@@ -205,7 +205,7 @@ internal class UklassifisertInntektRouteTest {
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 val storedInntekt =
-                    moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+                    jacksonObjectMapper.readValue<StoredInntekt>(response.content!!)
                 assertEquals(storedInntekt.inntektId, inntektId)
             }
         }
@@ -221,7 +221,7 @@ internal class UklassifisertInntektRouteTest {
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 val uncachedInntekt =
-                    moshiInstance.adapter<DetachedInntekt>(DetachedInntekt::class.java).fromJson(response.content!!)!!
+                    jacksonObjectMapper.readValue<DetachedInntekt>(response.content!!)
                 assertEquals(emptyInntekt.ident, uncachedInntekt.inntekt.ident)
             }
         }
@@ -244,11 +244,11 @@ internal class UklassifisertInntektRouteTest {
             ) {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 addHeader(HttpHeaders.Authorization, "Bearer $token")
-                setBody(moshiInstance.adapter(GUIInntekt::class.java).toJson(guiInntekt))
+                setBody(jacksonObjectMapper.writeValueAsString(guiInntekt))
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 val storedInntekt =
-                    moshiInstance.adapter(StoredInntekt::class.java).fromJson(response.content!!)!!
+                    jacksonObjectMapper.readValue<StoredInntekt>(response.content!!)
                 assertEquals(storedInntekt.inntektId, inntektId)
             }
         }
@@ -271,11 +271,11 @@ internal class UklassifisertInntektRouteTest {
             ) {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 addHeader(HttpHeaders.Authorization, "Bearer $token")
-                setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
+                setBody(jacksonObjectMapper.writeValueAsString(guiInntekt))
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 val storedInntekt =
-                    moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+                    jacksonObjectMapper.readValue<StoredInntekt>(response.content!!)
                 assertEquals(storedInntekt.inntektId, inntektId)
                 shouldBeCounted(metricName = INNTEKT_KORRIGERING)
             }
@@ -328,7 +328,7 @@ internal class UklassifisertInntektRouteTest {
             ) {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 addHeader(HttpHeaders.Authorization, "Bearer $token")
-                val body = moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt)
+                val body = jacksonObjectMapper.writeValueAsString(guiInntekt)
                 setBody(body.replace(oldValue = "123", newValue = ""))
             }.apply {
                 assertEquals(HttpStatusCode.BadRequest, response.status())
@@ -353,11 +353,11 @@ internal class UklassifisertInntektRouteTest {
             ) {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 addHeader(HttpHeaders.Authorization, "Bearer $token")
-                setBody(moshiInstance.adapter<GUIInntekt>(GUIInntekt::class.java).toJson(guiInntekt))
+                setBody(jacksonObjectMapper.writeValueAsString(guiInntekt))
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 val storedInntekt =
-                    moshiInstance.adapter<StoredInntekt>(StoredInntekt::class.java).fromJson(response.content!!)!!
+                    jacksonObjectMapper.readValue<StoredInntekt>(response.content!!)
                 assertEquals(storedInntekt.inntektId, inntektId)
                 shouldBeCounted(metricName = INNTEKT_OPPFRISKING_BRUKT)
             }
@@ -381,11 +381,11 @@ internal class UklassifisertInntektRouteTest {
             ) {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 addHeader(HttpHeaders.Authorization, "Bearer $token")
-                setBody(moshiInstance.adapter(GUIInntekt::class.java).toJson(guiInntekt))
+                setBody(jacksonObjectMapper.writeValueAsString(guiInntekt))
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 val storedInntekt =
-                    moshiInstance.adapter(StoredInntekt::class.java).fromJson(response.content!!)!!
+                    jacksonObjectMapper.readValue<StoredInntekt>(response.content!!)
                 assertEquals(storedInntekt.inntektId, inntektId)
                 shouldBeCounted(metricName = INNTEKT_OPPFRISKING_BRUKT)
             }
@@ -399,7 +399,7 @@ internal class UklassifisertInntektRouteTest {
             }.apply {
                 assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
                 assertEquals(HttpStatusCode.OK, response.status())
-                assertTrue(runCatching { inntektKlassifiseringsKoderJsonAdapter.fromJson(response.content!!) }.isSuccess)
+                assertTrue(runCatching { jacksonObjectMapper.readValue<Set<String>>(response.content!!) }.isSuccess)
             }
         }
 

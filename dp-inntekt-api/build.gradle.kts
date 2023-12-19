@@ -49,11 +49,6 @@ dependencies {
     implementation("io.ktor:ktor-client-apache:${libs.versions.ktor.get()}")
 
     implementation(libs.bundles.jackson)
-
-    implementation("com.squareup.moshi:moshi:$moshiVersion")
-    implementation("com.squareup.moshi:moshi-adapters:$moshiVersion")
-    implementation("com.squareup.moshi:moshi-kotlin:$moshiVersion")
-
     implementation("org.apache.kafka:kafka-clients:3.6.1")
 
     implementation(libs.kotlin.logging)

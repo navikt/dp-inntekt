@@ -10,7 +10,7 @@ import no.nav.dagpenger.events.inntekt.v1.Postering
 import no.nav.dagpenger.events.inntekt.v1.PosteringsType
 import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.klassifiserer.klassifiserOgMapInntekt
-import no.nav.dagpenger.inntekt.moshiInstance
+import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -20,10 +20,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 internal class KlassifiserOgMapInntektTest {
-    companion object {
-        val spesifisertInntektJsonAdapter = moshiInstance.adapter(SpesifisertInntekt::class.java)
-    }
-
     @Test
     fun `Klassifiserer tom inntekt`() {
         val spesifisertInntekt =
@@ -53,7 +49,7 @@ internal class KlassifiserOgMapInntektTest {
         val testDataJson =
             KlassifiserOgMapInntektTest::class.java
                 .getResource("/test-data/spesifisert-inntekt-mange-posteringer.json").readText()
-        val spesifisertInntekt = spesifisertInntektJsonAdapter.fromJson(testDataJson)!!
+        val spesifisertInntekt = jacksonObjectMapper.readValue(testDataJson, SpesifisertInntekt::class.java)
 
         val sum = spesifisertInntekt.posteringer.fold(BigDecimal.ZERO) { acc, postering -> acc + postering.beløp }
         val spesifiserteMåneder = spesifisertInntekt.posteringer.groupBy { it.posteringsMåned }.keys
@@ -79,7 +75,7 @@ internal class KlassifiserOgMapInntektTest {
         val testDataJson =
             KlassifiserOgMapInntektTest::class.java
                 .getResource("/test-data/spesifisert-inntekt-flere-klasser.json").readText()
-        val spesifisertInntekt = spesifisertInntektJsonAdapter.fromJson(testDataJson)!!
+        val spesifisertInntekt = jacksonObjectMapper.readValue(testDataJson, SpesifisertInntekt::class.java)
 
         val klassifisertInntekt = klassifiserOgMapInntekt(spesifisertInntekt)
 

@@ -4,9 +4,11 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.dagpenger.events.inntekt.v1.InntektKlasse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.klassifiserer.klassifiserOgMapInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToSpesifisertInntekt
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
+import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import java.time.LocalDate
 import javax.sql.DataSource
 
@@ -54,7 +56,7 @@ internal class KronetilleggUttrekk(private val dataSource: DataSource) {
                         inntekt =
                             StoredInntekt(
                                 inntektId = InntektId(inntektId.id),
-                                inntekt = PostgresInntektStore.adapter.fromJson(it.string("inntekt"))!!,
+                                inntekt = jacksonObjectMapper.readValue(it.string("inntekt"), InntektkomponentResponse::class.java)!!,
                                 manueltRedigert = it.boolean("manuelt_redigert"),
                             ),
                         vedtakId = it.int("kontekstid"),
