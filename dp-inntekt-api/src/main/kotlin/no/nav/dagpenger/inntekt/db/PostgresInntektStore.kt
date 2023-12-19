@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.db
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import de.huxhorn.sulky.ulid.ULID
 import io.prometheus.client.Summary
 import kotliquery.queryOf
@@ -118,7 +119,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                 ).map { row ->
                     StoredInntekt(
                         inntektId = InntektId(row.string("id")),
-                        inntekt = jacksonObjectMapper.readValue(row.string("inntekt"), InntektkomponentResponse::class.java)!!,
+                        inntekt = row.binaryStream("inntekt").use { jacksonObjectMapper.readValue<InntektkomponentResponse>(it) },
                         manueltRedigert = row.boolean("manuelt_redigert"),
                         timestamp = row.zonedDateTime("timestamp").toLocalDateTime(),
                     )
@@ -148,7 +149,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                     ).map { row ->
                         StoredInntekt(
                             inntektId = InntektId(row.string("id")),
-                            inntekt = jacksonObjectMapper.readValue(row.string("inntekt"), InntektkomponentResponse::class.java)!!,
+                            inntekt = row.binaryStream("inntekt").use { jacksonObjectMapper.readValue<InntektkomponentResponse>(it) },
                             manueltRedigert = row.boolean("manuelt_redigert"),
                             timestamp = row.zonedDateTime("timestamp").toLocalDateTime(),
                         ) to row.localDate("beregningsdato")
