@@ -1,9 +1,7 @@
 package no.nav.dagpenger.inntekt.v1
 
 import com.auth0.jwt.exceptions.JWTDecodeException
-import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.withCharset
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
@@ -12,7 +10,6 @@ import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.plugins.callid.callId
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
-import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
@@ -29,7 +26,6 @@ import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
-import no.nav.dagpenger.inntekt.inntektKlassifiseringsKoderJsonAdapter
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
@@ -191,11 +187,12 @@ fun Route.uklassifisertInntekt(
     route("/verdikoder") {
         get {
             withContext(Dispatchers.IO) {
-                call.respondText(
-                    inntektKlassifiseringsKoderJsonAdapter.toJson(dataGrunnlagKlassifiseringToVerdikode.values),
-                    ContentType.Application.Json.withCharset(Charsets.UTF_8),
-                    HttpStatusCode.OK,
-                )
+                call.respond(HttpStatusCode.OK, dataGrunnlagKlassifiseringToVerdikode.values)
+//                call.respondText(
+//                    inntektKlassifiseringsKoderJsonAdapter.toJson(dataGrunnlagKlassifiseringToVerdikode.values),
+//                    ContentType.Application.Json.withCharset(Charsets.UTF_8),
+//                    HttpStatusCode.OK,
+//                )
             }
         }
     }

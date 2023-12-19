@@ -11,7 +11,7 @@ import no.nav.dagpenger.inntekt.db.KronetilleggUttrekk
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
 import no.nav.dagpenger.inntekt.db.dataSourceFrom
 import no.nav.dagpenger.inntekt.db.migrate
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentHttpClient
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentKtorClient
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.httpClient
 import no.nav.dagpenger.inntekt.oppslag.pdl.PdlGraphQLRepository
@@ -57,7 +57,7 @@ fun main() {
                 httpClient = httpClient(),
             )
         val inntektskomponentHttpClient =
-            InntektskomponentHttpClient(
+            InntektkomponentKtorClient(
                 config.application.hentinntektListeUrl,
                 stsOidcClient,
             )

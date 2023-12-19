@@ -22,7 +22,7 @@ class NaisChecksTest {
     private val inntektStoreMock: InntektStore =
         mockk(
             relaxed = true,
-            moreInterfaces = *arrayOf(HealthCheck::class),
+            moreInterfaces = arrayOf(HealthCheck::class),
         )
     private val inntektStoreMockHealthCheck = inntektStoreMock as HealthCheck
 

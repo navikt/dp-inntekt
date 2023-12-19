@@ -45,7 +45,7 @@ dependencies {
     implementation("com.expediagroup:graphql-kotlin-ktor-client:$expediaGraphqlVersion")
     implementation("com.expediagroup:graphql-kotlin-client-jackson:$expediaGraphqlVersion")
 
-    implementation(libs.ktor.client.logging.jvm)
+    implementation(libs.bundles.ktor.client)
     implementation("io.ktor:ktor-client-apache:${libs.versions.ktor.get()}")
 
     implementation(libs.bundles.jackson)
@@ -57,10 +57,6 @@ dependencies {
     implementation("org.apache.kafka:kafka-clients:3.6.1")
 
     implementation(libs.kotlin.logging)
-
-    implementation("com.github.kittinunf.fuel:fuel:2.2.1")
-    implementation("com.github.kittinunf.fuel:fuel-moshi:2.2.1")
-    implementation("com.github.kittinunf.fuel:fuel-coroutines:2.2.1")
 
     implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")

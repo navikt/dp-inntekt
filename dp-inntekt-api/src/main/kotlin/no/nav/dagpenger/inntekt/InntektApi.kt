@@ -8,6 +8,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
+import io.ktor.http.withCharset
 import io.ktor.serialization.jackson.JacksonConverter
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -227,7 +228,7 @@ internal fun Application.inntektApi(
     }
 
     install(ContentNegotiation) {
-        register(ContentType.Application.Json, JacksonConverter(jacksonObjectMapper))
+        register(ContentType.Application.Json.withCharset(Charsets.UTF_8), JacksonConverter(jacksonObjectMapper))
     }
 
     routing {

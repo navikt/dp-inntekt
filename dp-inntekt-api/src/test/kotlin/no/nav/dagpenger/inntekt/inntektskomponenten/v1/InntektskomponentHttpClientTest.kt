@@ -65,8 +65,8 @@ internal class InntektskomponentHttpClientTest {
 
         stubFor(
             post(urlEqualTo("/v1/hentinntektliste"))
-                .withHeader("Authorization", RegexPattern("Bearer\\s[\\d|a-f]{8}-([\\d|a-f]{4}-){3}[\\d|a-f]{12}"))
-                .withHeader("Nav-Consumer-Id", EqualToPattern("dp-inntekt-api"))
+                .withHeader("Authorization", authorizationBearer)
+                .withHeader("Nav-Consumer-Id", dpInntektApi)
                 .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     okForContentType("application/json", body),
@@ -74,7 +74,7 @@ internal class InntektskomponentHttpClientTest {
         )
 
         val inntektskomponentClient =
-            InntektskomponentHttpClient(
+            InntektkomponentKtorClient(
                 server.url("/v1/hentinntektliste"),
                 DummyOidcClient(),
             )
@@ -102,9 +102,9 @@ internal class InntektskomponentHttpClientTest {
                 .getResource("/test-data/example-inntekt-spesielleinntjeningsforhold.json").readText()
 
         stubFor(
-            WireMock.post(urlEqualTo("/v1/hentinntektliste"))
-                .withHeader("Authorization", RegexPattern("Bearer\\s[\\d|a-f]{8}-([\\d|a-f]{4}-){3}[\\d|a-f]{12}"))
-                .withHeader("Nav-Consumer-Id", EqualToPattern("dp-inntekt-api"))
+            post(urlEqualTo("/v1/hentinntektliste"))
+                .withHeader("Authorization", authorizationBearer)
+                .withHeader("Nav-Consumer-Id", dpInntektApi)
                 .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     okForContentType("application/json", body),
@@ -112,7 +112,7 @@ internal class InntektskomponentHttpClientTest {
         )
 
         val inntektskomponentClient =
-            InntektskomponentHttpClient(
+            InntektkomponentKtorClient(
                 server.url("/v1/hentinntektliste"),
                 DummyOidcClient(),
             )
@@ -140,8 +140,8 @@ internal class InntektskomponentHttpClientTest {
     fun `fetch uklassifisert inntekt on 500 server error`() {
         stubFor(
             post(urlEqualTo("/v1/hentinntektliste"))
-                .withHeader("Authorization", RegexPattern("Bearer\\s[\\d|a-f]{8}-([\\d|a-f]{4}-){3}[\\d|a-f]{12}"))
-                .withHeader("Nav-Consumer-Id", EqualToPattern("dp-inntekt-api"))
+                .withHeader("Authorization", authorizationBearer)
+                .withHeader("Nav-Consumer-Id", dpInntektApi)
                 .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     WireMock.serverError(),
@@ -149,7 +149,7 @@ internal class InntektskomponentHttpClientTest {
         )
 
         val inntektskomponentClient =
-            InntektskomponentHttpClient(
+            InntektkomponentKtorClient(
                 server.url("/v1/hentinntektliste"),
                 DummyOidcClient(),
             )
@@ -178,8 +178,8 @@ internal class InntektskomponentHttpClientTest {
     fun `fetch uklassifisert inntekt with timeout`() {
         stubFor(
             post(urlEqualTo("/v1/hentinntektliste"))
-                .withHeader("Authorization", RegexPattern("Bearer\\s[\\d|a-f]{8}-([\\d|a-f]{4}-){3}[\\d|a-f]{12}"))
-                .withHeader("Nav-Consumer-Id", EqualToPattern("dp-inntekt-api"))
+                .withHeader("Authorization", authorizationBearer)
+                .withHeader("Nav-Consumer-Id", dpInntektApi)
                 .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     WireMock.serviceUnavailable().withFixedDelay(500),
@@ -187,9 +187,10 @@ internal class InntektskomponentHttpClientTest {
         )
 
         val inntektskomponentClient =
-            InntektskomponentHttpClient(
-                server.url("/v1/hentinntektliste"),
-                DummyOidcClient(),
+            InntektkomponentKtorClient(
+                hentInntektlisteUrl = server.url("/v1/hentinntektliste"),
+                timeouts = InntektskomponentClient.ConnectionTimeout(readTimeout = Duration.ofMillis(5)),
+                oidcClient = DummyOidcClient(),
             )
 
         val result =
@@ -202,7 +203,6 @@ internal class InntektskomponentHttpClientTest {
                             månedFom = YearMonth.of(2017, 3),
                             månedTom = YearMonth.of(2019, 1),
                         ),
-                        InntektskomponentClient.ConnectionTimeout(readTimeout = Duration.ofMillis(5)),
                     )
                 }
             }
@@ -210,7 +210,7 @@ internal class InntektskomponentHttpClientTest {
         result.isFailure.shouldBeTrue()
         result.shouldBeClientException<InntektskomponentenHttpClientException>(
             status = 500,
-            message = "Failed to fetch inntekt. Status code -1. Response message: . Problem message: Read timed out",
+            message = "Tidsavbrudd mot inntektskomponenten.",
         )
 
         shouldBeCounted(metricName = INNTEKTSKOMPONENT_FETCH_ERROR)
@@ -220,8 +220,8 @@ internal class InntektskomponentHttpClientTest {
     fun `fetch uklassifisert inntekt on 500 server error with body`() {
         stubFor(
             post(urlEqualTo("/v1/hentinntektliste"))
-                .withHeader("Authorization", RegexPattern("Bearer\\s[\\d|a-f]{8}-([\\d|a-f]{4}-){3}[\\d|a-f]{12}"))
-                .withHeader("Nav-Consumer-Id", EqualToPattern("dp-inntekt-api"))
+                .withHeader("Authorization", authorizationBearer)
+                .withHeader("Nav-Consumer-Id", dpInntektApi)
                 .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     WireMock.serverError().withBody(errorFromInntekskomponenten),
@@ -229,7 +229,7 @@ internal class InntektskomponentHttpClientTest {
         )
 
         val inntektskomponentClient =
-            InntektskomponentHttpClient(
+            InntektkomponentKtorClient(
                 server.url("/v1/hentinntektliste"),
                 DummyOidcClient(),
             )
@@ -251,10 +251,14 @@ internal class InntektskomponentHttpClientTest {
         result.isFailure.shouldBeTrue()
         result.shouldBeClientException<InntektskomponentenHttpClientException>(
             status = 500,
-            message = "Failed to fetch inntekt. Status code 500. Response message: Server Error. Problem message: Feil i filtrering: En feil oppstod i filteret DagpengerGrunnlagA-Inntekt, Regel no.nav.inntektskomponenten.filter.regler.dagpenger.DagpengerHovedregel støtter ikke inntekter av type no.nav.inntektskomponenten.domain.Loennsinntekt",
+            message = "Failed to fetch inntekt. Problem message: Feil i filtrering: En feil oppstod i filteret DagpengerGrunnlagA-Inntekt, Regel no.nav.inntektskomponenten.filter.regler.dagpenger.DagpengerHovedregel støtter ikke inntekter av type no.nav.inntektskomponenten.domain.Loennsinntekt",
             detail = "Feil i filtrering: En feil oppstod i filteret DagpengerGrunnlagA-Inntekt, Regel no.nav.inntektskomponenten.filter.regler.dagpenger.DagpengerHovedregel støtter ikke inntekter av type no.nav.inntektskomponenten.domain.Loennsinntekt",
         )
     }
+
+    private val dpInntektApi = EqualToPattern("dp-inntekt-api")
+
+    private val authorizationBearer = RegexPattern("Bearer\\s[\\d|a-f]{8}-([\\d|a-f]{4}-){3}[\\d|a-f]{12}")
 
     private val errorFromInntekskomponenten =
         """

@@ -1,23 +1,34 @@
 package no.nav.dagpenger.inntekt.inntektskomponenten.v1
 
-import com.github.kittinunf.fuel.core.awaitResponseResult
-import com.github.kittinunf.fuel.core.extensions.authentication
-import com.github.kittinunf.fuel.httpPost
-import com.github.kittinunf.fuel.moshi.moshiDeserializerOf
 import de.huxhorn.sulky.ulid.ULID
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.ServerResponseException
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.serialization.jackson.JacksonConverter
 import io.prometheus.client.Counter
 import io.prometheus.client.Summary
 import mu.KotlinLogging
 import mu.withLoggingContext
-import no.nav.dagpenger.inntekt.moshiInstance
+import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import no.nav.dagpenger.oidc.OidcClient
-import java.time.YearMonth
+import kotlin.time.Duration.Companion.seconds
 
 private val logg = KotlinLogging.logger {}
 private val sikkerLogg = KotlinLogging.logger("tjenestekall")
-private val jsonResponseAdapter = moshiInstance.adapter(InntektkomponentResponse::class.java)
-private val jsonRequestRequestAdapter = moshiInstance.adapter(HentInntektListeRequest::class.java)
-private val jsonMapAdapter = moshiInstance.adapter(Map::class.java)
 private val ulid = ULID()
 const val INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME = "inntektskomponent_client_seconds"
 private val clientLatencyStats: Summary =
@@ -42,89 +53,90 @@ private val inntektskomponentStatusCodesCounter =
         .labelNames("status_code")
         .register()
 
-class InntektskomponentHttpClient(
+internal class InntektkomponentKtorClient(
     private val hentInntektlisteUrl: String,
     private val oidcClient: OidcClient,
+    private val timeouts: InntektskomponentClient.ConnectionTimeout = InntektskomponentClient.ConnectionTimeout(),
+    engine: HttpClientEngine =
+        CIO.create {
+            requestTimeout = 30.seconds.inWholeMilliseconds
+        },
 ) : InntektskomponentClient {
-    override suspend fun getInntekt(
-        request: InntektkomponentRequest,
-        timeouts: InntektskomponentClient.ConnectionTimeout,
-        callId: String?,
-    ): InntektkomponentResponse {
-        val requestBody =
-            HentInntektListeRequest(
-                "DagpengerGrunnlagA-Inntekt",
-                "Dagpenger",
-                Aktoer(AktoerType.AKTOER_ID, request.aktørId),
-                request.månedFom,
-                request.månedTom,
-            )
-        val jsonBody = jsonRequestRequestAdapter.toJson(requestBody)
-        val timer = clientLatencyStats.startTimer()
-        val externalCallId = callId ?: ulid.nextULID()
-        withLoggingContext(
-            "callId" to externalCallId,
-        ) {
-            logg.info("Fetching new inntekt for ${request.copy(fødselsnummer = "<REDACTED>")}")
-
-            try {
-                val (_, response, result) =
-                    with(hentInntektlisteUrl.httpPost()) {
-                        timeout(timeouts.connectionTimeout.toMillis().toInt())
-                        timeoutRead(timeouts.readTimeout.toMillis().toInt())
-
-                        authentication().bearer(oidcClient.oidcToken().access_token)
-                        header("Nav-Consumer-Id" to "dp-inntekt-api")
-                        header("Nav-Call-Id" to externalCallId)
-                        body(jsonBody)
-                        awaitResponseResult(moshiDeserializerOf(jsonResponseAdapter))
-                    }
-
-                inntektskomponentStatusCodesCounter.labels(response.statusCode.toString()).inc()
-
-                return result.fold(
-                    {
-                        it
-                    },
-                    { error ->
-                        val resp = error.response.body().asString("application/json")
-                        val detail =
-                            runCatching {
-                                jsonMapAdapter.fromJson(resp)
-                            }.let {
-                                it.getOrNull()?.get("message")?.toString() ?: error.message
-                            }
-
-                        clientFetchErrors.inc()
-
-                        throw InntektskomponentenHttpClientException(
-                            if (response.statusCode == -1) 500 else response.statusCode,
-                            @Suppress("ktlint:standard:max-line-length")
-                            "Failed to fetch inntekt. Status code ${response.statusCode}. Response message: ${response.responseMessage}. Problem message: $detail",
-                            detail,
-                        ).also {
-                            logg.error(it) { it }
-                            sikkerLogg.error(it) { "Oppslag mot inntektskomponenten feilet. Request=$requestBody" }
-                        }
-                    },
-                )
-            } finally {
-                timer.observeDuration()
+    private val httpClient =
+        HttpClient(engine) {
+            expectSuccess = true
+            install(Logging) {
+                level = LogLevel.INFO
+            }
+            install(HttpTimeout) {
+                connectTimeoutMillis = timeouts.connectionTimeout.toMillis()
+                requestTimeoutMillis = timeouts.readTimeout.toMillis()
+                socketTimeoutMillis = timeouts.connectionTimeout.toMillis()
+            }
+            install(ContentNegotiation) {
+                register(ContentType.Application.Json, JacksonConverter(jacksonObjectMapper))
+            }
+            defaultRequest {
+                header("Nav-Consumer-Id", "dp-inntekt-api")
             }
         }
+
+    override suspend fun getInntekt(
+        request: InntektkomponentRequest,
+        callId: String?,
+    ): InntektkomponentResponse {
+        val requestBody = request.tilInntektListeRequest()
+
+        val externalCallId = callId ?: ulid.nextULID()
+        withLoggingContext(mapOf("callId" to externalCallId)) {
+            val timer = clientLatencyStats.startTimer()
+            val response =
+                try {
+                    httpClient.post(urlString = hentInntektlisteUrl) {
+                        header("Nav-Call-Id", externalCallId)
+                        header(HttpHeaders.ContentType, ContentType.Application.Json)
+                        header(HttpHeaders.Authorization, "Bearer ${oidcClient.oidcToken().access_token}")
+                        setBody(requestBody)
+                    }
+                } catch (error: ServerResponseException) {
+                    val statusKode = error.response.status.value
+                    inntektskomponentStatusCodesCounter.labels(statusKode.toString()).inc()
+                    clientFetchErrors.inc()
+                    val feilmelding =
+                        kotlin.runCatching { jacksonObjectMapper.readTree(error.response.bodyAsText()).get("message").asText() }
+                            .getOrElse { error.message }
+                    throw InntektskomponentenHttpClientException(
+                        statusKode,
+                        "Failed to fetch inntekt. Problem message: $feilmelding",
+                        feilmelding,
+                    ).also {
+                        logg.error(it) { it }
+                        sikkerLogg.error(it) { "Oppslag mot inntektskomponenten feilet. Request=$requestBody" }
+                    }
+                } catch (timeout: HttpRequestTimeoutException) {
+                    val detail = "Tidsavbrudd mot inntektskomponenten. Brukte ${timer.observeDuration().seconds}"
+                    clientFetchErrors.inc()
+                    logg.error(timeout) { detail }
+                    throw InntektskomponentenHttpClientException(
+                        500,
+                        "Tidsavbrudd mot inntektskomponenten.",
+                        detail,
+                    )
+                } finally {
+                    timer.observeDuration()
+                }
+            inntektskomponentStatusCodesCounter.labels(response.status.value.toString()).inc()
+
+            return response.body()
+        }
     }
+
+    private fun InntektkomponentRequest.tilInntektListeRequest() =
+        HentInntektListeRequest(
+            "DagpengerGrunnlagA-Inntekt",
+            "Dagpenger",
+            Aktoer(AktoerType.AKTOER_ID, this.aktørId),
+            this.månedFom,
+            this.månedTom,
+        )
 }
-
-data class HentInntektListeRequest(
-    val ainntektsfilter: String,
-    val formaal: String,
-    val ident: Aktoer,
-    val maanedFom: YearMonth,
-    val maanedTom: YearMonth,
-)
-
-class InntektskomponentenHttpClientException(
-    val status: Int,
-    override val message: String,
-    val detail: String? = null,
-) : RuntimeException(message)
