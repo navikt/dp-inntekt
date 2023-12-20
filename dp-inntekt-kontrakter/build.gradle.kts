@@ -33,7 +33,7 @@ publishing {
             artifact(sourcesJar.get())
 
             pom {
-                name.set("kontrakter")
+                name.set("dp-inntekt-kontrakter")
                 description.set(
                     "Holder definisjonen av dagpenger inntekt",
                 )
