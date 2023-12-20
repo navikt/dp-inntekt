@@ -16,6 +16,8 @@ val sourcesJar by tasks.registering(Jar::class) {
 val githubUser: String? by project
 val githubPassword: String? by project
 
+group = "com.github.navikt"
+
 publishing {
 
     repositories {
