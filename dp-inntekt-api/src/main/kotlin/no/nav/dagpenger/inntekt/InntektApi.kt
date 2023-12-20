@@ -1,8 +1,8 @@
 package no.nav.dagpenger.inntekt
 
+import com.fasterxml.jackson.core.JsonParseException
+import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.natpryce.konfig.Configuration
-import com.squareup.moshi.JsonDataException
-import com.squareup.moshi.JsonEncodingException
 import de.huxhorn.sulky.ulid.ULID
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -143,7 +143,7 @@ internal fun Application.inntektApi(
                 )
             call.respond(statusCode, error)
         }
-        exception<JsonEncodingException> { call, cause ->
+        exception<JsonParseException> { call, cause ->
             LOGGER.warn("Request was malformed", cause)
             val error =
                 Problem(
@@ -153,7 +153,7 @@ internal fun Application.inntektApi(
                 )
             call.respond(HttpStatusCode.BadRequest, error)
         }
-        exception<JsonDataException> { call, cause ->
+        exception<MismatchedInputException> { call, cause ->
             LOGGER.warn("Request does not match expected json", cause)
             val error =
                 Problem(

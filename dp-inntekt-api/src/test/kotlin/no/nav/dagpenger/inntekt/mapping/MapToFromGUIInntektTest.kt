@@ -15,8 +15,8 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
-import no.nav.dagpenger.inntekt.moshiInstance
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
+import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -177,8 +177,8 @@ internal class KategoriseringTest {
             )
         val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), inntektsmottaker)
 
-        val beforeJson = moshiInstance.adapter(InntektkomponentResponse::class.java).toJson(rawInntekt)
-        val mappedJson = moshiInstance.adapter(GUIInntektsKomponentResponse::class.java).toJson(guiInntekt.inntekt)
+        val beforeJson = jacksonObjectMapper.writeValueAsString(rawInntekt)
+        val mappedJson = jacksonObjectMapper.writeValueAsString(guiInntekt.inntekt)
 
         JSONAssert.assertEquals(
             mappedJson,
@@ -253,8 +253,8 @@ internal class KategoriseringTest {
 
         val mappedInntekt = mapToStoredInntekt(guiInntekt)
 
-        val beforeJson = moshiInstance.adapter(GUIInntektsKomponentResponse::class.java).toJson(guiInntekt.inntekt)
-        val mappedJson = moshiInstance.adapter(InntektkomponentResponse::class.java).toJson(mappedInntekt.inntekt)
+        val beforeJson = jacksonObjectMapper.writeValueAsString(guiInntekt.inntekt)
+        val mappedJson = jacksonObjectMapper.writeValueAsString(mappedInntekt.inntekt)
 
         JSONAssert.assertEquals(
             beforeJson,

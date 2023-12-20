@@ -188,11 +188,6 @@ fun Route.uklassifisertInntekt(
         get {
             withContext(Dispatchers.IO) {
                 call.respond(HttpStatusCode.OK, dataGrunnlagKlassifiseringToVerdikode.values)
-//                call.respondText(
-//                    inntektKlassifiseringsKoderJsonAdapter.toJson(dataGrunnlagKlassifiseringToVerdikode.values),
-//                    ContentType.Application.Json.withCharset(Charsets.UTF_8),
-//                    HttpStatusCode.OK,
-//                )
             }
         }
     }
