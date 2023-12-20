@@ -5,8 +5,8 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCach
 plugins {
     id("common")
     application
-    id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("com.expediagroup.graphql") version "6.4.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.expediagroup.graphql") version "7.0.2"
     id("de.undercouch.download") version "5.5.0"
 }
 
@@ -23,7 +23,7 @@ application {
 
 val expediaGraphqlVersion = "7.0.2"
 val moshiVersion = "1.14.0"
-val log4j2Version = "2.20.0"
+val log4j2Version = "2.22.0"
 
 dependencies {
 
@@ -40,7 +40,7 @@ dependencies {
     implementation(libs.ktor.server.auth.jwt)
     implementation(libs.ktor.server.metrics.micrometer)
 
-    implementation("io.micrometer:micrometer-registry-prometheus:1.10.1")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.12.1")
 
     implementation("com.expediagroup:graphql-kotlin-client:$expediaGraphqlVersion")
     implementation("com.expediagroup:graphql-kotlin-ktor-client:$expediaGraphqlVersion")
@@ -50,7 +50,7 @@ dependencies {
     implementation("io.ktor:ktor-client-apache:${libs.versions.ktor.get()}")
 
     implementation(libs.bundles.jackson)
-    implementation("org.apache.kafka:kafka-clients:3.6.1")
+    implementation("org.apache.kafka:kafka-clients:7.5.2-ce")
 
     implementation(libs.kotlin.logging)
 
@@ -61,7 +61,7 @@ dependencies {
 
     implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.3.0")
 
-    implementation("no.nav.dagpenger:sts-klient:2023.12.13-22.05.4909146325c9")
+    implementation("no.nav.dagpenger:sts-klient:2023.12.20-09.10.d437884c245f")
 
     implementation(libs.bundles.postgres)
     implementation(libs.konfig)
@@ -74,7 +74,7 @@ dependencies {
     implementation("io.prometheus:simpleclient_common:0.16.0")
     implementation("io.prometheus:simpleclient_hotspot:0.16.0")
     implementation("io.prometheus:simpleclient_log4j2:0.16.0")
-    implementation("no.bekk.bekkopen:nocommons:0.9.0")
+    implementation("no.bekk.bekkopen:nocommons:0.16.0")
 
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
 
@@ -84,7 +84,7 @@ dependencies {
     testImplementation("no.nav.security:mock-oauth2-server:2.1.0")
     testImplementation("io.ktor:ktor-client-mock:${libs.versions.ktor.get()}")
 
-    testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
+    testImplementation("com.github.tomakehurst:wiremock-standalone:3.0.1")
 
     testImplementation(libs.bundles.kotest.assertions)
     testImplementation("io.kotest:kotest-property:${libs.versions.kotest.get()}")
@@ -94,7 +94,7 @@ dependencies {
     testImplementation(libs.testcontainer.postgresql)
     testImplementation("org.testcontainers:kafka:${libs.versions.testcontainer.get()}")
     testImplementation(libs.mockk)
-    testImplementation("org.skyscreamer:jsonassert:1.5.0")
+    testImplementation("org.skyscreamer:jsonassert:1.5.1")
 }
 
 tasks.named("shadowJar") {
