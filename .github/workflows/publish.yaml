@@ -9,6 +9,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,7 +27,7 @@ jobs:
         with:
           gradle-version: wrapper
           dependency-graph: generate-and-submit
-          arguments: --configuration-cache test
+          arguments: --configuration-cache :dp-inntekt-kontrakter:test
 
 
   release:
@@ -60,7 +62,7 @@ jobs:
           java-version: 17.x
           cache: 'gradle'
       - name: publish
-        run: ./gradlew -Pversion="$(echo ${{ needs.release.outputs.tag }})" publish
+        run: ./gradlew -Pversion="$(echo ${{ needs.release.outputs.tag }})" :dp-inntekt-kontrakter:publish
         env:
           ORG_GRADLE_PROJECT_githubUser: x-access-token
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}

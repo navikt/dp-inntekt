@@ -20,7 +20,7 @@ publishing {
 
     repositories {
         maven {
-            url = uri("https://maven.pkg.github.com/navikt/dp-inntekt-kontrakter")
+            url = uri("https://maven.pkg.github.com/navikt/dp-inntekt")
             credentials {
                 username = githubUser
                 password = githubPassword
