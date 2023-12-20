@@ -1,8 +1,8 @@
 package no.nav.dagpenger.inntekt.klassifiserer
 
-import no.nav.dagpenger.events.inntekt.v1.InntektKlasse
-import no.nav.dagpenger.events.inntekt.v1.Postering
-import no.nav.dagpenger.events.inntekt.v1.PosteringsType
+import no.nav.dagpenger.inntekt.v1.InntektKlasse
+import no.nav.dagpenger.inntekt.v1.Postering
+import no.nav.dagpenger.inntekt.v1.PosteringsType
 
 internal data class KlassifisertPostering(val postering: Postering, val inntektKlasse: InntektKlasse)
 

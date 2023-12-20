@@ -1,10 +1,10 @@
 package no.nav.dagpenger.inntekt.klassifiserer
 
-import no.nav.dagpenger.events.inntekt.v1.Avvik
-import no.nav.dagpenger.events.inntekt.v1.Inntekt
-import no.nav.dagpenger.events.inntekt.v1.KlassifisertInntekt
-import no.nav.dagpenger.events.inntekt.v1.KlassifisertInntektMåned
-import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
+import no.nav.dagpenger.inntekt.v1.Avvik
+import no.nav.dagpenger.inntekt.v1.Inntekt
+import no.nav.dagpenger.inntekt.v1.KlassifisertInntekt
+import no.nav.dagpenger.inntekt.v1.KlassifisertInntektMåned
+import no.nav.dagpenger.inntekt.v1.SpesifisertInntekt
 import java.math.BigDecimal
 import java.time.YearMonth
 

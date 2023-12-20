@@ -7,13 +7,13 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
-import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.mapping.mapToSpesifisertInntekt
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.v1.SpesifisertInntekt
 import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException

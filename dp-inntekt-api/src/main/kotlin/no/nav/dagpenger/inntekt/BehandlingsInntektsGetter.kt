@@ -1,8 +1,6 @@
 package no.nav.dagpenger.inntekt
 
 import mu.KotlinLogging
-import no.nav.dagpenger.events.inntekt.v1.Inntekt
-import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.Inntektparametre
@@ -12,6 +10,8 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.klassifiserer.klassifiserOgMapInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToSpesifisertInntekt
+import no.nav.dagpenger.inntekt.v1.Inntekt
+import no.nav.dagpenger.inntekt.v1.SpesifisertInntekt
 
 private val LOGGER = KotlinLogging.logger {}
 

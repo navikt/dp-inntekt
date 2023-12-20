@@ -1,16 +1,16 @@
 package no.nav.dagpenger.inntekt.klassifiser
 
 import io.kotest.matchers.shouldBe
-import no.nav.dagpenger.events.inntekt.v1.Aktør
-import no.nav.dagpenger.events.inntekt.v1.AktørType
-import no.nav.dagpenger.events.inntekt.v1.Avvik
-import no.nav.dagpenger.events.inntekt.v1.InntektId
-import no.nav.dagpenger.events.inntekt.v1.InntektKlasse
-import no.nav.dagpenger.events.inntekt.v1.Postering
-import no.nav.dagpenger.events.inntekt.v1.PosteringsType
-import no.nav.dagpenger.events.inntekt.v1.SpesifisertInntekt
 import no.nav.dagpenger.inntekt.klassifiserer.klassifiserOgMapInntekt
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.v1.Aktør
+import no.nav.dagpenger.inntekt.v1.AktørType
+import no.nav.dagpenger.inntekt.v1.Avvik
+import no.nav.dagpenger.inntekt.v1.InntektId
+import no.nav.dagpenger.inntekt.v1.InntektKlasse
+import no.nav.dagpenger.inntekt.v1.Postering
+import no.nav.dagpenger.inntekt.v1.PosteringsType
+import no.nav.dagpenger.inntekt.v1.SpesifisertInntekt
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDateTime
