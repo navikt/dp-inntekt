@@ -1,8 +1,8 @@
 package no.nav.dagpenger.inntekt.klassifiser
 
-import no.nav.dagpenger.events.inntekt.v1.InntektKlasse
-import no.nav.dagpenger.events.inntekt.v1.PosteringsType
 import no.nav.dagpenger.inntekt.klassifiserer.klassifiserOgMapInntekt
+import no.nav.dagpenger.inntekt.v1.InntektKlasse
+import no.nav.dagpenger.inntekt.v1.PosteringsType
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 

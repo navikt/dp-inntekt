@@ -27,7 +27,8 @@ val log4j2Version = "2.20.0"
 
 dependencies {
 
-    implementation("com.github.navikt:dagpenger-events:20231204.ee1cc3")
+    implementation(project(":dp-inntekt-kontrakter"))
+
     implementation("com.github.navikt:dagpenger-streams:20230831.f3d785")
 
     implementation(libs.bundles.ktor.server)

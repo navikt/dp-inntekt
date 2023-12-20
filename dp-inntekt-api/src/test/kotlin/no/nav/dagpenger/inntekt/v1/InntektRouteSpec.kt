@@ -19,9 +19,6 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
 import no.bekk.bekkopen.person.FodselsnummerCalculator.getFodselsnummerForDate
-import no.nav.dagpenger.events.inntekt.v1.InntektKlasse
-import no.nav.dagpenger.events.inntekt.v1.KlassifisertInntekt
-import no.nav.dagpenger.events.inntekt.v1.KlassifisertInntektMåned
 import no.nav.dagpenger.inntekt.ApiKeyVerifier
 import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
@@ -130,7 +127,7 @@ internal class InntektRouteSpec {
     val uKjentInntektsId = ULID().nextULID()
     val kjentInntektsId = ULID().nextULID()
     val kjentInntekt =
-        no.nav.dagpenger.events.inntekt.v1.Inntekt(
+        no.nav.dagpenger.inntekt.v1.Inntekt(
             kjentInntektsId,
             sisteAvsluttendeKalenderMåned = YearMonth.of(2023, 10),
             inntektsListe =
@@ -401,7 +398,7 @@ internal class InntektRouteSpec {
             val hentetInntekt =
                 jacksonObjectMapper.readValue(
                     kjentInntektIdresponse.bodyAsText(),
-                    no.nav.dagpenger.events.inntekt.v1.Inntekt::class.java,
+                    no.nav.dagpenger.inntekt.v1.Inntekt::class.java,
                 )
             assertSoftly {
                 hentetInntekt.inntektsId shouldBe kjentInntekt.inntektsId

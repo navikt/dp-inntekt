@@ -1,9 +1,9 @@
 package no.nav.dagpenger.inntekt.mapping
 
-import no.nav.dagpenger.events.inntekt.v1.PosteringsType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
+import no.nav.dagpenger.inntekt.v1.PosteringsType
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 

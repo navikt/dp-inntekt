@@ -1,10 +1,10 @@
 package no.nav.dagpenger.inntekt.mapping
 
 import com.uchuhimo.collections.biMapOf
-import no.nav.dagpenger.events.inntekt.v1.PosteringsType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold
+import no.nav.dagpenger.inntekt.v1.PosteringsType
 
 data class PosteringsTypeGrunnlag(
     val type: InntektType,
