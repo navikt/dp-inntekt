@@ -50,7 +50,7 @@ dependencies {
     implementation("io.ktor:ktor-client-apache:${libs.versions.ktor.get()}")
 
     implementation(libs.bundles.jackson)
-    implementation("org.apache.kafka:kafka-clients:3.6.1")
+    implementation("org.apache.kafka:kafka-clients:7.5.2-ce")
 
     implementation(libs.kotlin.logging)
 
