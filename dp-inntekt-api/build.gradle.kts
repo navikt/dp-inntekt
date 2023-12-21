@@ -23,7 +23,7 @@ application {
 
 val expediaGraphqlVersion = "7.0.2"
 val moshiVersion = "1.14.0"
-val log4j2Version = "2.20.0"
+val log4j2Version = "2.22.0"
 
 dependencies {
 
