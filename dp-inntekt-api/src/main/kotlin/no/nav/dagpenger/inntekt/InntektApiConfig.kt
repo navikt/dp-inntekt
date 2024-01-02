@@ -32,8 +32,6 @@ internal object Config {
                 "srvdp.inntekt.api.username" to "postgres",
                 "srvdp.inntekt.api.password" to "postgres",
                 "flyway.locations" to "db/migration,db/testdata",
-                "api.secret" to "secret",
-                "api.keys" to "dp-datalaster-inntekt",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.url" to "http://localhost:4321",
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret",
@@ -126,8 +124,6 @@ internal object Config {
                 enhetsregisteretUrl = this[Key("enhetsregisteret.url", stringType)],
                 oicdStsUrl = this[Key("oidc.sts.issuerurl", stringType)],
                 name = "dp-inntekt-api",
-                apiSecret = this[Key("api.secret", stringType)],
-                allowedApiKeys = this[Key("api.keys", stringType)].split(",").toList(),
             )
     val Configuration.inntektApiConfig
         get() =
@@ -174,8 +170,6 @@ data class InntektApiConfig(
         val enhetsregisteretUrl: String,
         val oicdStsUrl: String,
         val name: String,
-        val apiSecret: String,
-        val allowedApiKeys: List<String>,
     )
 
     data class Pdl(

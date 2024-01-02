@@ -13,7 +13,6 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.testApplication
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
-import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.Config
 import no.nav.dagpenger.inntekt.HealthCheck
@@ -56,7 +55,6 @@ internal object TestApplication {
         inntektStore: InntektStore = mockk(),
         behandlingsInntektsGetter: BehandlingsInntektsGetter = mockk(),
         personOppslag: PersonOppslag = mockk(),
-        apiAuthApiKeyVerifier: AuthApiKeyVerifier = mockk(relaxed = true),
         enhetsregisterClient: EnhetsregisterClient = mockk(relaxed = true),
         kronetilleggUttrekk: KronetilleggUttrekk = mockk(relaxed = true),
         healthChecks: List<HealthCheck> = emptyList(),
@@ -68,7 +66,6 @@ internal object TestApplication {
                 inntektStore = inntektStore,
                 behandlingsInntektsGetter = behandlingsInntektsGetter,
                 personOppslag = personOppslag,
-                apiAuthApiKeyVerifier = apiAuthApiKeyVerifier,
                 enhetsregisterClient = enhetsregisterClient,
                 kronetilleggUttrekk = kronetilleggUttrekk,
                 healthChecks = healthChecks,

@@ -15,8 +15,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class NaisChecksTest {
-    private val apiKeyVerifier = ApiKeyVerifier("secret")
-    private val authApiKeyVerifier = AuthApiKeyVerifier(apiKeyVerifier, listOf("test-client"))
     private val inntektskomponentClientMock: InntektskomponentClient = mockk()
     private val personOppslagMock: PersonOppslag = mockk()
     private val inntektStoreMock: InntektStore =
@@ -47,7 +45,6 @@ class NaisChecksTest {
                 inntektskomponentClient = inntektskomponentClientMock,
                 inntektStore = inntektStoreMock,
                 personOppslag = personOppslagMock,
-                apiAuthApiKeyVerifier = authApiKeyVerifier,
                 healthChecks =
                     listOf(
                         inntektStoreMockHealthCheck,
