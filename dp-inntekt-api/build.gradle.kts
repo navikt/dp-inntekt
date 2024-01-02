@@ -23,7 +23,7 @@ application {
 
 val expediaGraphqlVersion = "7.0.2"
 val moshiVersion = "1.14.0"
-val log4j2Version = "2.20.0"
+val log4j2Version = "2.22.1"
 
 dependencies {
 
@@ -40,7 +40,7 @@ dependencies {
     implementation(libs.ktor.server.auth.jwt)
     implementation(libs.ktor.server.metrics.micrometer)
 
-    implementation("io.micrometer:micrometer-registry-prometheus:1.10.1")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.12.1")
 
     implementation("com.expediagroup:graphql-kotlin-client:$expediaGraphqlVersion")
     implementation("com.expediagroup:graphql-kotlin-ktor-client:$expediaGraphqlVersion")
