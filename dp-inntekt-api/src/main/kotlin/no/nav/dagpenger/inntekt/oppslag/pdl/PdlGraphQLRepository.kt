@@ -86,6 +86,8 @@ fun pdlGraphQLClientFactory(
                 header(HttpHeaders.UserAgent, "dp-inntekt-api")
                 header(HttpHeaders.Accept, "application/json")
                 header("Tema", "DAG")
+                header("behandlingsnummer", "B286")
+                // https://behandlingskatalog.intern.nav.no/process/purpose/DAGPENGER/486f1672-52ed-46fb-8d64-bda906ec1bc9
                 header("Nav-Call-Id", UUID.randomUUID())
             }
         }
