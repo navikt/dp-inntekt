@@ -19,8 +19,6 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
 import no.bekk.bekkopen.person.FodselsnummerCalculator.getFodselsnummerForDate
-import no.nav.dagpenger.inntekt.ApiKeyVerifier
-import no.nav.dagpenger.inntekt.AuthApiKeyVerifier
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
@@ -127,7 +125,7 @@ internal class InntektRouteSpec {
     val uKjentInntektsId = ULID().nextULID()
     val kjentInntektsId = ULID().nextULID()
     val kjentInntekt =
-        no.nav.dagpenger.inntekt.v1.Inntekt(
+        Inntekt(
             kjentInntektsId,
             sisteAvsluttendeKalenderMåned = YearMonth.of(2023, 10),
             inntektsListe =
@@ -165,12 +163,8 @@ internal class InntektRouteSpec {
 
     private val spesifisertPath = "/inntekt/spesifisert"
     private val klassifisertPath = "/inntekt/klassifisert"
-    private val spesifisertInntektPathV1 = "/v1/$spesifisertPath"
-    private val klassifisertInntektPathV1 = "/v1/$klassifisertPath"
-
-    private val apiKeyVerifier = ApiKeyVerifier("secret")
-    private val authApiKeyVerifier = AuthApiKeyVerifier(apiKeyVerifier, listOf("test-client"))
-    private val apiKey = apiKeyVerifier.generate("test-client")
+    private val spesifisertInntektPathV2 = "/v2$spesifisertPath"
+    private val klassifisertInntektPathV2 = "/v2$klassifisertPath"
 
     private val callId = "string-ulid"
     private val inntektId = InntektId(ULID().nextULID())
@@ -224,9 +218,8 @@ internal class InntektRouteSpec {
     @Test
     fun `Spesifisert inntekt API specification test - Should match json field names and formats`() =
         testApp {
-            handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, spesifisertInntektPathV2) {
                 addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-API-KEY", apiKey)
                 addHeader("X-Request-Id", callId)
                 setBody(validJson)
             }.apply {
@@ -239,9 +232,8 @@ internal class InntektRouteSpec {
     @Test
     fun `Klassifisert inntekt API specification test - Should match json field names and formats`() =
         testApp {
-            handleRequest(HttpMethod.Post, klassifisertInntektPathV1) {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, klassifisertInntektPathV2) {
                 addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-API-KEY", apiKey)
                 addHeader("X-Request-Id", callId)
                 setBody(validJson)
             }.apply {
@@ -254,9 +246,8 @@ internal class InntektRouteSpec {
     @Test
     fun `Spesifisert Requests with vedtakId as string works and does store data`() =
         testApp {
-            handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, spesifisertInntektPathV2) {
                 addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-API-KEY", apiKey)
                 addHeader("X-Request-Id", callId)
                 setBody(validJsonWithVedtakIdAsUlid)
             }.apply {
@@ -279,9 +270,8 @@ internal class InntektRouteSpec {
     @Test
     fun `Klassifisert Requests with fødselsnummer works and does store data`() =
         testApp {
-            handleRequest(HttpMethod.Post, klassifisertInntektPathV1) {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, klassifisertInntektPathV2) {
                 addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-API-KEY", apiKey)
                 addHeader("X-Request-Id", callId)
                 setBody(validJsonWithFnr)
             }.apply {
@@ -295,9 +285,8 @@ internal class InntektRouteSpec {
     @Test
     fun `Klassifisert Requests with vedtakId as string works and does store data`() =
         testApp {
-            handleRequest(HttpMethod.Post, klassifisertInntektPathV1) {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, klassifisertInntektPathV2) {
                 addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-API-KEY", apiKey)
                 addHeader("X-Request-Id", callId)
                 setBody(validJsonWithVedtakIdAsUlid)
             }.apply {
@@ -326,9 +315,8 @@ internal class InntektRouteSpec {
     @Test
     fun `Spesifisert Requests with fødselsnummer works and does store data`() =
         testApp {
-            handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, spesifisertInntektPathV2) {
                 addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-API-KEY", apiKey)
                 addHeader("X-Request-Id", callId)
                 setBody(validJsonWithFnr)
             }.apply {
@@ -341,9 +329,8 @@ internal class InntektRouteSpec {
     @Test
     fun `Spesifisert request fails on post request with missing fields`() =
         testApp {
-            handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, spesifisertInntektPathV2) {
                 addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-API-KEY", apiKey)
                 setBody(jsonMissingFields)
             }.apply {
                 assertEquals(HttpStatusCode.BadRequest, response.status())
@@ -353,9 +340,8 @@ internal class InntektRouteSpec {
     @Test
     fun `Klassifisert request fails on post request with missing fields`() =
         testApp {
-            handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, spesifisertInntektPathV2) {
                 addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-API-KEY", apiKey)
                 setBody(jsonMissingFields)
             }.apply {
                 assertEquals(HttpStatusCode.BadRequest, response.status())
@@ -365,9 +351,8 @@ internal class InntektRouteSpec {
     @Test
     fun `Spesifisert request fails on post request with unknown person `() =
         testApp {
-            handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, spesifisertInntektPathV2) {
                 addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-API-KEY", apiKey)
                 setBody(jsonUkjentPerson)
             }.apply {
                 assertEquals(HttpStatusCode.BadRequest, response.status())
@@ -377,9 +362,8 @@ internal class InntektRouteSpec {
     @Test
     fun `Klassifisert request fails on post request with unknownperson`() =
         testApp {
-            handleRequest(HttpMethod.Post, spesifisertInntektPathV1) {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, spesifisertInntektPathV2) {
                 addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-API-KEY", apiKey)
                 setBody(jsonUkjentPerson)
             }.apply {
                 assertEquals(HttpStatusCode.BadRequest, response.status())
@@ -398,7 +382,7 @@ internal class InntektRouteSpec {
             val hentetInntekt =
                 jacksonObjectMapper.readValue(
                     kjentInntektIdresponse.bodyAsText(),
-                    no.nav.dagpenger.inntekt.v1.Inntekt::class.java,
+                    Inntekt::class.java,
                 )
             assertSoftly {
                 hentetInntekt.inntektsId shouldBe kjentInntekt.inntektsId
@@ -426,7 +410,6 @@ internal class InntektRouteSpec {
             mockInntektApi(
                 behandlingsInntektsGetter = behandlingsInntektsGetterMock,
                 personOppslag = personOppslagMock,
-                apiAuthApiKeyVerifier = authApiKeyVerifier,
             ),
         ) { callback() }
     }

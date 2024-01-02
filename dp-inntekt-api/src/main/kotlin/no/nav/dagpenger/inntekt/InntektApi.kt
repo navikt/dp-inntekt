@@ -32,7 +32,6 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import mu.KotlinLogging
-import mu.withLoggingContext
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -60,7 +59,6 @@ internal fun Application.inntektApi(
     inntektStore: InntektStore,
     behandlingsInntektsGetter: BehandlingsInntektsGetter,
     personOppslag: PersonOppslag,
-    apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     enhetsregisterClient: EnhetsregisterClient,
     kronetilleggUttrekk: KronetilleggUttrekk,
     healthChecks: List<HealthCheck>,
@@ -72,18 +70,6 @@ internal fun Application.inntektApi(
     }
 
     install(Authentication) {
-        apiKeyAuth("apikey") {
-            apiKeyName = "X-API-KEY"
-            validate { apikeyCredential: ApiKeyCredential ->
-                withLoggingContext("request_type" to "API") {
-                    when {
-                        apiAuthApiKeyVerifier.verify(apikeyCredential.value) -> ApiPrincipal(apikeyCredential)
-                        else -> null
-                    }
-                }
-            }
-        }
-
         jwt("azure") {
             azureAdJWT(config)
         }
@@ -234,9 +220,6 @@ internal fun Application.inntektApi(
     routing {
         route("/v1") {
             route("/inntekt") {
-                authenticate("apikey") {
-                    inntekt(behandlingsInntektsGetter, personOppslag)
-                }
                 uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, personOppslag)
             }
             opptjeningsperiodeApi(inntektStore)
@@ -251,13 +234,6 @@ internal fun Application.inntektApi(
             }
         }
         naischecks(healthChecks)
-    }
-}
-
-internal data class AuthApiKeyVerifier(private val apiKeyVerifier: ApiKeyVerifier, private val clients: List<String>) {
-    fun verify(payload: String): Boolean {
-        sikkerLogg.info { "Verifiserer ApiKey" }
-        return clients.map { apiKeyVerifier.verify(payload, it) }.firstOrNull { it } ?: false
     }
 }
 

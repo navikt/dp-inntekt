@@ -8,8 +8,6 @@ private val mockedConfigs =
         "enhetsregisteret.url",
         "oppslag.url",
         "oidc.sts.issuerurl",
-        "api.secret",
-        "api.keys",
         "jwks.url",
         "jwks.issuer",
         "KAFKA_BROKERS",

@@ -31,11 +31,6 @@ fun main() {
         migrate(config)
         DefaultExports.initialize()
         val dataSource = dataSourceFrom(config)
-        val authApiKeyVerifier =
-            AuthApiKeyVerifier(
-                apiKeyVerifier = ApiKeyVerifier(config.application.apiSecret),
-                clients = config.application.allowedApiKeys,
-            )
         val postgresInntektStore = PostgresInntektStore(dataSource)
         val stsOidcClient =
             StsOidcClient(
@@ -83,7 +78,6 @@ fun main() {
                 postgresInntektStore,
                 cachedInntektsGetter,
                 pdlPersonOppslag,
-                authApiKeyVerifier,
                 enhetsregisterClient,
                 kronetilleggUttrekk,
                 listOf(
