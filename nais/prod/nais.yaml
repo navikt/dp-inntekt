@@ -37,9 +37,6 @@ spec:
       rules:
         - application: dp-oppslag-inntekt
         - application: dp-inntekt-klassifiserer
-        - application: dp-kronetillegg
-          namespace: teamdagpenger
-          cluster: prod-gcp
         - application: dagpenger-regel-ui
           namespace: teamdagpenger
           cluster: prod-gcp
