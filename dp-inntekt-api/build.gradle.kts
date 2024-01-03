@@ -61,7 +61,7 @@ dependencies {
 
     implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.3.0")
 
-    implementation("no.nav.dagpenger:sts-klient:2023.12.13-22.05.4909146325c9")
+    implementation("no.nav.dagpenger:sts-klient:2023.12.20-09.10.d437884c245f")
 
     implementation(libs.bundles.postgres)
     implementation(libs.konfig)
