@@ -7,7 +7,6 @@ import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.Config.inntektApiConfig
-import no.nav.dagpenger.inntekt.db.KronetilleggUttrekk
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
 import no.nav.dagpenger.inntekt.db.dataSourceFrom
 import no.nav.dagpenger.inntekt.db.migrate
@@ -69,7 +68,6 @@ fun main() {
                 )
             }
 
-        val kronetilleggUttrekk = KronetilleggUttrekk(dataSource)
         // Provides a HTTP API for getting inntekt
         embeddedServer(Netty, port = config.application.httpPort) {
             inntektApi(
@@ -79,7 +77,6 @@ fun main() {
                 cachedInntektsGetter,
                 pdlPersonOppslag,
                 enhetsregisterClient,
-                kronetilleggUttrekk,
                 listOf(
                     postgresInntektStore as HealthCheck,
                     subsumsjonBruktDataConsumer as HealthCheck,

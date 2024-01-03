@@ -17,7 +17,6 @@ import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.Config
 import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.db.InntektStore
-import no.nav.dagpenger.inntekt.db.KronetilleggUttrekk
 import no.nav.dagpenger.inntekt.inntektApi
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
@@ -56,7 +55,6 @@ internal object TestApplication {
         behandlingsInntektsGetter: BehandlingsInntektsGetter = mockk(),
         personOppslag: PersonOppslag = mockk(),
         enhetsregisterClient: EnhetsregisterClient = mockk(relaxed = true),
-        kronetilleggUttrekk: KronetilleggUttrekk = mockk(relaxed = true),
         healthChecks: List<HealthCheck> = emptyList(),
     ): Application.() -> Unit =
         fun Application.() {
@@ -67,7 +65,6 @@ internal object TestApplication {
                 behandlingsInntektsGetter = behandlingsInntektsGetter,
                 personOppslag = personOppslag,
                 enhetsregisterClient = enhetsregisterClient,
-                kronetilleggUttrekk = kronetilleggUttrekk,
                 healthChecks = healthChecks,
                 collectorRegistry = CollectorRegistry(true),
             )
