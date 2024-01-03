@@ -74,7 +74,7 @@ dependencies {
     implementation("io.prometheus:simpleclient_common:0.16.0")
     implementation("io.prometheus:simpleclient_hotspot:0.16.0")
     implementation("io.prometheus:simpleclient_log4j2:0.16.0")
-    implementation("no.bekk.bekkopen:nocommons:0.9.0")
+    implementation("no.bekk.bekkopen:nocommons:0.16.0")
 
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
 
