@@ -35,7 +35,6 @@ import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
-import no.nav.dagpenger.inntekt.db.KronetilleggUttrekk
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oppslag.PersonNotFoundException
@@ -46,7 +45,6 @@ import no.nav.dagpenger.inntekt.v1.enhetsregisteret
 import no.nav.dagpenger.inntekt.v1.inntekt
 import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
 import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
-import no.nav.dagpenger.inntekt.v1.uttrekk
 import org.slf4j.event.Level
 import java.net.URI
 
@@ -60,7 +58,6 @@ internal fun Application.inntektApi(
     behandlingsInntektsGetter: BehandlingsInntektsGetter,
     personOppslag: PersonOppslag,
     enhetsregisterClient: EnhetsregisterClient,
-    kronetilleggUttrekk: KronetilleggUttrekk,
     healthChecks: List<HealthCheck>,
     collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry,
 ) {
@@ -229,7 +226,6 @@ internal fun Application.inntektApi(
             route("/inntekt") {
                 authenticate("azure") {
                     inntekt(behandlingsInntektsGetter, personOppslag)
-                    uttrekk(kronetilleggUttrekk)
                 }
             }
         }
