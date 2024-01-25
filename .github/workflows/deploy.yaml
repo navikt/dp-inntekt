@@ -22,7 +22,7 @@ jobs:
           java-version: 17
 
       - uses: gradle/wrapper-validation-action@v1.1.0
-      - uses: gradle/gradle-build-action@v2.11.1
+      - uses: gradle/gradle-build-action@v2.12.0
         id: build
         env:
           DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: compileClasspath|runtimeClasspath
