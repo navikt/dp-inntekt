@@ -10,19 +10,11 @@ import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 import no.nav.dagpenger.streams.Credential
 import no.nav.dagpenger.streams.KafkaAivenCredentials
-import java.net.InetAddress
-import java.net.UnknownHostException
 
 internal object Config {
     private val localProperties =
         ConfigurationMap(
             mapOf(
-                "database.host" to "localhost",
-                "database.port" to "5432",
-                "database.name" to "dp-inntekt-db",
-                "database.user" to "postgres",
-                "database.password" to "postgres",
-                "vault.mountpath" to "postgresql/dev/",
                 "KAFKA_BROKERS" to "localhost:9092",
                 "application.profile" to "LOCAL",
                 "application.httpPort" to "8099",
@@ -40,11 +32,6 @@ internal object Config {
     private val devProperties =
         ConfigurationMap(
             mapOf(
-                "database.host" to "b27dbvl013.preprod.local",
-                "database.port" to "5432",
-                "database.name" to "dp-inntekt-db-q0",
-                "flyway.locations" to "db/migration,db/testdata",
-                "vault.mountpath" to "postgresql/preprod-fss/",
                 "hentinntektliste.url" to "https://app-q0.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
                 "oidc.sts.issuerurl" to "https://security-token-service.nais.preprod.local/",
@@ -58,11 +45,6 @@ internal object Config {
     private val prodProperties =
         ConfigurationMap(
             mapOf(
-                "database.host" to "fsspgdb.adeo.no",
-                "database.port" to "5432",
-                "database.name" to "dp-inntekt-db",
-                "flyway.locations" to "db/migration",
-                "vault.mountpath" to "postgresql/prod-fss/",
                 "hentinntektliste.url" to "https://app.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
                 "oidc.sts.issuerurl" to "https://security-token-service.nais.adeo.no/",
@@ -82,23 +64,6 @@ internal object Config {
             }
         }
     }
-    private val Configuration.database
-        get() =
-            InntektApiConfig.Database(
-                host = this[Key("database.host", stringType)],
-                port = this[Key("database.port", stringType)],
-                name = this[Key("database.name", stringType)],
-                user = this.getOrNull(Key("database.user", stringType)),
-                password = this.getOrNull(Key("database.password", stringType)),
-                flywayLocations =
-                    this.getOrNull(Key("flyway.locations", stringType))?.split(",")
-                        ?: listOf("db/migration"),
-            )
-    private val Configuration.vault
-        get() =
-            InntektApiConfig.Vault(
-                mountPath = this[Key("vault.mountpath", stringType)],
-            )
     private val Configuration.pdl
         get() =
             InntektApiConfig.Pdl(
@@ -128,8 +93,6 @@ internal object Config {
     val Configuration.inntektApiConfig
         get() =
             InntektApiConfig(
-                database = this.database,
-                vault = this.vault,
                 application = this.application,
                 pdl = this.pdl,
                 enhetsregisteretUrl = this.enhetsregister,
@@ -138,22 +101,11 @@ internal object Config {
 }
 
 data class InntektApiConfig(
-    val database: Database,
-    val vault: Vault,
     val application: Application,
     val pdl: Pdl,
     val enhetsregisteretUrl: Enhetsregister,
     val inntektBruktDataTopic: String,
 ) {
-    data class Database(
-        val host: String,
-        val port: String,
-        val name: String,
-        val user: String?,
-        val password: String?,
-        val flywayLocations: List<String>,
-    )
-
     data class Vault(
         val mountPath: String,
     )
@@ -179,15 +131,6 @@ data class InntektApiConfig(
     data class Enhetsregister(
         val url: String,
     )
-}
-
-private fun getHostname(): String {
-    return try {
-        val addr: InetAddress = InetAddress.getLocalHost()
-        addr.hostName
-    } catch (e: UnknownHostException) {
-        "unknown"
-    }
 }
 
 enum class Profile {

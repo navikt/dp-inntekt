@@ -10,16 +10,11 @@ import io.kotest.property.arbitrary.localDateTime
 import io.kotest.property.arbitrary.next
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
-import no.nav.dagpenger.inntekt.Config
-import no.nav.dagpenger.inntekt.Config.inntektApiConfig
-import no.nav.dagpenger.inntekt.DataSource
-import no.nav.dagpenger.inntekt.dummyConfigs
+import no.nav.dagpenger.inntekt.Postgres.withCleanDb
+import no.nav.dagpenger.inntekt.Postgres.withMigratedDb
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
-import no.nav.dagpenger.inntekt.withCleanDb
-import no.nav.dagpenger.inntekt.withMigratedDb
-import no.nav.dagpenger.inntekt.withProps
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -33,17 +28,15 @@ internal class PostgresTest {
     @Test
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
-            val migrations = migrate(DataSource.instance)
+            val migrations = PostgresDataSourceBuilder.runMigration()
             assertEquals(15, migrations, "Wrong number of migrations")
         }
     }
 
     @Test
     fun `Migration scripts are idempotent`() {
-        withCleanDb {
-            migrate(DataSource.instance)
-
-            val migrations = migrate(DataSource.instance)
+        withMigratedDb {
+            val migrations = PostgresDataSourceBuilder.runMigration()
             assertEquals(0, migrations, "Wrong number of migrations")
         }
     }
@@ -51,17 +44,8 @@ internal class PostgresTest {
     @Test
     fun `Migration of testdata `() {
         withCleanDb {
-            val migrations = migrate(DataSource.instance, locations = listOf("db/migration", "db/testdata"))
+            val migrations = PostgresDataSourceBuilder.runMigration(locations = listOf("db/migration", "db/testdata"))
             assertEquals(20, migrations, "Wrong number of migrations")
-        }
-    }
-
-    @Test
-    fun `JDBC url is set correctly from  config values `() {
-        withProps(dummyConfigs) {
-            with(hikariConfigFrom(Config.config.inntektApiConfig)) {
-                assertEquals("jdbc:postgresql://localhost:5432/dp-inntekt-db", jdbcUrl)
-            }
         }
     }
 }
@@ -70,7 +54,7 @@ internal class PostgresInntektStoreTest {
     @Test
     fun `Successful insert of inntekter`() {
         withMigratedDb {
-            with(PostgresInntektStore(DataSource.instance)) {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
                 val parameters = Inntektparametre("1234", "1234", LocalDate.now(), RegelKontekst("1234", "vedtak"))
                 val hentInntektListeResponse =
                     InntektkomponentResponse(
@@ -102,7 +86,7 @@ internal class PostgresInntektStoreTest {
         val ident2 = "5678"
 
         withMigratedDb {
-            with(PostgresInntektStore(DataSource.instance)) {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
                 val aktør1 =
                     Inntektparametre(
                         aktørId = ident1,
@@ -169,7 +153,7 @@ internal class PostgresInntektStoreTest {
         val ident1 = "1234"
 
         withMigratedDb {
-            with(PostgresInntektStore(DataSource.instance)) {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
                 val aktør1 =
                     Inntektparametre(
                         aktørId = ident1,
@@ -218,7 +202,7 @@ internal class PostgresInntektStoreTest {
     @Test
     fun `Successful insert of inntekter which is manuelt redigert`() {
         withMigratedDb {
-            with(PostgresInntektStore(DataSource.instance)) {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
                 val parameters = Inntektparametre("1234", "1234", LocalDate.now(), RegelKontekst("1234", "vedtak"))
                 val hentInntektListeResponse =
                     InntektkomponentResponse(
@@ -250,7 +234,7 @@ internal class PostgresInntektStoreTest {
     @Test
     fun ` Sucessfully get inntekter`() {
         withMigratedDb {
-            with(PostgresInntektStore(DataSource.instance)) {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
                 val hentInntektListeResponse =
                     InntektkomponentResponse(
                         emptyList(),
@@ -283,7 +267,7 @@ internal class PostgresInntektStoreTest {
     @Test
     fun ` Inntekt not present should give null StoredInntekt`() {
         withMigratedDb {
-            with(PostgresInntektStore(DataSource.instance)) {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
                 val inntektId =
                     getInntektId(Inntektparametre("7890", "7890", LocalDate.now(), RegelKontekst("7890", "vedtak")))
                 assertNull(inntektId)
@@ -294,7 +278,7 @@ internal class PostgresInntektStoreTest {
     @Test
     fun `getInntektId should return latest InntektId`() {
         withMigratedDb {
-            with(PostgresInntektStore(DataSource.instance)) {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
                 val hentInntektListeResponse =
                     InntektkomponentResponse(
                         emptyList(),
@@ -322,7 +306,7 @@ internal class PostgresInntektStoreTest {
     @Test
     fun `Should get spesifisert inntekt`() {
         withMigratedDb {
-            with(PostgresInntektStore(DataSource.instance)) {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
                 val hentInntektListeResponse =
                     InntektkomponentResponse(
                         emptyList(),
@@ -348,7 +332,7 @@ internal class PostgresInntektStoreTest {
     @Test
     fun ` Sucessfully get beregningsdato`() {
         withMigratedDb {
-            with(PostgresInntektStore(DataSource.instance)) {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
                 val hentInntektListeResponse =
                     InntektkomponentResponse(
                         emptyList(),
@@ -380,9 +364,9 @@ internal class PostgresInntektStoreTest {
     @Test
     fun `Sucessfully get beregningsdato from backup table`() {
         withCleanDb {
-            migrate(DataSource.instance, locations = listOf("db/migration", "unit-testdata"))
+            PostgresDataSourceBuilder.runMigration(locations = listOf("db/migration", "unit-testdata"))
 
-            with(PostgresInntektStore(DataSource.instance)) {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
                 val beregningsDatoFromMain = getBeregningsdato(InntektId("01E46501PMY105AFXE4XF088MV"))
                 assertNotNull(beregningsDatoFromMain)
                 assertEquals(LocalDate.of(2019, 1, 1), beregningsDatoFromMain)
@@ -397,9 +381,9 @@ internal class PostgresInntektStoreTest {
     @Test
     fun `Sucessfully  migrates from vedtakid and converts to konteksttype`() {
         withCleanDb {
-            migrate(DataSource.instance, locations = listOf("db/migration", "unit-testdata"))
+            PostgresDataSourceBuilder.runMigration(locations = listOf("db/migration", "unit-testdata"))
 
-            with(PostgresInntektStore(DataSource.instance)) {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
                 val inntektsid =
                     getInntektId(
                         Inntektparametre(
@@ -417,7 +401,7 @@ internal class PostgresInntektStoreTest {
     @Test
     fun ` Getting beregningsdato for unknown inntektId should throw error`() {
         withMigratedDb {
-            with(PostgresInntektStore(DataSource.instance)) {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
                 val result =
                     runCatching {
                         getBeregningsdato(InntektId("12ARZ3NDEKTSV4RRFFQ69G5FBY"))
@@ -431,7 +415,7 @@ internal class PostgresInntektStoreTest {
     @Test
     fun ` Should mark an inntekt as used `() {
         withMigratedDb {
-            with(PostgresInntektStore(DataSource.instance)) {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
                 val hentInntektListeResponse =
                     InntektkomponentResponse(
                         emptyList(),
@@ -461,7 +445,7 @@ internal class PostgresInntektStoreTest {
 internal class InntektsStorePropertyTest : StringSpec() {
     init {
         withMigratedDb {
-            val store = PostgresInntektStore(DataSource.instance)
+            val store = PostgresInntektStore(PostgresDataSourceBuilder.dataSource)
 
             "Alle inntekter skal kunne hentes når de lagres" {
                 checkAll(storeInntekCommandGenerator) { command: StoreInntektCommand ->

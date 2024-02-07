@@ -66,10 +66,6 @@ dependencies {
     implementation(libs.bundles.postgres)
     implementation(libs.konfig)
     implementation("org.slf4j:slf4j-api:2.0.12")
-    implementation("no.nav:vault-jdbc:1.3.10") {
-        exclude(module = "slf4j-simple")
-        exclude(module = "slf4j-api")
-    }
 
     implementation("io.prometheus:simpleclient_common:0.16.0")
     implementation("io.prometheus:simpleclient_hotspot:0.16.0")

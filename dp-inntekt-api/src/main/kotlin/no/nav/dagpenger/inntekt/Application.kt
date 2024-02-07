@@ -7,9 +7,8 @@ import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.Config.inntektApiConfig
+import no.nav.dagpenger.inntekt.db.PostgresDataSourceBuilder
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
-import no.nav.dagpenger.inntekt.db.dataSourceFrom
-import no.nav.dagpenger.inntekt.db.migrate
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentKtorClient
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.httpClient
@@ -27,9 +26,9 @@ private val configuration = Config.config
 fun main() {
     runBlocking {
         val config = configuration.inntektApiConfig
-        migrate(config)
+        PostgresDataSourceBuilder.runMigration()
         DefaultExports.initialize()
-        val dataSource = dataSourceFrom(config)
+        val dataSource = PostgresDataSourceBuilder.dataSource
         val postgresInntektStore = PostgresInntektStore(dataSource)
         val stsOidcClient =
             StsOidcClient(

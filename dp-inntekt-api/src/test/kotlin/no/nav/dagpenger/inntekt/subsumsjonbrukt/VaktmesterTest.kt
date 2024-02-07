@@ -4,10 +4,11 @@ import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.prometheus.client.CollectorRegistry
-import no.nav.dagpenger.inntekt.DataSource
+import no.nav.dagpenger.inntekt.Postgres.withMigratedDb
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.ManueltRedigert
+import no.nav.dagpenger.inntekt.db.PostgresDataSourceBuilder
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
 import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
@@ -16,7 +17,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
-import no.nav.dagpenger.inntekt.withMigratedDb
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
@@ -41,7 +41,7 @@ internal class VaktmesterTest {
     @Test
     fun `Skal ikke slette brukte inntekter`() {
         withMigratedDb {
-            val inntektStore = PostgresInntektStore(DataSource.instance)
+            val inntektStore = PostgresInntektStore(PostgresDataSourceBuilder.dataSource)
             val bruktInntekt =
                 inntektStore.storeInntekt(
                     StoreInntektCommand(
@@ -50,7 +50,7 @@ internal class VaktmesterTest {
                     ),
                 )
             inntektStore.markerInntektBrukt(bruktInntekt.inntektId)
-            val vaktmester = Vaktmester(DataSource.instance)
+            val vaktmester = Vaktmester(PostgresDataSourceBuilder.dataSource)
             vaktmester.rydd()
             inntektStore.getInntekt(bruktInntekt.inntektId) shouldNotBe null
         }
@@ -60,7 +60,7 @@ internal class VaktmesterTest {
     @Suppress("ktlint:standard:max-line-length")
     fun `Skal kun slette inntekt som ikke er brukt selvom det er referrert til samme behandlingsnøkler som en annen inntekt som er brukt`() {
         withMigratedDb {
-            val inntektStore = PostgresInntektStore(DataSource.instance)
+            val inntektStore = PostgresInntektStore(PostgresDataSourceBuilder.dataSource)
             val ubruktInntekt =
                 inntektStore.storeInntekt(
                     StoreInntektCommand(
@@ -88,7 +88,7 @@ internal class VaktmesterTest {
                     created = ZonedDateTime.now().minusMonths(7),
                 )
             inntektStore.markerInntektBrukt(bruktInntekt.inntektId)
-            val vaktmester = Vaktmester(DataSource.instance)
+            val vaktmester = Vaktmester(PostgresDataSourceBuilder.dataSource)
             vaktmester.rydd()
             inntektStore.getInntektId(parameters) shouldBe bruktInntekt.inntektId
             assertThrows<InntektNotFoundException> { inntektStore.getInntekt(ubruktInntekt.inntektId) }
@@ -98,7 +98,7 @@ internal class VaktmesterTest {
     @Test
     fun `Skal kun slette ubrukte inntekter som er eldre enn 180 dager`() {
         withMigratedDb {
-            val inntektStore = PostgresInntektStore(DataSource.instance)
+            val inntektStore = PostgresInntektStore(PostgresDataSourceBuilder.dataSource)
             val ubruktEldreEnn180Dager =
                 inntektStore.storeInntekt(
                     command =
@@ -117,7 +117,7 @@ internal class VaktmesterTest {
                         ),
                 )
 
-            val vaktmester = Vaktmester(DataSource.instance)
+            val vaktmester = Vaktmester(PostgresDataSourceBuilder.dataSource)
             vaktmester.rydd()
             assertThrows<InntektNotFoundException> { inntektStore.getInntekt(ubruktEldreEnn180Dager.inntektId) }
             inntektStore.getInntekt(ubruktYngreEnn180Dager.inntektId) shouldBe ubruktYngreEnn180Dager
@@ -132,7 +132,7 @@ internal class VaktmesterTest {
     @Test
     fun `Skal kun slette manuelt redigerte, ubrukte inntekter som er eldre enn 180 dager`() {
         withMigratedDb {
-            val inntektStore = PostgresInntektStore(DataSource.instance)
+            val inntektStore = PostgresInntektStore(PostgresDataSourceBuilder.dataSource)
             val ubruktEldreEnn90Dager =
                 inntektStore.storeInntekt(
                     command =
@@ -147,7 +147,7 @@ internal class VaktmesterTest {
                     created = ZonedDateTime.now().minusMonths(7),
                 )
 
-            val vaktmester = Vaktmester(DataSource.instance)
+            val vaktmester = Vaktmester(PostgresDataSourceBuilder.dataSource)
             vaktmester.rydd()
             assertThrows<InntektNotFoundException> { inntektStore.getInntekt(ubruktEldreEnn90Dager.inntektId) }
             inntektStore.getManueltRedigert(ubruktEldreEnn90Dager.inntektId) shouldBe null
