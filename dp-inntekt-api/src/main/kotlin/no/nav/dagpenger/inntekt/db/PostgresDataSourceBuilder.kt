@@ -56,6 +56,7 @@ internal object PostgresDataSourceBuilder {
         flyWayBuilder
             .dataSource(dataSource)
             .initSql(initSql)
+            .locations("db/migration")
             .load()
             .migrate()
             .migrations
