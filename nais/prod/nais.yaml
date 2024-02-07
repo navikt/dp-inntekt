@@ -41,7 +41,7 @@ spec:
   kafka:
     pool: nav-prod
   gcp:
-  sqlInstances:
+    sqlInstances:
     - autoBackupHour: 1
       collation: nb_NO.UTF8
       databases:

@@ -50,7 +50,7 @@ spec:
   secureLogs:
     enabled: true
   gcp:
-  sqlInstances:
+    sqlInstances:
     - collation: nb_NO.UTF8
       databases:
         - envVarPrefix: DB
