@@ -59,7 +59,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: nais/deploy/actions/deploy@v2
         env:
-          CLUSTER: dev-fss
+          CLUSTER: dev-gcp
           RESOURCE: nais/dev/nais.yaml
           VARS: nais/vars.yaml
           VAR: image=${{ needs.build.outputs.image }}
@@ -72,7 +72,7 @@ jobs:
 #    permissions:
 #      contents: "read"
 #      id-token: "write"
-#    environment: prod-fss
+#    environment: prod-gcp
 #    steps:
 #      - uses: actions/checkout@v4
 #      - uses: nais/deploy/actions/deploy@v2
