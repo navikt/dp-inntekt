@@ -47,13 +47,25 @@ spec:
           cluster: dev-gcp
   kafka:
     pool: nav-dev
-  vault:
-    enabled: true
-    paths:
-      - kvPath: serviceuser/data/dev/{{service_user}}
-        mountPath: /var/run/secrets/nais.io/service_user
   secureLogs:
     enabled: true
-  ingresses:
-    - https://dp-inntekt-api.nais.preprod.local
-    - https://dp-inntekt-api.dev-fss-pub.nais.io
+  gcp:
+  sqlInstances:
+    - collation: nb_NO.UTF8
+      databases:
+        - envVarPrefix: DB
+          name: inntekt
+      diskAutoresize: true
+      diskType: SSD
+      highAvailability: false
+      insights:
+        enabled: true
+        queryStringLength: 4500
+        recordApplicationTags: true
+        recordClientAddress: true
+      maintenance:
+        day: 1
+        hour: 4
+      pointInTimeRecovery: false
+      tier:	db-custom-1-3840
+      type: POSTGRES_15
