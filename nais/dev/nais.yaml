@@ -38,6 +38,11 @@ spec:
       allowAllUsers: true # Dette var default før NAIS endret default til false
       enabled: true
   accessPolicy:
+    outbound:
+      external:
+        - host: "pdl-api.dev-fss-pub.nais.io"
+        - host: "team-inntekt-proxy.dev-fss-pub.nais.io"
+        - host: "data.brreg.no"
     inbound:
       rules:
         - application: dp-oppslag-inntekt

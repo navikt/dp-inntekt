@@ -47,7 +47,6 @@ dependencies {
     implementation("com.expediagroup:graphql-kotlin-client-jackson:$expediaGraphqlVersion")
 
     implementation(libs.bundles.ktor.client)
-    implementation("io.ktor:ktor-client-apache:${libs.versions.ktor.get()}")
 
     implementation(libs.bundles.jackson)
     implementation("org.apache.kafka:kafka-clients:7.5.3-ce")
@@ -61,8 +60,6 @@ dependencies {
 
     implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.3.0")
 
-    implementation("no.nav.dagpenger:sts-klient:2023.12.20-09.10.d437884c245f")
-
     implementation(libs.bundles.postgres)
     implementation(libs.konfig)
     implementation("org.slf4j:slf4j-api:2.0.12")
@@ -73,6 +70,7 @@ dependencies {
     implementation("no.bekk.bekkopen:nocommons:0.16.0")
 
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
+    implementation(libs.dp.biblioteker.oauth2.klient)
 
     testImplementation(kotlin("test"))
     testImplementation(libs.ktor.server.test.host)

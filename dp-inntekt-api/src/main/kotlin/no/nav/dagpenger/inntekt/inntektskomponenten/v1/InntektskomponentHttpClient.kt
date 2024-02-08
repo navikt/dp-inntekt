@@ -24,7 +24,6 @@ import io.prometheus.client.Summary
 import mu.KotlinLogging
 import mu.withLoggingContext
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
-import no.nav.dagpenger.oidc.OidcClient
 import kotlin.time.Duration.Companion.seconds
 
 private val logg = KotlinLogging.logger {}
@@ -55,7 +54,7 @@ private val inntektskomponentStatusCodesCounter =
 
 internal class InntektkomponentKtorClient(
     private val hentInntektlisteUrl: String,
-    private val oidcClient: OidcClient,
+    private val azureAdTokenProvider: () -> String,
     private val timeouts: InntektskomponentClient.ConnectionTimeout = InntektskomponentClient.ConnectionTimeout(),
     engine: HttpClientEngine =
         CIO.create {
@@ -95,7 +94,7 @@ internal class InntektkomponentKtorClient(
                     httpClient.post(urlString = hentInntektlisteUrl) {
                         header("Nav-Call-Id", externalCallId)
                         header(HttpHeaders.ContentType, ContentType.Application.Json)
-                        header(HttpHeaders.Authorization, "Bearer ${oidcClient.oidcToken().access_token}")
+                        header(HttpHeaders.Authorization, "Bearer ${azureAdTokenProvider()}")
                         setBody(requestBody)
                     }
                 } catch (error: ServerResponseException) {
@@ -103,7 +102,9 @@ internal class InntektkomponentKtorClient(
                     inntektskomponentStatusCodesCounter.labels(statusKode.toString()).inc()
                     clientFetchErrors.inc()
                     val feilmelding =
-                        kotlin.runCatching { jacksonObjectMapper.readTree(error.response.bodyAsText()).get("message").asText() }
+                        kotlin.runCatching {
+                            jacksonObjectMapper.readTree(error.response.bodyAsText()).get("message").asText()
+                        }
                             .getOrElse { error.message }
                     throw InntektskomponentenHttpClientException(
                         statusKode,

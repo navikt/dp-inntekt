@@ -10,27 +10,24 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import com.github.tomakehurst.wiremock.matching.RegexPattern
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.runBlocking
-import no.nav.dagpenger.oidc.OidcClient
-import no.nav.dagpenger.oidc.OidcToken
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.time.YearMonth
-import java.util.UUID
 import kotlin.test.assertEquals
 
 @Suppress("ktlint:standard:max-line-length")
 internal class InntektskomponentHttpClientTest {
     companion object {
+        val dummyTokenProvider = { "oidc" }
         val server: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
 
         @BeforeAll
@@ -49,12 +46,6 @@ internal class InntektskomponentHttpClientTest {
     @BeforeEach
     fun configure() {
         configureFor(server.port())
-    }
-
-    class DummyOidcClient : OidcClient {
-        override suspend fun getOidcToken(): OidcToken = oidcToken()
-
-        override fun oidcToken(): OidcToken = OidcToken(UUID.randomUUID().toString(), "openid", 3000)
     }
 
     @Test
@@ -76,7 +67,7 @@ internal class InntektskomponentHttpClientTest {
         val inntektskomponentClient =
             InntektkomponentKtorClient(
                 server.url("/v1/hentinntektliste"),
-                DummyOidcClient(),
+                dummyTokenProvider,
             )
 
         val hentInntektListeResponse =
@@ -114,7 +105,7 @@ internal class InntektskomponentHttpClientTest {
         val inntektskomponentClient =
             InntektkomponentKtorClient(
                 server.url("/v1/hentinntektliste"),
-                DummyOidcClient(),
+                dummyTokenProvider,
             )
 
         val hentInntektListeResponse =
@@ -151,7 +142,7 @@ internal class InntektskomponentHttpClientTest {
         val inntektskomponentClient =
             InntektkomponentKtorClient(
                 server.url("/v1/hentinntektliste"),
-                DummyOidcClient(),
+                dummyTokenProvider,
             )
 
         val result =
@@ -190,7 +181,7 @@ internal class InntektskomponentHttpClientTest {
             InntektkomponentKtorClient(
                 hentInntektlisteUrl = server.url("/v1/hentinntektliste"),
                 timeouts = InntektskomponentClient.ConnectionTimeout(readTimeout = Duration.ofMillis(5)),
-                oidcClient = DummyOidcClient(),
+                azureAdTokenProvider = dummyTokenProvider,
             )
 
         val result =
@@ -231,7 +222,7 @@ internal class InntektskomponentHttpClientTest {
         val inntektskomponentClient =
             InntektkomponentKtorClient(
                 server.url("/v1/hentinntektliste"),
-                DummyOidcClient(),
+                dummyTokenProvider,
             )
 
         val result =
@@ -258,7 +249,7 @@ internal class InntektskomponentHttpClientTest {
 
     private val dpInntektApi = EqualToPattern("dp-inntekt-api")
 
-    private val authorizationBearer = RegexPattern("Bearer\\s[\\d|a-f]{8}-([\\d|a-f]{4}-){3}[\\d|a-f]{12}")
+    private val authorizationBearer = EqualToPattern("Bearer oidc")
 
     private val errorFromInntekskomponenten =
         """

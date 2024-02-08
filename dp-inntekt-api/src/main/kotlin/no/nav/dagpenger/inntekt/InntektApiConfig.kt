@@ -8,6 +8,9 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
+import kotlinx.coroutines.runBlocking
+import no.nav.dagpenger.oauth2.CachedOauth2Client
+import no.nav.dagpenger.oauth2.OAuth2Config
 import no.nav.dagpenger.streams.Credential
 import no.nav.dagpenger.streams.KafkaAivenCredentials
 
@@ -20,38 +23,40 @@ internal object Config {
                 "application.httpPort" to "8099",
                 "hentinntektliste.url" to "https://localhost/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
-                "oidc.sts.issuerurl" to "http://localhost/",
-                "srvdp.inntekt.api.username" to "postgres",
-                "srvdp.inntekt.api.password" to "postgres",
                 "flyway.locations" to "db/migration,db/testdata",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
-                "pdl.url" to "http://localhost:4321",
+                "pdl.url" to "https://pdl-api.dev-fss-pub.nais.io/graphql",
+                "pdl.api.scope" to "api://dev-fss.pdl.pdl-api/.default",
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret",
             ),
         )
     private val devProperties =
         ConfigurationMap(
             mapOf(
-                "hentinntektliste.url" to "https://app-q0.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
+                @Suppress("ktlint:standard:max-line-length")
+                "hentinntektliste.url"
+                    to "https://team-inntekt-proxy.dev-fss-pub.nais.io/inntektskomponenten-q0/rs/api/v1/hentinntektliste",
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
-                "oidc.sts.issuerurl" to "https://security-token-service.nais.preprod.local/",
                 "application.profile" to "DEV",
                 "application.httpPort" to "8099",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
-                "pdl.url" to "https://pdl-api-q1.dev.intern.nav.no/graphql",
+                "pdl.url" to "https://pdl-api.dev-fss-pub.nais.io/graphql",
+                "pdl.api.scope" to "api://dev-fss.pdl.pdl-api/.default",
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret",
             ),
         )
     private val prodProperties =
         ConfigurationMap(
             mapOf(
-                "hentinntektliste.url" to "https://app.adeo.no/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
+                @Suppress("ktlint:standard:max-line-length")
+                "hentinntektliste.url"
+                    to "https://team-inntekt-proxy.prod-fss-pub.nais.io/inntektskomponenten/rs/api/v1/hentinntektliste",
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
-                "oidc.sts.issuerurl" to "https://security-token-service.nais.adeo.no/",
                 "application.profile" to "PROD",
                 "application.httpPort" to "8099",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
-                "pdl.url" to "http://pdl-api.pdl.svc.nais.local/graphql",
+                "pdl.url" to "https://pdl-api.prod-fss-pub.nais.io",
+                "pdl.api.scope" to "api://prod-fss.pdl.pdl-api/.default",
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret",
             ),
         )
@@ -83,11 +88,8 @@ internal object Config {
                 profile = this.profile,
                 credential = if (this.profile == Profile.LOCAL) null else KafkaAivenCredentials(),
                 httpPort = this[Key("application.httpPort", intType)],
-                username = this[Key("srvdp.inntekt.api.username", stringType)],
-                password = this[Key("srvdp.inntekt.api.password", stringType)],
                 hentinntektListeUrl = this[Key("hentinntektliste.url", stringType)],
                 enhetsregisteretUrl = this[Key("enhetsregisteret.url", stringType)],
-                oicdStsUrl = this[Key("oidc.sts.issuerurl", stringType)],
                 name = "dp-inntekt-api",
             )
     val Configuration.inntektApiConfig
@@ -98,6 +100,27 @@ internal object Config {
                 enhetsregisteretUrl = this.enhetsregister,
                 inntektBruktDataTopic = this[Key("kafka.inntekt.brukt.topic", stringType)],
             )
+
+    val pdlTokenProvider by lazy {
+        azureAdTokenSupplier(config[Key("pdl.api.scope", stringType)])
+    }
+
+    val inntektsKomponentTokenProvider by lazy {
+        azureAdTokenSupplier(config[Key("inntektskomponenten.api.scope", stringType)])
+    }
+
+    private val azureAdClient: CachedOauth2Client by lazy {
+        val azureAdConfig = OAuth2Config.AzureAd(config)
+        CachedOauth2Client(
+            tokenEndpointUrl = azureAdConfig.tokenEndpointUrl,
+            authType = azureAdConfig.clientSecret(),
+        )
+    }
+
+    private fun azureAdTokenSupplier(scope: String): () -> String =
+        {
+            runBlocking { azureAdClient.clientCredentials(scope).accessToken }
+        }
 }
 
 data class InntektApiConfig(
@@ -106,21 +129,14 @@ data class InntektApiConfig(
     val enhetsregisteretUrl: Enhetsregister,
     val inntektBruktDataTopic: String,
 ) {
-    data class Vault(
-        val mountPath: String,
-    )
-
     data class Application(
         val id: String,
         val brokers: String,
         val profile: Profile,
         val credential: Credential?,
         val httpPort: Int,
-        val username: String,
-        val password: String,
         val hentinntektListeUrl: String,
         val enhetsregisteretUrl: String,
-        val oicdStsUrl: String,
         val name: String,
     )
 

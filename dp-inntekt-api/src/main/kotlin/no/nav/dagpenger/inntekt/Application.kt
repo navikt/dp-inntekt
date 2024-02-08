@@ -15,7 +15,6 @@ import no.nav.dagpenger.inntekt.oppslag.enhetsregister.httpClient
 import no.nav.dagpenger.inntekt.oppslag.pdl.PdlGraphQLRepository
 import no.nav.dagpenger.inntekt.oppslag.pdl.pdlGraphQLClientFactory
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.Vaktmester
-import no.nav.dagpenger.oidc.StsOidcClient
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.fixedRateTimer
 
@@ -29,18 +28,12 @@ fun main() {
         DefaultExports.initialize()
         val dataSource = PostgresDataSourceBuilder.dataSource
         val postgresInntektStore = PostgresInntektStore(dataSource)
-        val stsOidcClient =
-            StsOidcClient(
-                config.application.oicdStsUrl,
-                config.application.username,
-                config.application.password,
-            )
         val pdlPersonOppslag =
             PdlGraphQLRepository(
                 client =
                     pdlGraphQLClientFactory(
                         url = config.pdl.url,
-                        oidcProvider = { runBlocking { stsOidcClient.oidcToken().access_token } },
+                        oidcProvider = Config.pdlTokenProvider,
                     ),
             )
         val enhetsregisterClient =
@@ -51,7 +44,7 @@ fun main() {
         val inntektskomponentHttpClient =
             InntektkomponentKtorClient(
                 config.application.hentinntektListeUrl,
-                stsOidcClient,
+                Config.inntektsKomponentTokenProvider,
             )
         val cachedInntektsGetter = BehandlingsInntektsGetter(inntektskomponentHttpClient, postgresInntektStore)
         // Marks inntekt as used
