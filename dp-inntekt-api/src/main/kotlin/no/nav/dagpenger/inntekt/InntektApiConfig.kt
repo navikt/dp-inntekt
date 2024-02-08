@@ -21,7 +21,7 @@ internal object Config {
                 "KAFKA_BROKERS" to "localhost:9092",
                 "application.httpPort" to "8099",
                 "application.profile" to "LOCAL",
-                "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
+                "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/",
                 "flyway.locations" to "db/migration,db/testdata",
                 "hentinntektliste.url" to "https://localhost/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
                 "inntektskomponenten.api.scope" to "api://dev-fss.team-inntekt.team-inntekt-proxy/.default",
@@ -35,7 +35,7 @@ internal object Config {
             mapOf(
                 "application.httpPort" to "8099",
                 "application.profile" to "DEV",
-                "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
+                "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/",
                 @Suppress("ktlint:standard:max-line-length")
                 "hentinntektliste.url"
                     to "https://team-inntekt-proxy.dev-fss-pub.nais.io/inntektskomponenten-q0/rs/api/v1/hentinntektliste",
@@ -50,7 +50,7 @@ internal object Config {
             mapOf(
                 "application.httpPort" to "8099",
                 "application.profile" to "PROD",
-                "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/api",
+                "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret/",
                 @Suppress("ktlint:standard:max-line-length")
                 "hentinntektliste.url"
                     to "https://team-inntekt-proxy.prod-fss-pub.nais.io/inntektskomponenten/rs/api/v1/hentinntektliste",
