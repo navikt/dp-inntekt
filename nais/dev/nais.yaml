@@ -50,6 +50,8 @@ spec:
         - application: dagpenger-regel-ui
           namespace: teamdagpenger
           cluster: dev-gcp
+  ingresses:
+    - https://dp-inntekt-api.intern.dev.nav.no
   kafka:
     pool: nav-dev
   secureLogs:

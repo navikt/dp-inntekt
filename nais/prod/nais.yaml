@@ -45,6 +45,8 @@ spec:
         - application: dagpenger-regel-ui
   kafka:
     pool: nav-prod
+  ingresses:
+    - https://dp-inntekt-api.intern.nav.no
   gcp:
     sqlInstances:
     - autoBackupHour: 1
