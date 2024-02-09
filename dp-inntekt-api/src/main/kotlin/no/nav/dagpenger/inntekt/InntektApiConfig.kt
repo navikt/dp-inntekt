@@ -57,7 +57,7 @@ internal object Config {
                 "inntektskomponenten.api.scope" to "api://prod-fss.team-inntekt.team-inntekt-proxy/.default",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://prod-fss.pdl.pdl-api/.default",
-                "pdl.url" to "https://pdl-api.prod-fss-pub.nais.io",
+                "pdl.url" to "https://pdl-api.prod-fss-pub.nais.io/graphql",
             ),
         )
     val config by lazy {
