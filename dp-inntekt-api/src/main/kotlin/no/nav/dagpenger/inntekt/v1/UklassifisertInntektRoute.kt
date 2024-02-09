@@ -76,7 +76,7 @@ fun Route.uklassifisertInntekt(
                             mapToGUIInntekt(it, Opptjeningsperiode(this.beregningsDato), inntektsmottaker)
                         }?.let {
                             call.respond(HttpStatusCode.OK, it)
-                        } ?: throw InntektNotFoundException("Inntekt with for $this is not found.")
+                        } ?: throw InntektNotFoundException("Inntekt with for $this not found.")
                     }
                 }
             }
