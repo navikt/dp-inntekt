@@ -54,6 +54,7 @@ spec:
       databases:
         - envVarPrefix: DB
           name: inntekt
+      diskSize: 100
       diskAutoresize: true
       diskType: SSD
       highAvailability: true
