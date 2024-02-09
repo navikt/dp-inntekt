@@ -39,7 +39,7 @@ internal object Config {
                 @Suppress("ktlint:standard:max-line-length")
                 "hentinntektliste.url"
                     to "https://team-inntekt-proxy.dev-fss-pub.nais.io/inntektskomponenten-q0/rs/api/v1/hentinntektliste",
-                "inntektskomponenten.api.scope" to "api://dev-fss.team-inntekt.team-inntekt-proxy/.default",
+                "inntektskomponenten.api.scope" to "api://dev-fss.team-inntekt.inntektskomponenten/.default",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://dev-fss.pdl.pdl-api/.default",
                 "pdl.url" to "https://pdl-api.dev-fss-pub.nais.io/graphql",
@@ -54,7 +54,7 @@ internal object Config {
                 @Suppress("ktlint:standard:max-line-length")
                 "hentinntektliste.url"
                     to "https://team-inntekt-proxy.prod-fss-pub.nais.io/inntektskomponenten/rs/api/v1/hentinntektliste",
-                "inntektskomponenten.api.scope" to "api://prod-fss.team-inntekt.team-inntekt-proxy/.default",
+                "inntektskomponenten.api.scope" to "api://prod-fss.team-inntekt.inntektskomponenten/.default",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://prod-fss.pdl.pdl-api/.default",
                 "pdl.url" to "https://pdl-api.prod-fss-pub.nais.io/graphql",
