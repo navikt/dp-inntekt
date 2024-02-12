@@ -14,6 +14,7 @@ import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.httpClient
 import no.nav.dagpenger.inntekt.oppslag.pdl.PdlGraphQLRepository
 import no.nav.dagpenger.inntekt.oppslag.pdl.pdlGraphQLClientFactory
+import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.Vaktmester
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.fixedRateTimer
@@ -48,17 +49,17 @@ fun main() {
             )
         val cachedInntektsGetter = BehandlingsInntektsGetter(inntektskomponentHttpClient, postgresInntektStore)
         // Marks inntekt as used
-//        val subsumsjonBruktDataConsumer =
-//            KafkaSubsumsjonBruktDataConsumer(config, postgresInntektStore).apply {
-//                listen()
-//            }.also {
-//                Runtime.getRuntime().addShutdownHook(
-//                    Thread {
-//                        it.stop()
-//                    },
-//                )
-//            }
-//
+        val subsumsjonBruktDataConsumer =
+            KafkaSubsumsjonBruktDataConsumer(config, postgresInntektStore).apply {
+                listen()
+            }.also {
+                Runtime.getRuntime().addShutdownHook(
+                    Thread {
+                        it.stop()
+                    },
+                )
+            }
+
         // Provides a HTTP API for getting inntekt
         embeddedServer(Netty, port = config.application.httpPort) {
             inntektApi(
@@ -70,7 +71,7 @@ fun main() {
                 enhetsregisterClient,
                 listOf(
                     postgresInntektStore as HealthCheck,
-//                    subsumsjonBruktDataConsumer as HealthCheck,
+                    subsumsjonBruktDataConsumer as HealthCheck,
                 ),
             )
         }.start().also {
