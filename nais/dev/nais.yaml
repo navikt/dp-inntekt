@@ -41,6 +41,8 @@ spec:
     outbound:
       external:
         - host: "pdl-api.dev-fss-pub.nais.io"
+        - host: "pdl-api-q0.dev-fss-pub.nais.io"
+        - host: "pdl-api-q1.dev-fss-pub.nais.io"
         - host: "team-inntekt-proxy.dev-fss-pub.nais.io"
         - host: "data.brreg.no"
     inbound:
