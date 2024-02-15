@@ -42,7 +42,7 @@ internal object Config {
                 "inntektskomponenten.api.scope" to "api://dev-fss.team-inntekt.inntektskomponenten/.default",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://dev-fss.pdl.pdl-api/.default",
-                "pdl.url" to "https://pdl-api.dev-fss-pub.nais.io/graphql",
+                "pdl.url" to "https://pdl-api-q1.dev-fss-pub.nais.io/graphql",
             ),
         )
     private val prodProperties =
