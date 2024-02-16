@@ -41,7 +41,7 @@ internal object Config {
                     to "https://team-inntekt-proxy.dev-fss-pub.nais.io/proxy/inntektskomponenten-q0/rs/api/v1/hentinntektliste",
                 "inntektskomponenten.api.scope" to "api://dev-fss.team-inntekt.inntektskomponenten/.default",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
-                "pdl.api.scope" to "api://dev-fss.pdl.pdl-api/.default",
+                "pdl.api.scope" to "api://dev-fss.pdl.pdl-api-q1/.default",
                 "pdl.url" to "https://pdl-api-q1.dev-fss-pub.nais.io/graphql",
             ),
         )
