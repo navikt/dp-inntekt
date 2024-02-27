@@ -44,6 +44,7 @@ internal object PostgresDataSourceBuilder {
             .connectRetries(10)
             .validateMigrationNaming(true)
             .failOnMissingLocations(true)
+            .configuration(java.util.Map.of("flyway.postgresql.transactional.lock", "false"))
 
     fun clean(): CleanResult =
         flyWayBuilder
