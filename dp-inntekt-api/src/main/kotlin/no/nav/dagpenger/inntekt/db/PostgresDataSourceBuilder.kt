@@ -44,7 +44,8 @@ internal object PostgresDataSourceBuilder {
             .connectRetries(10)
             .validateMigrationNaming(true)
             .failOnMissingLocations(true)
-            .configuration(java.util.Map.of("flyway.postgresql.transactional.lock", "false"))
+            // Skru på denne for å støtte CONCURRENTLY opprettelse av indekser
+            //.configuration(java.util.Map.of("flyway.postgresql.transactional.lock", "false"))
 
     fun clean(): CleanResult =
         flyWayBuilder
