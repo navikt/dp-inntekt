@@ -37,8 +37,6 @@ import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
 import no.nav.dagpenger.inntekt.v1.TestApplication.testOAuthToken
 import no.nav.dagpenger.inntekt.v1.TestApplication.withMockAuthServerAndTestApplication
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -161,10 +159,7 @@ internal class InntektRouteSpec {
             coEvery { it.hentPerson("ukjent") } throws PersonNotFoundException("ukjent")
         }
 
-    private val spesifisertPath = "/inntekt/spesifisert"
-    private val klassifisertPath = "/inntekt/klassifisert"
-    private val spesifisertInntektPathV2 = "/v2$spesifisertPath"
-    private val klassifisertInntektPathV2 = "/v2$klassifisertPath"
+    private val klassifisertInntektPathV2 = "/v2/inntekt/klassifisert"
 
     private val callId = "string-ulid"
     private val inntektId = InntektId(ULID().nextULID())
@@ -191,11 +186,10 @@ internal class InntektRouteSpec {
         } throws InntektNotFoundException("Inntekt not found")
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = ["/v2/inntekt/spesifisert", "/v2/inntekt/klassifisert"])
-    fun `skal ikke autentisere på v2 hvis ikke auth token er med `(endpoint: String) =
+    @Test
+    fun `skal ikke autentisere på v2 hvis ikke auth token er med `() =
         testApp {
-            handleRequest(HttpMethod.Post, endpoint) {
+            handleRequest(HttpMethod.Post, klassifisertInntektPathV2) {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(validJson)
             }.apply {
@@ -203,29 +197,14 @@ internal class InntektRouteSpec {
             }
         }
 
-    @ParameterizedTest
-    @ValueSource(strings = ["/v2/inntekt/spesifisert", "/v2/inntekt/klassifisert"])
-    fun `skal autentisere på v2 hvis auth token er med `(endpoint: String) =
-        testApp {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, endpoint) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                setBody(validJson)
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-            }
-        }
-
     @Test
-    fun `Spesifisert inntekt API specification test - Should match json field names and formats`() =
+    fun `skal autentisere på v2 hvis auth token er med `() =
         testApp {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, spesifisertInntektPathV2) {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, klassifisertInntektPathV2) {
                 addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-Request-Id", callId)
                 setBody(validJson)
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
-                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(inntektParametre, callId) }
-                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(inntektParametre, callId) }
             }
         }
 
@@ -240,30 +219,6 @@ internal class InntektRouteSpec {
                 assertEquals(HttpStatusCode.OK, response.status())
                 coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(inntektParametre, callId) }
                 coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(inntektParametre, callId) }
-            }
-        }
-
-    @Test
-    fun `Spesifisert Requests with vedtakId as string works and does store data`() =
-        testApp {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, spesifisertInntektPathV2) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-Request-Id", callId)
-                setBody(validJsonWithVedtakIdAsUlid)
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                coVerify(exactly = 1) {
-                    behandlingsInntektsGetterMock.getBehandlingsInntekt(
-                        vedtakIdUlidParametre,
-                        callId,
-                    )
-                }
-                coVerify(exactly = 1) {
-                    behandlingsInntektsGetterMock.getSpesifisertInntekt(
-                        vedtakIdUlidParametre,
-                        callId,
-                    )
-                }
             }
         }
 
@@ -313,34 +268,9 @@ internal class InntektRouteSpec {
         }
 
     @Test
-    fun `Spesifisert Requests with fødselsnummer works and does store data`() =
-        testApp {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, spesifisertInntektPathV2) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-Request-Id", callId)
-                setBody(validJsonWithFnr)
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(fnrParametre, callId) }
-                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(fnrParametre, callId) }
-            }
-        }
-
-    @Test
-    fun `Spesifisert request fails on post request with missing fields`() =
-        testApp {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, spesifisertInntektPathV2) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                setBody(jsonMissingFields)
-            }.apply {
-                assertEquals(HttpStatusCode.BadRequest, response.status())
-            }
-        }
-
-    @Test
     fun `Klassifisert request fails on post request with missing fields`() =
         testApp {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, spesifisertInntektPathV2) {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, klassifisertInntektPathV2) {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(jsonMissingFields)
             }.apply {
@@ -349,20 +279,9 @@ internal class InntektRouteSpec {
         }
 
     @Test
-    fun `Spesifisert request fails on post request with unknown person `() =
+    fun `Klassifisert request fails on post request with unknown person`() =
         testApp {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, spesifisertInntektPathV2) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                setBody(jsonUkjentPerson)
-            }.apply {
-                assertEquals(HttpStatusCode.BadRequest, response.status())
-            }
-        }
-
-    @Test
-    fun `Klassifisert request fails on post request with unknownperson`() =
-        testApp {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, spesifisertInntektPathV2) {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, klassifisertInntektPathV2) {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(jsonUkjentPerson)
             }.apply {

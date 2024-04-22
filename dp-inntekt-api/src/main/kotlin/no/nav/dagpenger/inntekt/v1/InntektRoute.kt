@@ -23,29 +23,6 @@ fun Route.inntekt(
     behandlingsInntektsGetter: BehandlingsInntektsGetter,
     personOppslag: PersonOppslag,
 ) {
-    route("spesifisert") {
-        post {
-            withContext(IO) {
-                val request = call.receive<InntektRequestMedFnr>()
-                val person = personOppslag.hentPerson(request.ident)
-
-                val inntektparametre =
-                    Inntektparametre(
-                        aktørId = person.aktørId,
-                        regelkontekst = request.regelkontekst,
-                        beregningsdato = request.beregningsDato,
-                        fødselsnummer = person.fødselsnummer,
-                    )
-                val spesifisertInntekt =
-                    behandlingsInntektsGetter.getSpesifisertInntekt(
-                        inntektparametre,
-                        call.callId,
-                    )
-
-                call.respond(HttpStatusCode.OK, spesifisertInntekt)
-            }
-        }
-    }
     route("klassifisert") {
         post {
             withContext(IO) {
