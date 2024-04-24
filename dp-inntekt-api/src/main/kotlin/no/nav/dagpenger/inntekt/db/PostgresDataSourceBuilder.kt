@@ -13,6 +13,7 @@ import org.flywaydb.core.api.output.CleanResult
 import org.flywaydb.core.internal.configuration.ConfigUtils
 
 private val logger = KotlinLogging.logger {}
+private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 // Understands how to create a data source from environment variables
 internal object PostgresDataSourceBuilder {
@@ -37,7 +38,7 @@ internal object PostgresDataSourceBuilder {
             initializationFailTimeout = 5000
             maxLifetime = 30001
         }.also {
-            logger.info { "Created datasource ${it.dataSourceClassName} for ${it.dataSource}" }
+            sikkerlogg.info { "Created datasource ${it.dataSourceClassName} for ${it.dataSourceProperties}" }
         }
     }
 
