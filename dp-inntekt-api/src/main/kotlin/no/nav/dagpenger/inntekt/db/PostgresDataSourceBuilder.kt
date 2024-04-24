@@ -36,6 +36,8 @@ internal object PostgresDataSourceBuilder {
             connectionTimeout = 1000
             initializationFailTimeout = 5000
             maxLifetime = 30001
+        }.also {
+            logger.info { "Created datasource ${it.dataSourceClassName} for ${it.dataSource}" }
         }
     }
 
