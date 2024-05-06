@@ -21,16 +21,15 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/wrapper-validation-action@v3.3.1
-      - uses: gradle/gradle-build-action@v3.3.1
-        id: build
+      - uses: gradle/actions/wrapper-validation@v3
+      - uses: gradle/actions/setup-gradle@v3
         env:
           DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: compileClasspath|runtimeClasspath
           ORG_GRADLE_PROJECT_githubUser: x-access-token
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
         with:
           dependency-graph: generate-and-submit
-          arguments: --configuration-cache build
+      - run: ./gradlew --configuration-cache build
 
       - uses: nais/docker-build-push@v0
         name: docker-build-push
