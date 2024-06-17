@@ -21,7 +21,7 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/wrapper-validation-action@v3.4.0
+      - uses: gradle/wrapper-validation-action@v3.4.1
       - uses: gradle/gradle-build-action@v3.4.0
         id: build
         env:
