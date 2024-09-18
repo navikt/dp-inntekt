@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
       - uses: gradle/wrapper-validation-action@v3.5.0
       - uses: gradle/gradle-build-action@v3.5.0
         env:
@@ -59,7 +59,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17.x
+          java-version: 21.x
           cache: 'gradle'
       - name: publish
         run: ./gradlew -Pversion="$(echo ${{ needs.release.outputs.tag }})" :dp-inntekt-kontrakter:publish
