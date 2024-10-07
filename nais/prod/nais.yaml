@@ -41,6 +41,7 @@ spec:
     inbound:
       rules:
         - application: dp-oppslag-inntekt
+        - application: dp-arena-sink
         - application: dp-inntekt-klassifiserer
         - application: dagpenger-regel-ui
   kafka:
