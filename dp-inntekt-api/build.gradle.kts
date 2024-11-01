@@ -88,7 +88,7 @@ dependencies {
     testImplementation(libs.testcontainer.postgresql)
     testImplementation("org.testcontainers:kafka:${libs.versions.testcontainer.get()}")
     testImplementation(libs.mockk)
-    testImplementation("org.skyscreamer:jsonassert:1.5.1")
+    testImplementation("org.skyscreamer:jsonassert:1.5.3")
 }
 
 tasks.named("shadowJar") {
