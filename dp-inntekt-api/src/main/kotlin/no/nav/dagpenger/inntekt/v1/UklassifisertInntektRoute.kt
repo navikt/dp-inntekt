@@ -14,7 +14,6 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import io.ktor.util.pipeline.PipelineContext
 import io.prometheus.client.Counter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -60,7 +59,7 @@ fun Route.uklassifisertInntekt(
         route("/uklassifisert/{aktørId}/{kontekstType}/{kontekstId}/{beregningsDato}") {
             get {
                 withContext(Dispatchers.IO) {
-                    withInntektRequest("GET /uklassifisert/") {
+                    call.withInntektRequest("GET /uklassifisert/") {
                         val person = personOppslag.hentPerson(this.aktørId)
                         inntektStore.getInntektId(
                             Inntektparametre(
@@ -82,7 +81,7 @@ fun Route.uklassifisertInntekt(
             }
             post {
                 withContext(Dispatchers.IO) {
-                    withInntektRequest("POST /uklassifisert/") {
+                    call.withInntektRequest("POST /uklassifisert/") {
                         val person = personOppslag.hentPerson(this.aktørId)
                         val guiInntekt = call.receive<GUIInntekt>()
                         mapToStoredInntekt(guiInntekt).let {
@@ -99,7 +98,7 @@ fun Route.uklassifisertInntekt(
                                     manueltRedigert =
                                         ManueltRedigert.from(
                                             guiInntekt.redigertAvSaksbehandler,
-                                            getSubject(),
+                                            call.getSubject(),
                                         ),
                                 ),
                             )
@@ -124,7 +123,7 @@ fun Route.uklassifisertInntekt(
             get {
                 val callId = call.callId
                 withContext(Dispatchers.IO) {
-                    withInntektRequest("GET /uklassifisert/uncached/") {
+                    call.withInntektRequest("GET /uklassifisert/uncached/") {
                         val person = personOppslag.hentPerson(this.aktørId)
                         val opptjeningsperiode = Opptjeningsperiode(this.beregningsDato)
                         toInntektskomponentRequest(person, opptjeningsperiode).let {
@@ -146,7 +145,7 @@ fun Route.uklassifisertInntekt(
 
             post {
                 withContext(Dispatchers.IO) {
-                    withInntektRequest("POST /uklassifisert/uncached/") {
+                    call.withInntektRequest("POST /uklassifisert/uncached/") {
                         val guiInntekt = call.receive<GUIInntekt>()
                         val person = personOppslag.hentPerson(this.aktørId)
                         mapToDetachedInntekt(guiInntekt).let {
@@ -163,7 +162,7 @@ fun Route.uklassifisertInntekt(
                                     manueltRedigert =
                                         ManueltRedigert.from(
                                             guiInntekt.redigertAvSaksbehandler,
-                                            getSubject(),
+                                            call.getSubject(),
                                         ),
                                 ),
                             )
@@ -193,9 +192,9 @@ fun Route.uklassifisertInntekt(
     }
 }
 
-private fun PipelineContext<Unit, ApplicationCall>.getSubject(): String {
+private fun ApplicationCall.getSubject(): String {
     return runCatching {
-        call.authentication.principal<JWTPrincipal>()?.payload?.subject
+        this.authentication.principal<JWTPrincipal>()?.payload?.subject
             ?: throw JWTDecodeException("Unable to get subject from JWT")
     }.getOrElse {
         logger.error(it) { "Unable to get subject" }
@@ -203,17 +202,17 @@ private fun PipelineContext<Unit, ApplicationCall>.getSubject(): String {
     }
 }
 
-private inline fun PipelineContext<Unit, ApplicationCall>.withInntektRequest(
+private inline fun ApplicationCall.withInntektRequest(
     route: String,
     block: InntektRequest.() -> Unit,
 ) {
     val inntektRequest =
         runCatching {
             InntektRequest(
-                aktørId = call.parameters["aktørId"]!!,
-                kontekstId = call.parameters["kontekstId"]!!,
-                kontekstType = call.parameters["kontekstType"]!!,
-                beregningsDato = LocalDate.parse(call.parameters["beregningsDato"]!!),
+                aktørId = this.parameters["aktørId"]!!,
+                kontekstId = this.parameters["kontekstId"]!!,
+                kontekstType = this.parameters["kontekstType"]!!,
+                beregningsDato = LocalDate.parse(this.parameters["beregningsDato"]!!),
             )
         }.getOrElse { t -> throw IllegalArgumentException("Failed to parse parameters", t) }
 
