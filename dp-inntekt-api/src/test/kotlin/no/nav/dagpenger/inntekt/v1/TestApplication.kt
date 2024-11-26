@@ -3,7 +3,14 @@ package no.nav.dagpenger.inntekt.v1
 import com.natpryce.konfig.Configuration
 import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.overriding
+import io.ktor.client.request.header
+import io.ktor.client.request.request
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
+import io.ktor.http.content.TextContent
 import io.ktor.server.application.Application
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.TestApplicationCall
@@ -79,6 +86,26 @@ internal object TestApplication {
             test()
         }
     }
+
+    internal suspend fun ApplicationTestBuilder.autentisert(
+        endepunkt: String,
+        token: String = testOAuthToken,
+        httpMethod: HttpMethod = HttpMethod.Post,
+        body: String? = null,
+        callId: String? = null,
+    ): HttpResponse =
+        client.request(endepunkt) {
+            this.method = httpMethod
+            body?.let {
+                this.setBody(TextContent(it, ContentType.Application.Json))
+                this.header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            }
+            this.header(HttpHeaders.Accept, ContentType.Application.Json.toString())
+            this.header(HttpHeaders.Authorization, "Bearer $token")
+            callId?.let {
+                this.header("X-Request-Id", it)
+            }
+        }
 
     internal fun TestApplicationEngine.handleAuthenticatedAzureAdRequest(
         method: HttpMethod,
