@@ -13,10 +13,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.content.TextContent
 import io.ktor.server.application.Application
 import io.ktor.server.testing.ApplicationTestBuilder
-import io.ktor.server.testing.TestApplicationCall
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.TestApplicationRequest
-import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.testApplication
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
@@ -106,15 +102,4 @@ internal object TestApplication {
                 this.header("X-Request-Id", it)
             }
         }
-
-    internal fun TestApplicationEngine.handleAuthenticatedAzureAdRequest(
-        method: HttpMethod,
-        uri: String,
-        test: TestApplicationRequest.() -> Unit = {},
-    ): TestApplicationCall {
-        return this.handleRequest(method, uri) {
-            addHeader("Authorization", "Bearer $testOAuthToken")
-            test()
-        }
-    }
 }
