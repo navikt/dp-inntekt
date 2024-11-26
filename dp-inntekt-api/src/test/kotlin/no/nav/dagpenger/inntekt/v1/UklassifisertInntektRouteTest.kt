@@ -3,15 +3,12 @@ package no.nav.dagpenger.inntekt.v1
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.huxhorn.sulky.ulid.ULID
 import io.kotest.matchers.doubles.shouldBeGreaterThan
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.ktor.http.HttpHeaders
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.Application
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
-import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
@@ -40,8 +37,9 @@ import no.nav.dagpenger.inntekt.mapping.InntektMedVerdikode
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.v1.TestApplication.autentisert
 import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
-import org.junit.jupiter.api.Assertions
+import no.nav.dagpenger.inntekt.v1.TestApplication.withMockAuthServerAndTestApplication
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -150,85 +148,117 @@ internal class UklassifisertInntektRouteTest {
 
     @Test
     fun `GET unknown uklassifisert inntekt should return 404 not found`() =
-        testApp {
-            handleRequest(
-                HttpMethod.Get,
-                "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}",
-            ) {
-                addHeader(HttpHeaders.Authorization, "Bearer $token")
-            }.apply {
-                assertEquals(HttpStatusCode.NotFound, response.status())
-                val problem = jacksonObjectMapper.readValue<Problem>(response.content!!)
-                assertEquals("Kunne ikke finne inntekt i databasen", problem.title)
-                assertEquals("urn:dp:error:inntekt", problem.type.toString())
-                assertEquals(404, problem.status)
-                assertEquals(
-                    "Inntekt with for InntektRequest(aktørId=$aktørId, kontekstId=1, kontekstType=VEDTAK, beregningsDato=2019-01-08) not found.",
-                    problem.detail,
+
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Get,
+                    endepunkt = "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}",
+                    token = token,
                 )
-            }
+
+            assertEquals(HttpStatusCode.NotFound, response.status)
+            val problem = jacksonObjectMapper.readValue<Problem>(response.bodyAsText())
+            assertEquals("Kunne ikke finne inntekt i databasen", problem.title)
+            assertEquals("urn:dp:error:inntekt", problem.type.toString())
+            assertEquals(404, problem.status)
+            assertEquals(
+                "Inntekt with for InntektRequest(aktørId=$aktørId, kontekstId=1, kontekstType=VEDTAK, beregningsDato=2019-01-08) not found.",
+                problem.detail,
+            )
         }
 
     @Test
     fun `GET uklassifisert without auth cookie should return 401 `() =
-        testApp {
-            handleRequest(
-                HttpMethod.Get,
-                "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}",
-            ) {
-            }.apply {
-                Assertions.assertEquals(HttpStatusCode.Unauthorized, response.status())
-            }
+
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
+            val response =
+                client.get(
+                    "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}",
+                )
+
+            assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
 
     @Test
     fun `GET uklassifisert inntekt with malformed parameters should return bad request`() =
-        testApp {
-            handleRequest(
-                HttpMethod.Get,
-                "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/blabla",
-            ) {
-                addHeader(HttpHeaders.Authorization, "Bearer $token")
-            }.apply {
-                assertEquals(HttpStatusCode.BadRequest, response.status())
-            }
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
+            val response =
+                autentisert(
+                    "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/blabla",
+                )
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
         }
 
     @Test
     fun `Get request for uklassifisert inntekt should return 200 ok`() =
-        testApp {
-            handleRequest(
-                HttpMethod.Get,
-                "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-            ) {
-                addHeader(HttpHeaders.Authorization, "Bearer $token")
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                val storedInntekt =
-                    jacksonObjectMapper.readValue<StoredInntekt>(response.content!!)
-                assertEquals(storedInntekt.inntektId, inntektId)
-            }
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Get,
+                    endepunkt = "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
+                )
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            val storedInntekt =
+                jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
+            assertEquals(storedInntekt.inntektId, inntektId)
         }
 
     @Test
     fun `Get request for uncached uklassifisert inntekt should return 200 ok`() =
-        testApp {
-            handleRequest(
-                HttpMethod.Get,
-                "$uklassifisertInntekt/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-            ) {
-                addHeader(HttpHeaders.Authorization, "Bearer $token")
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                val uncachedInntekt =
-                    jacksonObjectMapper.readValue<DetachedInntekt>(response.content!!)
-                assertEquals(emptyInntekt.ident, uncachedInntekt.inntekt.ident)
-            }
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Get,
+                    endepunkt = "$uklassifisertInntekt/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
+                )
+            assertEquals(HttpStatusCode.OK, response.status)
+            val uncachedInntekt =
+                jacksonObjectMapper.readValue<DetachedInntekt>(response.bodyAsText())
+            assertEquals(emptyInntekt.ident, uncachedInntekt.inntekt.ident)
         }
 
     @Test
     fun `Post uklassifisert inntekt should return 200 ok`() =
-        testApp {
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
             val guiInntekt =
                 GUIInntekt(
                     inntektId = inntektId,
@@ -238,52 +268,59 @@ internal class UklassifisertInntektRouteTest {
                     redigertAvSaksbehandler = false,
                 )
 
-            handleRequest(
-                HttpMethod.Post,
-                "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-            ) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader(HttpHeaders.Authorization, "Bearer $token")
-                setBody(jacksonObjectMapper.writeValueAsString(guiInntekt))
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                val storedInntekt =
-                    jacksonObjectMapper.readValue<StoredInntekt>(response.content!!)
-                assertEquals(storedInntekt.inntektId, inntektId)
-            }
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Post,
+                    endepunkt = "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
+                    body = jacksonObjectMapper.writeValueAsString(guiInntekt),
+                )
+            assertEquals(HttpStatusCode.OK, response.status)
+            val uncachedInntekt =
+                jacksonObjectMapper.readValue<DetachedInntekt>(response.bodyAsText())
+            assertEquals(emptyInntekt.ident, uncachedInntekt.inntekt.ident)
         }
 
     @Test
     fun `Post uklassifisert inntekt redigert should return 200 ok`() =
-        testApp {
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
             val guiInntekt =
                 GUIInntekt(
                     inntektId = inntektId,
                     timestamp = null,
                     inntekt = GUIInntektsKomponentResponse(null, null, listOf(), Aktoer(AktoerType.AKTOER_ID, aktørId)),
                     manueltRedigert = false,
-                    redigertAvSaksbehandler = true,
+                    redigertAvSaksbehandler = false,
                 )
 
-            handleRequest(
-                HttpMethod.Post,
-                "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-            ) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader(HttpHeaders.Authorization, "Bearer $token")
-                setBody(jacksonObjectMapper.writeValueAsString(guiInntekt))
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                val storedInntekt =
-                    jacksonObjectMapper.readValue<StoredInntekt>(response.content!!)
-                assertEquals(storedInntekt.inntektId, inntektId)
-                shouldBeCounted(metricName = INNTEKT_KORRIGERING)
-            }
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Post,
+                    endepunkt = "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
+                    body = jacksonObjectMapper.writeValueAsString(guiInntekt),
+                )
+            assertEquals(HttpStatusCode.OK, response.status)
+            val storedInntekt =
+                jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
+            assertEquals(storedInntekt.inntektId, inntektId)
+            shouldBeCounted(metricName = INNTEKT_KORRIGERING)
         }
 
     @Test
     fun `Post uklassifisert inntekt med feil redigert should return 400 ok`() =
-        testApp {
+
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
             val guiInntekt =
                 GUIInntekt(
                     inntektId = inntektId,
@@ -322,22 +359,26 @@ internal class UklassifisertInntektRouteTest {
                     redigertAvSaksbehandler = true,
                 )
 
-            handleRequest(
-                HttpMethod.Post,
-                "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-            ) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader(HttpHeaders.Authorization, "Bearer $token")
-                val body = jacksonObjectMapper.writeValueAsString(guiInntekt)
-                setBody(body.replace(oldValue = "123", newValue = ""))
-            }.apply {
-                assertEquals(HttpStatusCode.BadRequest, response.status())
-            }
+            val body = jacksonObjectMapper.writeValueAsString(guiInntekt)
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Post,
+                    endepunkt = "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
+                    body = body.replace(oldValue = "123", newValue = ""),
+                )
+
+            response.status shouldBe HttpStatusCode.BadRequest
         }
 
     @Test
     fun `Post uklassifisert uncached inntekt should return 200 ok`() =
-        testApp {
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
             val guiInntekt =
                 GUIInntekt(
                     inntektId = null,
@@ -347,25 +388,29 @@ internal class UklassifisertInntektRouteTest {
                     redigertAvSaksbehandler = true,
                 )
 
-            handleRequest(
-                HttpMethod.Post,
-                "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-            ) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader(HttpHeaders.Authorization, "Bearer $token")
-                setBody(jacksonObjectMapper.writeValueAsString(guiInntekt))
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                val storedInntekt =
-                    jacksonObjectMapper.readValue<StoredInntekt>(response.content!!)
-                assertEquals(storedInntekt.inntektId, inntektId)
-                shouldBeCounted(metricName = INNTEKT_OPPFRISKING_BRUKT)
-            }
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Post,
+                    endepunkt = "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
+                    body = jacksonObjectMapper.writeValueAsString(guiInntekt),
+                )
+            assertEquals(HttpStatusCode.OK, response.status)
+            val storedInntekt =
+                jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
+            assertEquals(storedInntekt.inntektId, inntektId)
+            shouldBeCounted(metricName = INNTEKT_OPPFRISKING_BRUKT)
         }
 
     @Test
     fun `Post uklassifisert uncached inntekt redigert should return 200 ok`() =
-        testApp {
+
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
             val guiInntekt =
                 GUIInntekt(
                     inntektId = null,
@@ -375,45 +420,38 @@ internal class UklassifisertInntektRouteTest {
                     redigertAvSaksbehandler = false,
                 )
 
-            handleRequest(
-                HttpMethod.Post,
-                "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-            ) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader(HttpHeaders.Authorization, "Bearer $token")
-                setBody(jacksonObjectMapper.writeValueAsString(guiInntekt))
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                val storedInntekt =
-                    jacksonObjectMapper.readValue<StoredInntekt>(response.content!!)
-                assertEquals(storedInntekt.inntektId, inntektId)
-                shouldBeCounted(metricName = INNTEKT_OPPFRISKING_BRUKT)
-            }
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Post,
+                    endepunkt = "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
+                    body = jacksonObjectMapper.writeValueAsString(guiInntekt),
+                )
+            assertEquals(HttpStatusCode.OK, response.status)
+            val storedInntekt =
+                jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
+            assertEquals(storedInntekt.inntektId, inntektId)
+            shouldBeCounted(metricName = INNTEKT_OPPFRISKING_BRUKT)
         }
 
     @Test
     fun `Should get verdikode mapping`() =
-        testApp {
-            handleRequest(HttpMethod.Get, "v1/inntekt/verdikoder") {
-                addHeader(HttpHeaders.ContentType, "application/json")
-            }.apply {
-                assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
-                assertEquals(HttpStatusCode.OK, response.status())
-                assertTrue(runCatching { jacksonObjectMapper.readValue<Set<String>>(response.content!!) }.isSuccess)
-            }
-        }
 
-    private fun testApp(
-        moduleFunction: Application.() -> Unit =
+        withMockAuthServerAndTestApplication(
             mockInntektApi(
                 inntektskomponentClient = inntektskomponentClientMock,
                 inntektStore = inntektStoreMock,
                 personOppslag = personOppslagMock,
             ),
-        callback: TestApplicationEngine.() -> Unit,
-    ) {
-        withTestApplication(moduleFunction) { callback() }
-    }
+        ) {
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Get,
+                    endepunkt = "v1/inntekt/verdikoder",
+                )
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
+            assertTrue(runCatching { jacksonObjectMapper.readValue<Set<String>>(response.bodyAsText()) }.isSuccess)
+        }
 }
 
 private fun shouldBeCounted(metricName: String) {

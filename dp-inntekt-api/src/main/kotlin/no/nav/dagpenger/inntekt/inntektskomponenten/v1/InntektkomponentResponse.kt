@@ -99,11 +99,6 @@ enum class InntektType {
     YTELSE_FRA_OFFENTLIGE,
 }
 
-/**
- *  @Json = Moshi
- *  @JsonProperty = Jackson
- *
- */
 enum class SpesielleInntjeningsforhold {
     @JsonProperty("hyreTilMannskapPaaFiskeSmaahvalfangstOgSelfangstfartoey")
     HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
@@ -131,11 +126,6 @@ enum class SpesielleInntjeningsforhold {
     UNKNOWN,
 }
 
-/**
- *  @Json == Moshi
- *  @JsonProperty = Jackson
- *
- */
 enum class InntektBeskrivelse {
     @JsonProperty("aksjerGrunnfondsbevisTilUnderkurs")
     AKSJER_GRUNNFONDSBEVIS_TIL_UNDERKURS,

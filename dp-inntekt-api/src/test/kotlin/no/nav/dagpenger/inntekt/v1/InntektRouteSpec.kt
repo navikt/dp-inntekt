@@ -6,14 +6,13 @@ import io.kotest.matchers.shouldBe
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.ktor.server.testing.withTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -32,7 +31,7 @@ import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonNotFoundException
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
-import no.nav.dagpenger.inntekt.v1.TestApplication.handleAuthenticatedAzureAdRequest
+import no.nav.dagpenger.inntekt.v1.TestApplication.autentisert
 import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
 import no.nav.dagpenger.inntekt.v1.TestApplication.testOAuthToken
 import no.nav.dagpenger.inntekt.v1.TestApplication.withMockAuthServerAndTestApplication
@@ -188,105 +187,153 @@ internal class InntektRouteSpec {
 
     @Test
     fun `skal ikke autentisere på v2 hvis ikke auth token er med `() =
-        testApp {
-            handleRequest(HttpMethod.Post, klassifisertInntektPathV2) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                setBody(validJson)
-            }.apply {
-                assertEquals(HttpStatusCode.Unauthorized, response.status())
-            }
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
+            val response =
+                client.post(klassifisertInntektPathV2) {
+                    header(HttpHeaders.ContentType, "application/json")
+                    setBody(validJson)
+                }
+
+            assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
 
     @Test
     fun `skal autentisere på v2 hvis auth token er med `() =
-        testApp {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, klassifisertInntektPathV2) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                setBody(validJson)
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-            }
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
+            val response =
+                autentisert(
+                    klassifisertInntektPathV2,
+                    httpMethod = HttpMethod.Post,
+                    body = validJson,
+                    callId = callId,
+                )
+
+            assertEquals(HttpStatusCode.OK, response.status)
         }
 
     @Test
     fun `Klassifisert inntekt API specification test - Should match json field names and formats`() =
-        testApp {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, klassifisertInntektPathV2) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-Request-Id", callId)
-                setBody(validJson)
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(inntektParametre, callId) }
-                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(inntektParametre, callId) }
-            }
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
+            val response =
+                autentisert(
+                    klassifisertInntektPathV2,
+                    httpMethod = HttpMethod.Post,
+                    body = validJson,
+                    callId = callId,
+                )
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(inntektParametre, callId) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(inntektParametre, callId) }
         }
 
     @Test
     fun `Klassifisert Requests with fødselsnummer works and does store data`() =
-        testApp {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, klassifisertInntektPathV2) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-Request-Id", callId)
-                setBody(validJsonWithFnr)
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(fnrParametre, callId) }
-                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(fnrParametre, callId) }
-                coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(fnrParametre, callId) }
-            }
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
+            val response =
+                autentisert(
+                    klassifisertInntektPathV2,
+                    httpMethod = HttpMethod.Post,
+                    body = validJsonWithFnr,
+                    callId = callId,
+                )
+            assertEquals(HttpStatusCode.OK, response.status)
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getBehandlingsInntekt(fnrParametre, callId) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getSpesifisertInntekt(fnrParametre, callId) }
+            coVerify(exactly = 1) { behandlingsInntektsGetterMock.getKlassifisertInntekt(fnrParametre, callId) }
         }
 
     @Test
     fun `Klassifisert Requests with vedtakId as string works and does store data`() =
-        testApp {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, klassifisertInntektPathV2) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                addHeader("X-Request-Id", callId)
-                setBody(validJsonWithVedtakIdAsUlid)
-            }.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                coVerify(exactly = 1) {
-                    behandlingsInntektsGetterMock.getBehandlingsInntekt(
-                        vedtakIdUlidParametre,
-                        callId,
-                    )
-                }
-                coVerify(exactly = 1) {
-                    behandlingsInntektsGetterMock.getSpesifisertInntekt(
-                        vedtakIdUlidParametre,
-                        callId,
-                    )
-                }
-                coVerify(exactly = 1) {
-                    behandlingsInntektsGetterMock.getKlassifisertInntekt(
-                        vedtakIdUlidParametre,
-                        callId,
-                    )
-                }
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
+            val response =
+                autentisert(
+                    klassifisertInntektPathV2,
+                    httpMethod = HttpMethod.Post,
+                    body = validJsonWithVedtakIdAsUlid,
+                    callId = callId,
+                )
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            coVerify(exactly = 1) {
+                behandlingsInntektsGetterMock.getBehandlingsInntekt(
+                    vedtakIdUlidParametre,
+                    callId,
+                )
+            }
+            coVerify(exactly = 1) {
+                behandlingsInntektsGetterMock.getSpesifisertInntekt(
+                    vedtakIdUlidParametre,
+                    callId,
+                )
+            }
+            coVerify(exactly = 1) {
+                behandlingsInntektsGetterMock.getKlassifisertInntekt(
+                    vedtakIdUlidParametre,
+                    callId,
+                )
             }
         }
 
     @Test
     fun `Klassifisert request fails on post request with missing fields`() =
-        testApp {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, klassifisertInntektPathV2) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                setBody(jsonMissingFields)
-            }.apply {
-                assertEquals(HttpStatusCode.BadRequest, response.status())
-            }
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
+            val response =
+                autentisert(
+                    klassifisertInntektPathV2,
+                    httpMethod = HttpMethod.Post,
+                    body = jsonMissingFields,
+                    callId = callId,
+                )
+            assertEquals(HttpStatusCode.BadRequest, response.status)
         }
 
     @Test
     fun `Klassifisert request fails on post request with unknown person`() =
-        testApp {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, klassifisertInntektPathV2) {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                setBody(jsonUkjentPerson)
-            }.apply {
-                assertEquals(HttpStatusCode.BadRequest, response.status())
-            }
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+                personOppslag = personOppslagMock,
+            ),
+        ) {
+            val response =
+                autentisert(
+                    klassifisertInntektPathV2,
+                    httpMethod = HttpMethod.Post,
+                    body = jsonUkjentPerson,
+                    callId = callId,
+                )
+            assertEquals(HttpStatusCode.BadRequest, response.status)
         }
 
     @Test
@@ -323,15 +370,6 @@ internal class InntektRouteSpec {
 
             ikkeInntektIdResponse.status shouldBe HttpStatusCode.BadRequest
         }
-
-    private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        withTestApplication(
-            mockInntektApi(
-                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-                personOppslag = personOppslagMock,
-            ),
-        ) { callback() }
-    }
 
     private fun HttpRequestBuilder.autentisert() {
         header(HttpHeaders.Authorization, "Bearer $testOAuthToken")
