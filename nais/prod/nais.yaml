@@ -6,6 +6,8 @@ metadata:
   namespace: {{namespace}}
   labels:
     team: {{team}}
+  annotations:
+    config.linkerd.io/proxy-outbound-connect-timeout: 3000ms
 spec:
   image: {{image}}
   port: 8099
