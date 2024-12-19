@@ -70,7 +70,7 @@ dependencies {
     implementation("no.bekk.bekkopen:nocommons:0.16.0")
 
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
-    implementation("no.nav.dagpenger:oauth2-klient:2024.10.31-15.02.1d4f08a38d24")
+    implementation("no.nav.dagpenger:oauth2-klient:2024.12.10-14.29.b14a663ac6da")
 
     testImplementation(kotlin("test"))
     testImplementation(libs.ktor.server.test.host)
