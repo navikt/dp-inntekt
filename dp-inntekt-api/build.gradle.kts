@@ -21,7 +21,7 @@ application {
     mainClass.set("no.nav.dagpenger.inntekt.ApplicationKt")
 }
 
-val expediaGraphqlVersion = "8.2.1"
+val expediaGraphqlVersion = "8.3.0"
 val moshiVersion = "1.14.0"
 val log4j2Version = "2.24.3"
 
@@ -78,7 +78,7 @@ dependencies {
     testImplementation("no.nav.security:mock-oauth2-server:2.1.10")
     testImplementation("io.ktor:ktor-client-mock:${libs.versions.ktor.get()}")
 
-    testImplementation("org.wiremock:wiremock-standalone:3.10.0")
+    testImplementation("org.wiremock:wiremock-standalone:3.11.0")
 
     testImplementation(libs.bundles.kotest.assertions)
     testImplementation("io.kotest:kotest-property:${libs.versions.kotest.get()}")
