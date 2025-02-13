@@ -120,7 +120,7 @@ internal object Config {
     private fun azureAdTokenSupplier(scope: String): () -> String =
         {
             runBlocking {
-                azureAdClient.clientCredentials(scope).accessToken ?: throw RuntimeException("Failed to get token")
+                azureAdClient.clientCredentials(scope).access_token ?: throw RuntimeException("Failed to get token")
             }
         }
 }
