@@ -13,19 +13,21 @@ import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
-import no.nav.dagpenger.plain.producerConfig
+import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer.Companion.commonConfig
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
+import org.apache.logging.log4j.CloseableThreadContext.putAll
 import org.junit.jupiter.api.Test
-import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
+import org.testcontainers.kafka.ConfluentKafkaContainer
 import org.testcontainers.utility.DockerImageName
 import java.sql.SQLTransientConnectionException
 import java.time.Duration
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 
 private val LOGGER = KotlinLogging.logger { }
@@ -33,7 +35,7 @@ private val LOGGER = KotlinLogging.logger { }
 internal class KafkaSubsumsjonBruktDataConsumerTest {
     private object Kafka {
         val instance by lazy {
-            KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka").withTag("7.5.1")).apply {
+            ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka").withTag("7.5.1")).apply {
                 this.waitingFor(HostPortWaitStrategy())
                 this.start()
             }
@@ -64,11 +66,12 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
         )
     private val producer by lazy {
         KafkaProducer<String, String>(
-            producerConfig(
-                clientId = "test",
-                bootstrapServers = Kafka.instance.bootstrapServers,
-            ).also {
+            Properties().apply {
+                putAll(commonConfig(Kafka.instance.bootstrapServers, null))
+                put(ProducerConfig.CLIENT_ID_CONFIG, "test")
+            }.also {
                 it[ProducerConfig.ACKS_CONFIG] = "all"
+                it[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
                 it[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
             },
         )

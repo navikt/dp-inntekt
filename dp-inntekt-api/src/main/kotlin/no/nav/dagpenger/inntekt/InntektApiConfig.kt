@@ -11,10 +11,9 @@ import com.natpryce.konfig.stringType
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.oauth2.CachedOauth2Client
 import no.nav.dagpenger.oauth2.OAuth2Config
-import no.nav.dagpenger.streams.Credential
-import no.nav.dagpenger.streams.KafkaAivenCredentials
+import org.apache.kafka.common.security.auth.SecurityProtocol
 
-internal object Config {
+object Config {
     private val localProperties =
         ConfigurationMap(
             mapOf(
@@ -105,6 +104,17 @@ internal object Config {
         azureAdTokenSupplier(config[Key("pdl.api.scope", stringType)])
     }
 
+    data class KafkaAivenCredentials(
+        val securityProtocolConfig: String = SecurityProtocol.SSL.name,
+        val sslEndpointIdentificationAlgorithmConfig: String = "",
+        val sslTruststoreTypeConfig: String = "jks",
+        val sslKeystoreTypeConfig: String = "PKCS12",
+        val sslTruststoreLocationConfig: String = "/var/run/secrets/nais.io/kafka/client.truststore.jks",
+        val sslTruststorePasswordConfig: String = config[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
+        val sslKeystoreLocationConfig: String = "/var/run/secrets/nais.io/kafka/client.keystore.p12",
+        val sslKeystorePasswordConfig: String = sslTruststorePasswordConfig,
+    )
+
     val inntektsKomponentTokenProvider by lazy {
         azureAdTokenSupplier(config[Key("inntektskomponenten.api.scope", stringType)])
     }
@@ -135,7 +145,7 @@ data class InntektApiConfig(
         val id: String,
         val brokers: String,
         val profile: Profile,
-        val credential: Credential?,
+        val credential: Config.KafkaAivenCredentials?,
         val httpPort: Int,
         val hentinntektListeUrl: String,
         val enhetsregisteretUrl: String,

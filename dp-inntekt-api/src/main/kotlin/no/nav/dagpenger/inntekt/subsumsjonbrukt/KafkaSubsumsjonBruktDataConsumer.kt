@@ -6,20 +6,23 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.inntekt.Config
 import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.InntektApiConfig
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
-import no.nav.dagpenger.plain.consumerConfig
-import no.nav.dagpenger.streams.PacketDeserializer
+import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.CommitFailedException
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.config.SslConfigs
+import org.apache.kafka.common.serialization.StringDeserializer
 import java.time.Duration
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.util.Properties
 import kotlin.coroutines.CoroutineContext
 
 internal class KafkaSubsumsjonBruktDataConsumer(
@@ -43,13 +46,12 @@ internal class KafkaSubsumsjonBruktDataConsumer(
         launch(coroutineContext) {
             logger.info { "Starting ${config.application.id}" }
 
-            KafkaConsumer<String, Packet>(
+            KafkaConsumer<String, String>(
                 consumerConfig(
                     groupId = config.application.id,
                     bootstrapServerUrl = config.application.brokers,
                     credential = config.application.credential,
                 ).also {
-                    it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = PacketDeserializer::class.java
                     it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
                     it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = "false"
                     it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
@@ -62,16 +64,15 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                         val ids =
                             records.asSequence()
                                 .map { record -> record.value() }
+                                .map { jacksonObjectMapper.readTree(it) }
                                 .filter { packet ->
-                                    packet.hasFields(
-                                        "@event_name",
-                                        "aktorId",
-                                        "inntektsId",
-                                        "kontekst",
-                                    ) &&
-                                        packet.getStringValue("@event_name") == "brukt_inntekt"
+                                    packet.has("@event_name") &&
+                                        packet.has("aktorId") &&
+                                        packet.has("inntektsId") &&
+                                        packet.has("kontekst") &&
+                                        packet.get("@event_name").asText() == "brukt_inntekt"
                                 }
-                                .map { packet -> InntektId(packet.getStringValue("inntektsId")) }
+                                .map { packet -> InntektId(packet.get("inntektsId").asText()) }
                                 .toList()
 
                         try {
@@ -125,5 +126,52 @@ internal class KafkaSubsumsjonBruktDataConsumer(
         private val expires = from.plus(duration)
 
         fun expired() = ZonedDateTime.now(ZoneOffset.UTC).isAfter(expires)
+    }
+
+    companion object {
+        private val defaultConsumerConfig =
+            Properties().apply {
+                put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java.name)
+                put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java.name)
+            }
+
+        internal fun commonConfig(
+            bootstrapServers: String,
+            credential: Config.KafkaAivenCredentials? = null,
+        ): Properties {
+            return Properties().apply {
+                put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers)
+                credential?.let { creds ->
+                    putAll(
+                        Properties().apply {
+                            put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, creds.securityProtocolConfig)
+                            put(
+                                SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG,
+                                creds.sslEndpointIdentificationAlgorithmConfig,
+                            )
+                            put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, creds.sslTruststoreTypeConfig)
+                            put(SslConfigs.SSL_KEYSTORE_TYPE_CONFIG, creds.sslKeystoreTypeConfig)
+                            put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, creds.sslTruststoreLocationConfig)
+                            put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, creds.sslTruststorePasswordConfig)
+                            put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, creds.sslKeystoreLocationConfig)
+                            put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, creds.sslKeystorePasswordConfig)
+                        },
+                    )
+                }
+            }
+        }
+    }
+
+    private fun consumerConfig(
+        groupId: String,
+        bootstrapServerUrl: String,
+        credential: Config.KafkaAivenCredentials? = null,
+        properties: Properties = defaultConsumerConfig,
+    ): Properties {
+        return Properties().apply {
+            putAll(properties)
+            putAll(commonConfig(bootstrapServerUrl, credential))
+            put(ConsumerConfig.GROUP_ID_CONFIG, groupId)
+        }
     }
 }

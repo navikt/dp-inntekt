@@ -28,9 +28,6 @@ val log4j2Version = "2.24.3"
 dependencies {
 
     implementation(project(":dp-inntekt-kontrakter"))
-
-    implementation("com.github.navikt:dagpenger-streams:20230831.f3d785")
-
     implementation(libs.bundles.ktor.server)
     implementation("io.ktor:ktor-server-netty:${libs.versions.ktor.get()}")
     implementation("io.ktor:ktor-server-default-headers:${libs.versions.ktor.get()}")
