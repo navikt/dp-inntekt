@@ -59,7 +59,7 @@ dependencies {
 
     implementation(libs.bundles.postgres)
     implementation(libs.konfig)
-    implementation("org.slf4j:slf4j-api:2.0.16")
+    implementation("org.slf4j:slf4j-api:2.0.17")
 
     implementation("io.prometheus:simpleclient_common:0.16.0")
     implementation("io.prometheus:simpleclient_hotspot:0.16.0")
