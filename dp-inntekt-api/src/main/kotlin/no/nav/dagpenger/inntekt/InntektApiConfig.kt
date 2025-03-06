@@ -37,7 +37,7 @@ object Config {
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret",
                 @Suppress("ktlint:standard:max-line-length")
                 "hentinntektliste.url"
-                    to "https://team-inntekt-proxy.dev-fss-pub.nais.io/proxy/inntektskomponenten-q0/rs/api/v1/hentinntektliste",
+                    to "https://team-inntekt-proxy.dev-fss-pub.nais.io/proxy/inntektskomponenten-q1/rs/api/v1/hentinntektliste",
                 "inntektskomponenten.api.scope" to "api://dev-fss.team-inntekt.inntektskomponenten/.default",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://dev-fss.pdl.pdl-api-q1/.default",
