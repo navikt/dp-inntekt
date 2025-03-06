@@ -28,9 +28,9 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.micrometer.core.instrument.Clock
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
-import io.prometheus.client.CollectorRegistry
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import io.prometheus.metrics.model.registry.PrometheusRegistry
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
@@ -59,7 +59,7 @@ internal fun Application.inntektApi(
     personOppslag: PersonOppslag,
     enhetsregisterClient: EnhetsregisterClient,
     healthChecks: List<HealthCheck>,
-    collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry,
+    collectorRegistry: PrometheusRegistry = PrometheusRegistry.defaultRegistry,
 ) {
     install(DefaultHeaders)
     install(MicrometerMetrics) {
