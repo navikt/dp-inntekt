@@ -1,18 +1,21 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     kotlin("jvm")
-    id("com.diffplug.spotless")
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
 repositories {
     mavenCentral()
-    maven("https://www.jitpack.io")
+    maven("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
+    maven("https://jitpack.io")
 }
 
 dependencies {
+    implementation(platform(kotlin("bom")))
+    implementation(kotlin("stdlib-jdk8"))
     testImplementation(kotlin("test"))
 }
 
@@ -30,17 +33,6 @@ tasks.test {
     }
 }
 
-configure<com.diffplug.gradle.spotless.SpotlessExtension> {
-    kotlin {
-        ktlint()
-        targetExclude("build/generated/**")
-    }
-
-    kotlinGradle {
-        ktlint()
-    }
-}
-
 tasks.withType<KotlinCompile>().configureEach {
-    dependsOn("spotlessApply")
+    dependsOn("ktlintFormat")
 }

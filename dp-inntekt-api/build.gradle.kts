@@ -109,6 +109,12 @@ tasks.named("graphqlGenerateClient") {
     dependsOn("downloadPdlSDL")
 }
 
+ktlint {
+    filter {
+        exclude { element -> element.file.path.contains("generated/") }
+    }
+}
+
 val Project.buildDir_: File get() = layout.buildDirectory.get().asFile
 val schema = "schema.graphql"
 
