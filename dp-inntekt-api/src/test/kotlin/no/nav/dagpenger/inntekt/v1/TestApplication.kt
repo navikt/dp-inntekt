@@ -15,7 +15,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.mockk.mockk
-import io.prometheus.client.CollectorRegistry
+import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.Config
 import no.nav.dagpenger.inntekt.HealthCheck
@@ -69,7 +69,7 @@ internal object TestApplication {
                 personOppslag = personOppslag,
                 enhetsregisterClient = enhetsregisterClient,
                 healthChecks = healthChecks,
-                collectorRegistry = CollectorRegistry(true),
+                collectorRegistry = PrometheusRegistry.defaultRegistry,
             )
         }
 
