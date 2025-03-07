@@ -57,6 +57,9 @@ spec:
           cluster: dev-gcp
   ingresses:
     - https://dp-inntekt-api.intern.dev.nav.no
+  env:
+    - name: JDK_JAVA_OPTIONS
+      value: -XX:+UseParallelGC -XX:ActiveProcessorCount=4
   kafka:
     pool: nav-dev
   secureLogs:

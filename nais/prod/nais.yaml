@@ -50,6 +50,9 @@ spec:
     pool: nav-prod
   ingresses:
     - https://dp-inntekt-api.intern.nav.no
+  env:
+    - name: JDK_JAVA_OPTIONS
+      value: -XX:+UseParallelGC -XX:ActiveProcessorCount=4
   gcp:
     sqlInstances:
     - autoBackupHour: 1
