@@ -19,8 +19,8 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.jackson.JacksonConverter
-import io.prometheus.client.Counter
-import io.prometheus.client.Summary
+import io.prometheus.metrics.core.metrics.Counter
+import io.prometheus.metrics.core.metrics.Summary
 import mu.KotlinLogging
 import mu.withLoggingContext
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
@@ -31,7 +31,7 @@ private val sikkerLogg = KotlinLogging.logger("tjenestekall")
 private val ulid = ULID()
 const val INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME = "inntektskomponent_client_seconds"
 private val clientLatencyStats: Summary =
-    Summary.build()
+    Summary.builder()
         .name(INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME)
         .quantile(0.5, 0.05) // Add 50th percentile (= median) with 5% tolerated error
         .quantile(0.9, 0.01) // Add 90th percentile with 1% tolerated error
@@ -40,13 +40,13 @@ private val clientLatencyStats: Summary =
         .register()
 const val INNTEKTSKOMPONENT_FETCH_ERROR = "inntektskomponent_fetch_error"
 private val clientFetchErrors =
-    Counter.build()
+    Counter.builder()
         .name(INNTEKTSKOMPONENT_FETCH_ERROR)
         .help("Number of times fetching form inntektskomponenten has failed")
         .register()
 const val INNTEKTSKOMPONENT_STATUS_CODES = "inntektskomponent_status_codes"
 private val inntektskomponentStatusCodesCounter =
-    Counter.build()
+    Counter.builder()
         .name(INNTEKTSKOMPONENT_STATUS_CODES)
         .help("Number of times inntektskomponenten has returned a specific status code")
         .labelNames("status_code")
@@ -99,7 +99,7 @@ internal class InntektkomponentKtorClient(
                     }
                 } catch (error: ServerResponseException) {
                     val statusKode = error.response.status.value
-                    inntektskomponentStatusCodesCounter.labels(statusKode.toString()).inc()
+                    inntektskomponentStatusCodesCounter.labelValues(statusKode.toString()).inc()
                     clientFetchErrors.inc()
                     val feilmelding =
                         kotlin.runCatching {
@@ -126,7 +126,7 @@ internal class InntektkomponentKtorClient(
                 } finally {
                     timer.observeDuration()
                 }
-            inntektskomponentStatusCodesCounter.labels(response.status.value.toString()).inc()
+            inntektskomponentStatusCodesCounter.labelValues(response.status.value.toString()).inc()
 
             return response.body()
         }

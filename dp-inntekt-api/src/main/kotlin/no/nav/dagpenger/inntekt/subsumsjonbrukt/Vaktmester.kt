@@ -1,6 +1,6 @@
 package no.nav.dagpenger.inntekt.subsumsjonbrukt
 
-import io.prometheus.client.Counter
+import io.prometheus.metrics.core.metrics.Counter
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -8,7 +8,7 @@ import javax.sql.DataSource
 
 const val INNTEKT_SLETTET = "inntekt_slettet"
 private val deleteCounter =
-    Counter.build()
+    Counter.builder()
         .name(INNTEKT_SLETTET)
         .help("Antall inntektsett slettet fra databasen")
         .register()

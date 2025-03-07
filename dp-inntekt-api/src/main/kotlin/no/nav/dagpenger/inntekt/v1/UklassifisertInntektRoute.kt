@@ -3,7 +3,6 @@ package no.nav.dagpenger.inntekt.v1
 import com.auth0.jwt.exceptions.JWTDecodeException
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
@@ -14,7 +13,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import io.prometheus.client.Counter
+import io.prometheus.metrics.core.metrics.Counter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
@@ -41,13 +40,13 @@ import java.time.LocalDate
 private val logger = KotlinLogging.logger {}
 const val INNTEKT_KORRIGERING = "inntekt_korrigering"
 private val inntektKorrigeringCounter =
-    Counter.build().name(INNTEKT_KORRIGERING).help("Antall ganger saksbehandler har korrigert inntekter").register()
+    Counter.builder().name(INNTEKT_KORRIGERING).help("Antall ganger saksbehandler har korrigert inntekter").register()
 const val INNTEKT_OPPFRISKING = "inntekt_oppfrisking"
 private val inntektOppfriskingCounter =
-    Counter.build().name(INNTEKT_OPPFRISKING).help("Antall ganger saksbehandler har oppdatert inntekter").register()
+    Counter.builder().name(INNTEKT_OPPFRISKING).help("Antall ganger saksbehandler har oppdatert inntekter").register()
 const val INNTEKT_OPPFRISKING_BRUKT = "inntekt_oppfrisking_brukt"
 private val inntektOppfriskingBruktCounter =
-    Counter.build().name(INNTEKT_OPPFRISKING_BRUKT).help("Antall ganger saksbehandler har brukt oppdaterte inntekter")
+    Counter.builder().name(INNTEKT_OPPFRISKING_BRUKT).help("Antall ganger saksbehandler har brukt oppdaterte inntekter")
         .register()
 
 fun Route.uklassifisertInntekt(

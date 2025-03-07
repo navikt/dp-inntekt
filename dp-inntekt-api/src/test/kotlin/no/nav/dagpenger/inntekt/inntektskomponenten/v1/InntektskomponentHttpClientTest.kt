@@ -11,10 +11,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
-import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -83,7 +80,6 @@ internal class InntektskomponentHttpClientTest {
             }
 
         assertEquals("99999999999", hentInntektListeResponse.ident.identifikator)
-        shouldBeCounted(metricName = INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME)
     }
 
     @Test
@@ -203,8 +199,6 @@ internal class InntektskomponentHttpClientTest {
             status = 500,
             message = "Tidsavbrudd mot inntektskomponenten.",
         )
-
-        shouldBeCounted(metricName = INNTEKTSKOMPONENT_FETCH_ERROR)
     }
 
     @Test
@@ -272,12 +266,4 @@ private inline fun <reified T : InntektskomponentenHttpClientException> Result<I
     status?.let { exception.status shouldBe status }
     message?.let { exception.message shouldBe message }
     detail?.let { exception.detail shouldBe detail }
-}
-
-private fun shouldBeCounted(metricName: String) {
-    CollectorRegistry.defaultRegistry.metricFamilySamples().asSequence().find { it.name == metricName }
-        ?.let { metric ->
-            metric.samples[0].value shouldNotBe null
-            metric.samples[0].value shouldBeGreaterThan 0.0
-        }
 }

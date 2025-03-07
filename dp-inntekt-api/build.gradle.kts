@@ -39,6 +39,10 @@ dependencies {
 
     implementation("io.micrometer:micrometer-registry-prometheus:1.14.4")
 
+    implementation("io.prometheus:client_java:1.3.6")
+    implementation("io.prometheus:prometheus-metrics-core:1.3.6")
+    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.3.6")
+
     implementation("com.expediagroup:graphql-kotlin-client:$expediaGraphqlVersion")
     implementation("com.expediagroup:graphql-kotlin-ktor-client:$expediaGraphqlVersion")
     implementation("com.expediagroup:graphql-kotlin-client-jackson:$expediaGraphqlVersion")
@@ -61,9 +65,6 @@ dependencies {
     implementation(libs.konfig)
     implementation("org.slf4j:slf4j-api:2.0.17")
 
-    implementation("io.prometheus:simpleclient_common:0.16.0")
-    implementation("io.prometheus:simpleclient_hotspot:0.16.0")
-    implementation("io.prometheus:simpleclient_log4j2:0.16.0")
     implementation("no.bekk.bekkopen:nocommons:0.16.0")
 
     implementation("com.uchuhimo:kotlinx-bimap:1.2")

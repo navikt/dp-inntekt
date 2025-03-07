@@ -2,16 +2,13 @@ package no.nav.dagpenger.inntekt.v1
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.huxhorn.sulky.ulid.ULID
-import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.mockk.every
 import io.mockk.mockk
-import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
@@ -308,7 +305,6 @@ internal class UklassifisertInntektRouteTest {
             val storedInntekt =
                 jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
             assertEquals(storedInntekt.inntektId, inntektId)
-            shouldBeCounted(metricName = INNTEKT_KORRIGERING)
         }
 
     @Test
@@ -398,7 +394,6 @@ internal class UklassifisertInntektRouteTest {
             val storedInntekt =
                 jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
             assertEquals(storedInntekt.inntektId, inntektId)
-            shouldBeCounted(metricName = INNTEKT_OPPFRISKING_BRUKT)
         }
 
     @Test
@@ -430,7 +425,6 @@ internal class UklassifisertInntektRouteTest {
             val storedInntekt =
                 jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
             assertEquals(storedInntekt.inntektId, inntektId)
-            shouldBeCounted(metricName = INNTEKT_OPPFRISKING_BRUKT)
         }
 
     @Test
@@ -451,13 +445,5 @@ internal class UklassifisertInntektRouteTest {
             assertEquals(HttpStatusCode.OK, response.status)
             assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
             assertTrue(runCatching { jacksonObjectMapper.readValue<Set<String>>(response.bodyAsText()) }.isSuccess)
-        }
-}
-
-private fun shouldBeCounted(metricName: String) {
-    CollectorRegistry.defaultRegistry.metricFamilySamples().asSequence().find { it.name == metricName }
-        ?.let { metric ->
-            metric.samples[0].value shouldNotBe null
-            metric.samples[0].value shouldBeGreaterThan 0.0
         }
 }

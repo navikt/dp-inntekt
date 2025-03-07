@@ -1,9 +1,7 @@
 package no.nav.dagpenger.inntekt
 
 import io.ktor.server.engine.embeddedServer
-import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
-import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.Config.inntektApiConfig
@@ -26,7 +24,6 @@ fun main() {
     runBlocking {
         val config = configuration.inntektApiConfig
         PostgresDataSourceBuilder.runMigration()
-        DefaultExports.initialize()
         val dataSource = PostgresDataSourceBuilder.dataSource
         val postgresInntektStore = PostgresInntektStore(dataSource)
         val pdlPersonOppslag =

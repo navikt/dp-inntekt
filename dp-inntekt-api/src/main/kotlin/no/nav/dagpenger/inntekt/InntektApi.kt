@@ -60,10 +60,11 @@ internal fun Application.inntektApi(
     enhetsregisterClient: EnhetsregisterClient,
     healthChecks: List<HealthCheck>,
     collectorRegistry: PrometheusRegistry = PrometheusRegistry.defaultRegistry,
+    meterRegistry: PrometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, collectorRegistry, Clock.SYSTEM),
 ) {
     install(DefaultHeaders)
     install(MicrometerMetrics) {
-        registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, collectorRegistry, Clock.SYSTEM)
+        registry = meterRegistry
     }
 
     install(Authentication) {
@@ -229,7 +230,7 @@ internal fun Application.inntektApi(
                 }
             }
         }
-        naischecks(healthChecks)
+        naischecks(healthChecks, meterRegistry)
     }
 }
 

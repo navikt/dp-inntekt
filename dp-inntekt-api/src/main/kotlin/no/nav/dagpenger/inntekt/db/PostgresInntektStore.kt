@@ -2,7 +2,7 @@ package no.nav.dagpenger.inntekt.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.huxhorn.sulky.ulid.ULID
-import io.prometheus.client.Summary
+import io.prometheus.metrics.core.metrics.Summary
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -27,7 +27,7 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
         private val ulidGenerator = ULID()
         private val LOGGER = KotlinLogging.logger {}
         private val markerInntektTimer =
-            Summary.build()
+            Summary.builder()
                 .name("marker_inntekt_brukt")
                 .help("Hvor lang tid det tar å markere en inntekt brukt (i sekunder")
                 .register()

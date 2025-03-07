@@ -2,19 +2,18 @@ package no.nav.dagpenger.inntekt
 
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.response.respondText
-import io.ktor.server.response.respondTextWriter
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
-import io.prometheus.client.CollectorRegistry
-import io.prometheus.client.exporter.common.TextFormat
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import mu.KotlinLogging
 
 private val LOGGER = KotlinLogging.logger {}
-private val collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
 
-fun Routing.naischecks(healthChecks: List<HealthCheck>) {
+fun Routing.naischecks(
+    healthChecks: List<HealthCheck>,
+    meterRegistry: PrometheusMeterRegistry,
+) {
     get("/isAlive") {
         val failingHealthChecks = healthChecks.filter { it.status() == HealthStatus.DOWN }
 
@@ -31,8 +30,6 @@ fun Routing.naischecks(healthChecks: List<HealthCheck>) {
     }
     get("/metrics") {
         val names = call.request.queryParameters.getAll("name[]")?.toSet() ?: setOf()
-        call.respondTextWriter(ContentType.parse(TextFormat.CONTENT_TYPE_004)) {
-            TextFormat.write004(this, collectorRegistry.filteredMetricFamilySamples(names))
-        }
+        call.respondText(meterRegistry.scrape(), ContentType.parse("text/plain; version=0.0.4; charset=utf-8"))
     }
 }
