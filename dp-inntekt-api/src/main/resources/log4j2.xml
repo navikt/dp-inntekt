@@ -23,7 +23,6 @@
         </Logger>
         <Root level="info">
             <AppenderRef ref="ConsoleAppender"/>
-            <AppenderRef ref="metrics"/>
         </Root>
     </Loggers>
 </Configuration>
