@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="INFO" packages="com.vlkan.log4j2.logstash.layout,io.prometheus.client.log4j2">
+<Configuration status="INFO" packages="com.vlkan.log4j2.logstash.layout">
     <Appenders>
         <Console name="ConsoleAppender" target="SYSTEM_OUT">
             <JsonTemplateLayout eventTemplateUri="classpath:LogstashJsonEventLayoutV1.json" stackTraceEnabled="true"/>
         </Console>
-        <Prometheus name="metrics"/>
 
         <RollingFile name="secureLog" fileName="/secure-logs/secure.log" filepattern="/secure-logs/secure.log.%i">
             <Policies>
