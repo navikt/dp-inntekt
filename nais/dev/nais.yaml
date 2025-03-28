@@ -49,6 +49,8 @@ spec:
         - host: "data.brreg.no"
     inbound:
       rules:
+        - application: azure-token-generator
+          namespace: nais
         - application: dp-oppslag-inntekt
         - application: dp-arena-sink
         - application: dp-inntekt-klassifiserer
