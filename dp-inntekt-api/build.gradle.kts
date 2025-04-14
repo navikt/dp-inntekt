@@ -6,7 +6,7 @@ plugins {
     id("common")
     application
     alias(libs.plugins.shadow.jar)
-    id("com.expediagroup.graphql") version "8.4.0"
+    id("com.expediagroup.graphql") version "8.5.0"
     id("de.undercouch.download") version "5.6.0"
 }
 
