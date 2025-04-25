@@ -4,7 +4,10 @@ interface PersonOppslag {
     suspend fun hentPerson(ident: String): Person
 }
 
-class PersonNotFoundException(val ident: String?, msg: String = "Fant ikke person") : RuntimeException(msg)
+class PersonNotFoundException(
+    val ident: String?,
+    msg: String = "Fant ikke person",
+) : RuntimeException(msg)
 
 data class Person(
     val fødselsnummer: String,

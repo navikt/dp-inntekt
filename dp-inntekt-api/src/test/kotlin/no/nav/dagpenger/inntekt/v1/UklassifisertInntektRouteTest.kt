@@ -7,6 +7,7 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -19,6 +20,7 @@ import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.db.StoredInntekt
+import no.nav.dagpenger.inntekt.db.StoredInntektMedFnr
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
@@ -31,8 +33,10 @@ import no.nav.dagpenger.inntekt.mapping.GUIArbeidsInntektMaaned
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
 import no.nav.dagpenger.inntekt.mapping.GUIInntektsKomponentResponse
 import no.nav.dagpenger.inntekt.mapping.InntektMedVerdikode
+import no.nav.dagpenger.inntekt.mapping.InntekterResponse
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
+import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import no.nav.dagpenger.inntekt.v1.TestApplication.autentisert
 import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
@@ -446,4 +450,50 @@ internal class UklassifisertInntektRouteTest {
             assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
             assertTrue(runCatching { jacksonObjectMapper.readValue<Set<String>>(response.bodyAsText()) }.isSuccess)
         }
+
+    @Test
+    fun `Get request for uklassifisert inntekt with inntektID should return 200 ok`() {
+        val enhetsregisterClientMock = mockk<EnhetsregisterClient>(relaxed = true)
+        return withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                personOppslag = personOppslagMock,
+                enhetsregisterClient = enhetsregisterClientMock,
+            ),
+        ) {
+            coEvery { enhetsregisterClientMock.hentEnhet("1111111") } returns "Test Org"
+            val body =
+                UklassifisertInntektRouteTest::class.java
+                    .getResource("/test-data/example-inntekt-med-inntektId-payload.json")
+                    ?.readText()
+            every {
+                inntektStoreMock.getInntektMedPersonFnr(inntektId)
+            } returns
+                StoredInntektMedFnr(
+                    inntektId,
+                    inntekt =
+                        jacksonObjectMapper.readValue(body!!),
+                    manueltRedigert = false,
+                    timestamp = LocalDateTime.now(),
+                    fødselsnummer = fødselsnummer,
+                )
+
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Get,
+                    endepunkt = "$uklassifisertInntekt/${inntektId.id}",
+                )
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            val storedInntekt =
+                jacksonObjectMapper.readValue<InntekterResponse>(response.bodyAsText())
+            assertEquals(2, storedInntekt.virksomhetsinntekt.size)
+            assertEquals(4, storedInntekt.virksomhetsinntekt[0].inntekter?.size)
+            assertEquals("1111111", storedInntekt.virksomhetsinntekt.first().virksomhetsnummer)
+            assertEquals("Test Org", storedInntekt.virksomhetsinntekt.first().virksomhetsnavn)
+            assertEquals("2222222", storedInntekt.virksomhetsinntekt[1].virksomhetsnummer)
+            assertEquals("", storedInntekt.virksomhetsinntekt[1].virksomhetsnavn)
+        }
+    }
 }

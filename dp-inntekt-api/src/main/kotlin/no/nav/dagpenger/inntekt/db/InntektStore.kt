@@ -26,6 +26,8 @@ interface InntektStore {
     fun getManueltRedigert(inntektId: InntektId): ManueltRedigert?
 
     fun markerInntektBrukt(inntektId: InntektId): Int
+
+    fun getInntektMedPersonFnr(inntektId: InntektId): StoredInntektMedFnr
 }
 
 data class Inntektparametre(
@@ -36,12 +38,13 @@ data class Inntektparametre(
 ) {
     val opptjeningsperiode: Opptjeningsperiode = Opptjeningsperiode(beregningsdato)
 
-    fun toDebugString(): String {
-        return "Inntektparametre(aktørId='$aktørId', beregningsdato=$beregningsdato, regelkontekst=$regelkontekst)"
-    }
+    fun toDebugString(): String = "Inntektparametre(aktørId='$aktørId', beregningsdato=$beregningsdato, regelkontekst=$regelkontekst)"
 }
 
-data class RegelKontekst(val id: String, val type: String)
+data class RegelKontekst(
+    val id: String,
+    val type: String,
+)
 
 data class StoreInntektCommand(
     val inntektparametre: Inntektparametre,
@@ -49,7 +52,9 @@ data class StoreInntektCommand(
     val manueltRedigert: ManueltRedigert? = null,
 )
 
-data class ManueltRedigert(val redigertAv: String) {
+data class ManueltRedigert(
+    val redigertAv: String,
+) {
     companion object {
         fun from(
             bool: Boolean,
@@ -68,9 +73,14 @@ data class StoredInntekt(
     val timestamp: LocalDateTime? = null,
 )
 
-data class DetachedInntekt(val inntekt: InntektkomponentResponse, val manueltRedigert: Boolean)
+data class DetachedInntekt(
+    val inntekt: InntektkomponentResponse,
+    val manueltRedigert: Boolean,
+)
 
-data class InntektId(val id: String) {
+data class InntektId(
+    val id: String,
+) {
     init {
         try {
             ULID.parseULID(id)
@@ -80,9 +90,23 @@ data class InntektId(val id: String) {
     }
 }
 
-class InntektNotFoundException(override val message: String) : RuntimeException(message)
+data class StoredInntektMedFnr(
+    val inntektId: InntektId,
+    val inntekt: InntektkomponentResponse,
+    val manueltRedigert: Boolean,
+    val timestamp: LocalDateTime? = null,
+    val fødselsnummer: String,
+)
 
-class StoreException(override val message: String) : RuntimeException(message)
+class InntektNotFoundException(
+    override val message: String,
+) : RuntimeException(message)
 
-class IllegalInntektIdException(override val message: String, override val cause: Throwable?) :
-    java.lang.RuntimeException(message, cause)
+class StoreException(
+    override val message: String,
+) : RuntimeException(message)
+
+class IllegalInntektIdException(
+    override val message: String,
+    override val cause: Throwable?,
+) : java.lang.RuntimeException(message, cause)

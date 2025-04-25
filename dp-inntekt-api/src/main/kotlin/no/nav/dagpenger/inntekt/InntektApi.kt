@@ -107,7 +107,8 @@ internal fun Application.inntektApi(
         }
         exception<InntektskomponentenHttpClientException> { call, cause ->
             val statusCode =
-                if (HttpStatusCode.fromValue(cause.status)
+                if (HttpStatusCode
+                        .fromValue(cause.status)
                         .isSuccess()
                 ) {
                     HttpStatusCode.InternalServerError
@@ -218,7 +219,7 @@ internal fun Application.inntektApi(
     routing {
         route("/v1") {
             route("/inntekt") {
-                uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, personOppslag)
+                uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, personOppslag, enhetsregisterClient)
             }
             opptjeningsperiodeApi(inntektStore)
             enhetsregisteret(enhetsregisterClient)

@@ -127,27 +127,41 @@ internal class KategoriseringTest {
         val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), inntektsmottaker)
         assertEquals(
             "Aksjer/grunnfondsbevis til underkurs",
-            guiInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.verdikode,
+            guiInntekt.inntekt.arbeidsInntektMaaned
+                ?.first()
+                ?.arbeidsInntektInformasjon
+                ?.inntektListe
+                ?.first()
+                ?.verdikode,
         )
         assertEquals(
             "Fastlønn",
-            guiInntekt.inntekt.arbeidsInntektMaaned?.first {
-                it.aarMaaned ==
-                    YearMonth.of(
-                        2019,
-                        6,
-                    )
-            }?.arbeidsInntektInformasjon?.inntektListe?.first()?.verdikode,
+            guiInntekt.inntekt.arbeidsInntektMaaned
+                ?.first {
+                    it.aarMaaned ==
+                        YearMonth.of(
+                            2019,
+                            6,
+                        )
+                }?.arbeidsInntektInformasjon
+                ?.inntektListe
+                ?.first()
+                ?.verdikode,
         )
         assertEquals(
             "Hyre - Annet",
-            guiInntekt.inntekt.arbeidsInntektMaaned?.filter {
-                it.aarMaaned ==
-                    YearMonth.of(
-                        2019,
-                        6,
-                    )
-            }?.first()?.arbeidsInntektInformasjon?.inntektListe?.last()?.verdikode,
+            guiInntekt.inntekt.arbeidsInntektMaaned
+                ?.filter {
+                    it.aarMaaned ==
+                        YearMonth.of(
+                            2019,
+                            6,
+                        )
+                }?.first()
+                ?.arbeidsInntektInformasjon
+                ?.inntektListe
+                ?.last()
+                ?.verdikode,
         )
     }
 
@@ -217,15 +231,32 @@ internal class KategoriseringTest {
 
         assertEquals(
             InntektBeskrivelse.ANNET,
-            mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.beskrivelse,
+            mappedInntekt.inntekt.arbeidsInntektMaaned
+                ?.first()
+                ?.arbeidsInntektInformasjon
+                ?.inntektListe
+                ?.first()
+                ?.beskrivelse,
         )
         assertEquals(
             InntektType.LOENNSINNTEKT,
-            mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.inntektType,
+            mappedInntekt.inntekt.arbeidsInntektMaaned
+                ?.first()
+                ?.arbeidsInntektInformasjon
+                ?.inntektListe
+                ?.first()
+                ?.inntektType,
         )
         assertEquals(
             SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
-            mappedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold,
+            mappedInntekt.inntekt.arbeidsInntektMaaned
+                ?.first()
+                ?.arbeidsInntektInformasjon
+                ?.inntektListe
+                ?.first()
+                ?.tilleggsinformasjon
+                ?.tilleggsinformasjonDetaljer
+                ?.spesielleInntjeningsforhold,
         )
     }
 
