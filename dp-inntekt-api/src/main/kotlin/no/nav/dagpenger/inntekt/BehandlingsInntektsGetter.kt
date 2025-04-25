@@ -22,34 +22,28 @@ class BehandlingsInntektsGetter(
     suspend fun getKlassifisertInntekt(
         inntektparametre: Inntektparametre,
         callId: String? = null,
-    ): Inntekt {
-        return klassifiserOgMapInntekt(getSpesifisertInntekt(inntektparametre, callId))
-    }
+    ): Inntekt = klassifiserOgMapInntekt(getSpesifisertInntekt(inntektparametre, callId))
 
-    fun getKlassifisertInntekt(inntektId: InntektId): Inntekt {
-        return klassifiserOgMapInntekt(inntektStore.getSpesifisertInntekt(inntektId))
-    }
+    fun getKlassifisertInntekt(inntektId: InntektId): Inntekt = klassifiserOgMapInntekt(inntektStore.getSpesifisertInntekt(inntektId))
 
     suspend fun getSpesifisertInntekt(
         inntektparametre: Inntektparametre,
         callId: String? = null,
-    ): SpesifisertInntekt {
-        return mapToSpesifisertInntekt(
+    ): SpesifisertInntekt =
+        mapToSpesifisertInntekt(
             getBehandlingsInntekt(inntektparametre, callId),
             inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned,
         )
-    }
 
     internal suspend fun getBehandlingsInntekt(
         inntektparametre: Inntektparametre,
         callId: String? = null,
-    ): StoredInntekt {
-        return isInntektStored(inntektparametre)?.let {
+    ): StoredInntekt =
+        isInntektStored(inntektparametre)?.let {
             LOGGER.info { "Henter stored inntekt: ${inntektparametre.toDebugString()}" }
             inntektStore.getInntekt(it)
         }
             ?: fetchAndStoreInntekt(inntektparametre, callId)
-    }
 
     private suspend fun fetchAndStoreInntekt(
         inntektparametre: Inntektparametre,
