@@ -1,6 +1,7 @@
 package no.nav.dagpenger.inntekt.mapping
 
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Avvik
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
@@ -11,7 +12,7 @@ import java.time.YearMonth
 fun mapToInntektFrontend(
     inntektResponse: InntektkomponentResponse,
     person: Inntektsmottaker,
-): InntektForVirksomhetMaanedMedPersonInformasjon {
+): InntektForVirksomhetMedPersonInformasjon {
     val inntekt = inntektResponse.arbeidsInntektMaaned
     var virksomhetListe: MutableList<InntektForVirksomhet> = mutableListOf()
 
@@ -51,33 +52,40 @@ fun mapToInntektFrontend(
             val eksisterendeVirksomhet =
                 virksomhetListe.find { it.virksomhet == virksomhet?.identifikator }
             if (eksisterendeVirksomhet != null) {
-                eksisterendeVirksomhet.inntekter.addAll(inntekter)
+                eksisterendeVirksomhet.inntekter?.addAll(inntekter)
+                eksisterendeVirksomhet.periode =
+                    InntektForVirksomhetPeriode(
+                        fra = eksisterendeVirksomhet.inntekter!!.minOf { it.aarMaaned },
+                        til = eksisterendeVirksomhet.inntekter.maxOf { it.aarMaaned },
+                    )
+                eksisterendeVirksomhet.totalBeløp = eksisterendeVirksomhet.inntekter.sumOf { it.belop }
             } else {
                 virksomhetListe.add(
                     InntektForVirksomhet(
-                        virksomhet = virksomhet?.identifikator ?: "",
+                        virksomhet = virksomhet!!.identifikator,
                         virksomhetNavn = virksomhetNavn,
-                        periode = finnPeriode(inntekter),
+                        periode =
+                            InntektForVirksomhetPeriode(
+                                fra = arbeidsInntektMaaned.aarMaaned,
+                                til = arbeidsInntektMaaned.aarMaaned,
+                            ),
                         inntekter = inntekter,
+                        avvikListe =
+                            arbeidsInntektMaaned.avvikListe?.filter { it.virksomhet?.identifikator == virksomhet.identifikator }
+                                ?: emptyList(),
                     ),
                 )
             }
         }
     }
 
-    return InntektForVirksomhetMaanedMedPersonInformasjon(
+    return InntektForVirksomhetMedPersonInformasjon(
         inntektVirksomhetMaaned = virksomhetListe,
         mottaker = person,
     )
 }
 
-fun finnPeriode(inntekter: MutableList<InntektVirksomhetMaaned>): InntektForVirksomhetPeriode =
-    InntektForVirksomhetPeriode(
-        fra = inntekter.minOf { it.aarMaaned },
-        til = inntekter.maxOf { it.aarMaaned },
-    )
-
-data class InntektForVirksomhetMaanedMedPersonInformasjon(
+data class InntektForVirksomhetMedPersonInformasjon(
     val inntektVirksomhetMaaned: List<InntektForVirksomhet>,
     val mottaker: Inntektsmottaker,
 )
@@ -85,8 +93,10 @@ data class InntektForVirksomhetMaanedMedPersonInformasjon(
 data class InntektForVirksomhet(
     val virksomhet: String,
     val virksomhetNavn: String,
-    val periode: InntektForVirksomhetPeriode,
-    val inntekter: MutableList<InntektVirksomhetMaaned>,
+    var periode: InntektForVirksomhetPeriode?,
+    val inntekter: MutableList<InntektVirksomhetMaaned>?,
+    var totalBeløp: BigDecimal? = inntekter?.sumOf { it.belop } ?: BigDecimal.ZERO,
+    val avvikListe: List<Avvik>,
 )
 
 data class InntektForVirksomhetPeriode(
