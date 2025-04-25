@@ -20,7 +20,10 @@ data class GUIInntekt(
     val inntektsmottaker: Inntektsmottaker? = null,
 )
 
-data class Inntektsmottaker(val pnr: String?, val navn: String?)
+data class Inntektsmottaker(
+    val pnr: String?,
+    val navn: String?,
+)
 
 data class GUIInntektsKomponentResponse(
     val fraDato: YearMonth?,
@@ -61,4 +64,9 @@ data class InntektMedVerdikode(
     val inntektType: InntektType?,
     val tilleggsinformasjon: TilleggInformasjon? = null,
     val verdikode: String,
+)
+
+data class OrganisasjonNavnOgIdMapping(
+    val organisasjonsnummer: String,
+    val organisasjonNavn: String,
 )
