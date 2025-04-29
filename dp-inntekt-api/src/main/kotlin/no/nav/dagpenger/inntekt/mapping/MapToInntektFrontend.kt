@@ -31,6 +31,7 @@ fun InntektkomponentResponse.mapToFrontend(
                     // TODO: finn ut om inntekten er redigert
                     redigert = false,
                     begrunnelse = inntekt.beskrivelse.name,
+                    // TODO: er det det samme som InntektkomponentResponse.arbeidsInntektMaaned.aarMaaned?
                     aarMaaned = arbeidsInntektMaaned.aarMaaned,
                     fordel = inntekt.fordel,
                     beskrivelse = inntekt.beskrivelse,
@@ -41,6 +42,7 @@ fun InntektkomponentResponse.mapToFrontend(
                     opptjeningsland = inntekt.opptjeningsland,
                     skattemessigBosattLand = inntekt.skattemessigBosattLand,
                     inntektsinnsender = inntekt.inntektsinnsender,
+                    // TODO er dette alltid organisasjon eller kan dette være privatperson også? Kunne vi lagret org navn?
                     virksomhet = inntekt.virksomhet,
                     inntektsmottaker = inntekt.inntektsmottaker,
                     inngaarIGrunnlagForTrekk = inntekt.inngaarIGrunnlagForTrekk,
