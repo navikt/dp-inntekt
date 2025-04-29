@@ -12,9 +12,9 @@ import java.time.YearMonth
 fun InntektkomponentResponse.mapToFrontend(
     person: Inntektsmottaker,
     organisasjonsInfoListe: MutableList<OrganisasjonNavnOgIdMapping>,
-): InntektForVirksomhetMedPersonInformasjon {
+): InntekterResponse {
     val inntekt = arbeidsInntektMaaned
-    val virksomhetListe: MutableList<InntektForVirksomhet> = mutableListOf()
+    val virksomhetListe: MutableList<Virksomhet> = mutableListOf()
 
     inntekt?.forEach { arbeidsInntektMaaned ->
         val inntektsInformasjon = arbeidsInntektMaaned.arbeidsInntektInformasjon
@@ -23,18 +23,18 @@ fun InntektkomponentResponse.mapToFrontend(
             val virksomhetNavn =
                 organisasjonsInfoListe.find { it.organisasjonsnummer == virksomhet?.identifikator }?.organisasjonNavn
                     ?: ""
-            val inntekter = mutableListOf<InntektVirksomhetMaaned>()
+            val inntekter = mutableListOf<InntektMaaned>()
             inntekter.add(
-                InntektVirksomhetMaaned(
+                InntektMaaned(
                     belop = inntekt.beloep,
-                    inntektsKilde = inntekt.inntektskilde,
+                    inntektskilde = inntekt.inntektskilde,
                     // TODO: finn ut om inntekten er redigert
                     redigert = false,
                     begrunnelse = inntekt.beskrivelse.name,
                     aarMaaned = arbeidsInntektMaaned.aarMaaned,
                     fordel = inntekt.fordel,
                     beskrivelse = inntekt.beskrivelse,
-                    inntektsStatus = inntekt.inntektsstatus,
+                    inntektsstatus = inntekt.inntektsstatus,
                     utbetaltIMaaned = inntekt.utbetaltIMaaned,
                     inntektType = inntekt.inntektType,
                     leveringstidspunkt = inntekt.leveringstidspunkt,
@@ -51,22 +51,22 @@ fun InntektkomponentResponse.mapToFrontend(
             )
 
             val eksisterendeVirksomhet =
-                virksomhetListe.find { it.virksomhet == virksomhet?.identifikator }
+                virksomhetListe.find { it.virksomhetsnummer == virksomhet?.identifikator }
             if (eksisterendeVirksomhet != null) {
                 eksisterendeVirksomhet.inntekter?.addAll(inntekter)
                 eksisterendeVirksomhet.periode =
-                    InntektForVirksomhetPeriode(
+                    InntektPeriode(
                         fra = eksisterendeVirksomhet.inntekter!!.minOf { it.aarMaaned },
                         til = eksisterendeVirksomhet.inntekter.maxOf { it.aarMaaned },
                     )
                 eksisterendeVirksomhet.totalBeløp = eksisterendeVirksomhet.inntekter.sumOf { it.belop }
             } else {
                 virksomhetListe.add(
-                    InntektForVirksomhet(
-                        virksomhet = virksomhet?.identifikator ?: "",
-                        virksomhetNavn = virksomhetNavn,
+                    Virksomhet(
+                        virksomhetsnummer = virksomhet?.identifikator ?: "",
+                        virksomhetsnavn = virksomhetNavn,
                         periode =
-                            InntektForVirksomhetPeriode(
+                            InntektPeriode(
                                 fra = arbeidsInntektMaaned.aarMaaned,
                                 til = arbeidsInntektMaaned.aarMaaned,
                             ),
@@ -80,37 +80,37 @@ fun InntektkomponentResponse.mapToFrontend(
         }
     }
 
-    return InntektForVirksomhetMedPersonInformasjon(
-        inntektVirksomhetMaaned = virksomhetListe,
+    return InntekterResponse(
+        virksomhetsinntekt = virksomhetListe,
         mottaker = person,
     )
 }
 
-data class InntektForVirksomhetMedPersonInformasjon(
-    val inntektVirksomhetMaaned: List<InntektForVirksomhet>,
+data class InntekterResponse(
+    val virksomhetsinntekt: List<Virksomhet>,
     val mottaker: Inntektsmottaker,
 )
 
-data class InntektForVirksomhet(
-    val virksomhet: String,
-    val virksomhetNavn: String,
-    var periode: InntektForVirksomhetPeriode?,
-    val inntekter: MutableList<InntektVirksomhetMaaned>?,
+data class Virksomhet(
+    val virksomhetsnummer: String,
+    val virksomhetsnavn: String,
+    var periode: InntektPeriode?,
+    val inntekter: MutableList<InntektMaaned>?,
     var totalBeløp: BigDecimal? = inntekter?.sumOf { it.belop } ?: BigDecimal.ZERO,
     val avvikListe: List<Avvik>,
 )
 
-data class InntektForVirksomhetPeriode(
+data class InntektPeriode(
     val fra: YearMonth,
     val til: YearMonth,
 )
 
-data class InntektVirksomhetMaaned(
+data class InntektMaaned(
     val belop: BigDecimal,
     val fordel: String,
     val beskrivelse: InntektBeskrivelse,
-    val inntektsKilde: String,
-    val inntektsStatus: String,
+    val inntektskilde: String,
+    val inntektsstatus: String,
     val leveringstidspunkt: YearMonth? = null,
     val opptjeningsland: String? = null,
     val skattemessigBosattLand: String? = null,
