@@ -9,6 +9,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
+import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.YearMonth
@@ -190,41 +191,158 @@ class MapToInntektFrontendTest {
                 organisasjonNavnOgIdMappingForTesting,
             )
 
-        assertEquals(2, mappedToInntektFrontend.inntektVirksomhetMaaned.size)
+        assertEquals(2, mappedToInntektFrontend.virksomhetsinntekt.size)
         assertEquals(mottaker, mappedToInntektFrontend.mottaker)
 
-        assertTrue { mappedToInntektFrontend.inntektVirksomhetMaaned.any { it.virksomhet == "896929119" } }
-        assertTrue { mappedToInntektFrontend.inntektVirksomhetMaaned.any { it.virksomhet == "896929120" } }
-        assertFalse { mappedToInntektFrontend.inntektVirksomhetMaaned.any { it.virksomhet == "8969291001" } }
+        assertTrue { mappedToInntektFrontend.virksomhetsinntekt.any { it.virksomhetsnummer == "896929119" } }
+        assertTrue { mappedToInntektFrontend.virksomhetsinntekt.any { it.virksomhetsnummer == "896929120" } }
+        assertFalse { mappedToInntektFrontend.virksomhetsinntekt.any { it.virksomhetsnummer == "8969291001" } }
 
         assertEquals(
             2,
-            mappedToInntektFrontend.inntektVirksomhetMaaned
-                .filter { it.virksomhet == "896929119" }[0]
+            mappedToInntektFrontend.virksomhetsinntekt
+                .filter { it.virksomhetsnummer == "896929119" }[0]
                 .inntekter
                 ?.size,
         )
 
         assertEquals(
             BigDecimal(100000),
-            mappedToInntektFrontend.inntektVirksomhetMaaned
-                .filter { it.virksomhet == "896929119" }[0]
+            mappedToInntektFrontend.virksomhetsinntekt
+                .filter { it.virksomhetsnummer == "896929119" }[0]
                 .totalBeløp,
         )
 
         assertEquals(
             1,
-            mappedToInntektFrontend.inntektVirksomhetMaaned
-                .filter { it.virksomhet == "896929120" }[0]
+            mappedToInntektFrontend.virksomhetsinntekt
+                .filter { it.virksomhetsnummer == "896929120" }[0]
                 .inntekter
                 ?.size,
         )
 
         assertEquals(
             BigDecimal(50000),
-            mappedToInntektFrontend.inntektVirksomhetMaaned
-                .filter { it.virksomhet == "896929120" }[0]
+            mappedToInntektFrontend.virksomhetsinntekt
+                .filter { it.virksomhetsnummer == "896929120" }[0]
                 .totalBeløp,
+        )
+    }
+
+    @Test
+    fun `Map inntekt til Inntekt med tom virksomhetsdata og få tom navn`() {
+        val inntektkomponentResponseMedTomVirksomhet =
+            InntektkomponentResponse(
+                ident =
+                    Aktoer(
+                        aktoerType = AktoerType.AKTOER_ID,
+                        identifikator = "2044350291600",
+                    ),
+                arbeidsInntektMaaned =
+                    listOf(
+                        ArbeidsInntektMaaned(
+                            aarMaaned = YearMonth.of(2025, 1),
+                            arbeidsInntektInformasjon =
+                                ArbeidsInntektInformasjon(
+                                    inntektListe =
+                                        listOf(
+                                            Inntekt(
+                                                beloep = BigDecimal(50000),
+                                                fordel = "kontantytelse",
+                                                virksomhet = null,
+                                                beskrivelse = InntektBeskrivelse.FASTLOENN,
+                                                inntektType = InntektType.LOENNSINNTEKT,
+                                                inntektskilde = "A-ordningen",
+                                                inntektsstatus = "LoependeInnrapportert",
+                                                utbetaltIMaaned = YearMonth.of(2025, 1),
+                                                inntektsperiodetype = "Maaned",
+                                            ),
+                                        ),
+                                ),
+                            avvikListe = emptyList(),
+                        ),
+                        ArbeidsInntektMaaned(
+                            aarMaaned = YearMonth.of(2025, 1),
+                            arbeidsInntektInformasjon =
+                                ArbeidsInntektInformasjon(
+                                    inntektListe =
+                                        listOf(
+                                            Inntekt(
+                                                beloep = BigDecimal(2),
+                                                fordel = "kontantytelse",
+                                                virksomhet = null,
+                                                beskrivelse = InntektBeskrivelse.FASTLOENN,
+                                                inntektType = InntektType.LOENNSINNTEKT,
+                                                inntektskilde = "A-ordningen",
+                                                inntektsstatus = "LoependeInnrapportert",
+                                                utbetaltIMaaned = YearMonth.of(2025, 1),
+                                                inntektsperiodetype = "Maaned",
+                                            ),
+                                        ),
+                                ),
+                            avvikListe = emptyList(),
+                        ),
+                        ArbeidsInntektMaaned(
+                            aarMaaned = YearMonth.of(2025, 3),
+                            arbeidsInntektInformasjon =
+                                ArbeidsInntektInformasjon(
+                                    inntektListe =
+                                        listOf(
+                                            Inntekt(
+                                                beloep = BigDecimal(50000),
+                                                fordel = "kontantytelse",
+                                                virksomhet =
+                                                    Aktoer(
+                                                        aktoerType = AktoerType.ORGANISASJON,
+                                                        identifikator = "896929120",
+                                                    ),
+                                                beskrivelse = InntektBeskrivelse.FASTLOENN,
+                                                inntektType = InntektType.LOENNSINNTEKT,
+                                                inntektskilde = "A-ordningen",
+                                                inntektsstatus = "LoependeInnrapportert",
+                                                opptjeningsland = "NO",
+                                                utbetaltIMaaned = YearMonth.of(2025, 3),
+                                                inntektsmottaker =
+                                                    Aktoer(
+                                                        aktoerType = AktoerType.AKTOER_ID,
+                                                        identifikator = "2044350291600",
+                                                    ),
+                                                informasjonsstatus = "InngaarAlltid",
+                                                opplysningspliktig =
+                                                    Aktoer(
+                                                        aktoerType = AktoerType.ORGANISASJON,
+                                                        identifikator = "963743254",
+                                                    ),
+                                                inntektsperiodetype = "Maaned",
+                                                tilleggsinformasjon =
+                                                    TilleggInformasjon(
+                                                        kategori = "NorskKontinentalsokkel",
+                                                        tilleggsinformasjonDetaljer = null,
+                                                    ),
+                                                skattemessigBosattLand = "NO",
+                                                inngaarIGrunnlagForTrekk = true,
+                                                utloeserArbeidsgiveravgift = true,
+                                            ),
+                                        ),
+                                ),
+                            avvikListe = emptyList(),
+                        ),
+                    ),
+            )
+
+        val mapTilFrontendMedNullVirksomhet =
+            inntektkomponentResponseMedTomVirksomhet.mapToFrontend(mottaker, organisasjonNavnOgIdMappingForTesting)
+        assertEquals(3, mapTilFrontendMedNullVirksomhet.virksomhetsinntekt.size)
+        assertEquals(2, mapTilFrontendMedNullVirksomhet.virksomhetsinntekt.filter { it.virksomhetsnummer == "" }.size)
+        assertEquals(1, mapTilFrontendMedNullVirksomhet.virksomhetsinntekt.filter { it.virksomhetsnummer == "896929120" }.size)
+
+        jacksonObjectMapper.writeValueAsString(mapTilFrontendMedNullVirksomhet)
+        println(
+            "mapTilFrontendMedNullVirksomhetjson: ${
+                jacksonObjectMapper.writeValueAsString(
+                    mapTilFrontendMedNullVirksomhet,
+                )
+            }",
         )
     }
 }
