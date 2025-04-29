@@ -169,13 +169,25 @@ val mottaker =
         navn = "Ola Nordmann",
     )
 
+val organisasjonNavnOgIdMappingForTesting =
+    mutableListOf(
+        OrganisasjonNavnOgIdMapping(
+            organisasjonsnummer = "896929119",
+            organisasjonNavn = "Test Org 119",
+        ),
+        OrganisasjonNavnOgIdMapping(
+            organisasjonsnummer = "896929120",
+            organisasjonNavn = "Test Org 120",
+        ),
+    )
+
 class MapToInntektFrontendTest {
     @Test
     fun `Map inntekt til InntektForVirksomhetMedPersonInformasjon`() {
         val mappedToInntektFrontend =
-            mapToInntektFrontend(
-                inntektkomponentResponse,
+            inntektkomponentResponse.mapToFrontend(
                 mottaker,
+                organisasjonNavnOgIdMappingForTesting,
             )
 
         assertEquals(2, mappedToInntektFrontend.inntektVirksomhetMaaned.size)

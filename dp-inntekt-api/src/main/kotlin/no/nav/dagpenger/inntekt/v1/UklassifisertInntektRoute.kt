@@ -28,13 +28,15 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
 import no.nav.dagpenger.inntekt.mapping.Inntektsmottaker
+import no.nav.dagpenger.inntekt.mapping.OrganisasjonNavnOgIdMapping
 import no.nav.dagpenger.inntekt.mapping.dataGrunnlagKlassifiseringToVerdikode
 import no.nav.dagpenger.inntekt.mapping.mapToDetachedInntekt
+import no.nav.dagpenger.inntekt.mapping.mapToFrontend
 import no.nav.dagpenger.inntekt.mapping.mapToGUIInntekt
-import no.nav.dagpenger.inntekt.mapping.mapToInntektFrontend
 import no.nav.dagpenger.inntekt.mapping.mapToStoredInntekt
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
+import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.time.LocalDate
 
@@ -65,6 +67,7 @@ fun Route.uklassifisertInntekt(
     inntektskomponentClient: InntektskomponentClient,
     inntektStore: InntektStore,
     personOppslag: PersonOppslag,
+    enhetsregisterClient: EnhetsregisterClient,
 ) {
     authenticate("azure") {
         route("/uklassifisert/{aktørId}/{kontekstType}/{kontekstId}/{beregningsDato}") {
@@ -145,8 +148,17 @@ fun Route.uklassifisertInntekt(
                         .let {
                             val person = personOppslag.hentPerson(it.fødselsnummer)
                             val inntektsmottaker = Inntektsmottaker(it.fødselsnummer, person.sammensattNavn())
-                            mapToInntektFrontend(it.inntekt, inntektsmottaker)
-                        }?.let {
+                            val hentOrganisasjonsInfoListe =
+                                hentOrganisasjonNavn(
+                                    enhetsregisterClient,
+                                    it.inntekt.arbeidsInntektMaaned
+                                        ?.flatMap { it.arbeidsInntektInformasjon?.inntektListe.orEmpty() }
+                                        ?.mapNotNull { it.virksomhet?.identifikator }
+                                        ?.toTypedArray()
+                                        ?.toList() ?: emptyList(),
+                                )
+                            it.inntekt.mapToFrontend(inntektsmottaker, hentOrganisasjonsInfoListe)
+                        }.let {
                             call.respond(HttpStatusCode.OK, it)
                         }
                 }
@@ -226,6 +238,29 @@ fun Route.uklassifisertInntekt(
             }
         }
     }
+}
+
+private suspend fun hentOrganisasjonNavn(
+    enhetsregisterClient: EnhetsregisterClient,
+    organisasjonsNummerListe: List<String>?,
+): MutableList<OrganisasjonNavnOgIdMapping> {
+    val organisasjonNavnOgIdMappingListe = mutableListOf<OrganisasjonNavnOgIdMapping>()
+    organisasjonsNummerListe?.forEach { orgNr ->
+        runCatching {
+            enhetsregisterClient.hentEnhet(orgNr)
+        }.onFailure {
+            logger.error(it) { "Feil ved henting av organisasjonsnavn for $it" }
+        }.onSuccess {
+            val organisasjonsNavnOgIdMapping =
+                OrganisasjonNavnOgIdMapping(
+                    organisasjonsnummer = it,
+                    organisasjonNavn = it,
+                )
+            organisasjonNavnOgIdMappingListe.add(organisasjonsNavnOgIdMapping)
+        }
+    }
+
+    return organisasjonNavnOgIdMappingListe
 }
 
 private fun ApplicationCall.getSubject(): String {

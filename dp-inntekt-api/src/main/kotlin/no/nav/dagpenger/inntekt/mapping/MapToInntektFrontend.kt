@@ -9,19 +9,20 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import java.math.BigDecimal
 import java.time.YearMonth
 
-fun mapToInntektFrontend(
-    inntektResponse: InntektkomponentResponse,
+fun InntektkomponentResponse.mapToFrontend(
     person: Inntektsmottaker,
+    organisasjonsInfoListe: MutableList<OrganisasjonNavnOgIdMapping>,
 ): InntektForVirksomhetMedPersonInformasjon {
-    val inntekt = inntektResponse.arbeidsInntektMaaned
-    var virksomhetListe: MutableList<InntektForVirksomhet> = mutableListOf()
+    val inntekt = arbeidsInntektMaaned
+    val virksomhetListe: MutableList<InntektForVirksomhet> = mutableListOf()
 
     inntekt?.forEach { arbeidsInntektMaaned ->
         val inntektsInformasjon = arbeidsInntektMaaned.arbeidsInntektInformasjon
         inntektsInformasjon?.inntektListe?.forEach { inntekt ->
             val virksomhet = inntekt.virksomhet
-            // TODO: Replace with actual logic to get virksomhetNavn
-            val virksomhetNavn = "testNavn"
+            val virksomhetNavn =
+                organisasjonsInfoListe.find { it.organisasjonsnummer == virksomhet?.identifikator }?.organisasjonNavn
+                    ?: ""
             val inntekter = mutableListOf<InntektVirksomhetMaaned>()
             inntekter.add(
                 InntektVirksomhetMaaned(
@@ -62,7 +63,7 @@ fun mapToInntektFrontend(
             } else {
                 virksomhetListe.add(
                     InntektForVirksomhet(
-                        virksomhet = virksomhet!!.identifikator,
+                        virksomhet = virksomhet?.identifikator ?: "",
                         virksomhetNavn = virksomhetNavn,
                         periode =
                             InntektForVirksomhetPeriode(
@@ -71,7 +72,7 @@ fun mapToInntektFrontend(
                             ),
                         inntekter = inntekter,
                         avvikListe =
-                            arbeidsInntektMaaned.avvikListe?.filter { it.virksomhet?.identifikator == virksomhet.identifikator }
+                            arbeidsInntektMaaned.avvikListe?.filter { it.virksomhet?.identifikator == virksomhet?.identifikator }
                                 ?: emptyList(),
                     ),
                 )
