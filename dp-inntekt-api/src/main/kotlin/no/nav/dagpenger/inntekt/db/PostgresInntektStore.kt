@@ -22,12 +22,16 @@ import java.time.ZonedDateTime
 import javax.sql.DataSource
 
 @Suppress("ktlint:standard:max-line-length")
-internal class PostgresInntektStore(private val dataSource: DataSource) : InntektStore, HealthCheck {
+internal class PostgresInntektStore(
+    private val dataSource: DataSource,
+) : InntektStore,
+    HealthCheck {
     companion object {
         private val ulidGenerator = ULID()
         private val LOGGER = KotlinLogging.logger {}
         private val markerInntektTimer =
-            Summary.builder()
+            Summary
+                .builder()
                 .name("marker_inntekt_brukt")
                 .help("Hvor lang tid det tar å markere en inntekt brukt (i sekunder")
                 .register()
@@ -110,8 +114,8 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
         }
     }
 
-    override fun getInntekt(inntektId: InntektId): StoredInntekt {
-        return using(sessionOf(dataSource)) { session ->
+    override fun getInntekt(inntektId: InntektId): StoredInntekt =
+        using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     """ SELECT id, inntekt, manuelt_redigert, timestamp from inntekt_V1 where id = ?""",
@@ -123,12 +127,10 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                         manueltRedigert = row.boolean("manuelt_redigert"),
                         timestamp = row.zonedDateTime("timestamp").toLocalDateTime(),
                     )
-                }
-                    .asSingle,
+                }.asSingle,
             )
                 ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
         }
-    }
 
     override fun getSpesifisertInntekt(inntektId: InntektId): SpesifisertInntekt {
         @Language("sql")
@@ -137,8 +139,9 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
             SELECT inntekt.id, inntekt.inntekt, inntekt.manuelt_redigert, inntekt.timestamp, mapping.beregningsdato 
             from inntekt_V1 inntekt 
             inner join inntekt_V1_person_mapping mapping on inntekt.id = mapping.inntektid 
-            where inntekt.id = ?"""
-                .trimIndent()
+            where inntekt.id = ?
+            
+            """.trimIndent()
 
         val stored =
             using(sessionOf(dataSource)) { session ->
@@ -153,12 +156,38 @@ internal class PostgresInntektStore(private val dataSource: DataSource) : Inntek
                             manueltRedigert = row.boolean("manuelt_redigert"),
                             timestamp = row.zonedDateTime("timestamp").toLocalDateTime(),
                         ) to row.localDate("beregningsdato")
-                    }
-                        .asSingle,
+                    }.asSingle,
                 )
                     ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
             }
         return mapToSpesifisertInntekt(stored.first, Opptjeningsperiode(stored.second).sisteAvsluttendeKalenderMåned)
+    }
+
+    override fun getInntektMedPersonFnr(inntektId: InntektId): StoredInntektMedFnr {
+        @Language("sql")
+        val statement =
+            """ 
+            SELECT inntekt.id, inntekt.inntekt, inntekt.manuelt_redigert, inntekt.timestamp, mapping.fnr 
+            from inntekt_V1 inntekt 
+            inner join inntekt_V1_person_mapping mapping on inntekt.id = mapping.inntektid 
+            where inntekt.id = ?
+            
+            """.trimIndent()
+
+        return using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(statement, inntektId.id)
+                    .map {
+                        StoredInntektMedFnr(
+                            inntektId = InntektId(it.string("id")),
+                            inntekt = it.binaryStream("inntekt").use { jacksonObjectMapper.readValue<InntektkomponentResponse>(it) },
+                            manueltRedigert = it.boolean("manuelt_redigert"),
+                            timestamp = it.zonedDateTime("timestamp").toLocalDateTime(),
+                            fødselsnummer = it.string("fnr"),
+                        )
+                    }.asSingle,
+            ) ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
+        }
     }
 
     override fun storeInntekt(
