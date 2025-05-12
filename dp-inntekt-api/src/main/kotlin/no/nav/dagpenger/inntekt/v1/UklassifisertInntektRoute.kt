@@ -24,6 +24,7 @@ import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
@@ -153,7 +154,10 @@ fun Route.uklassifisertInntekt(
                                     enhetsregisterClient,
                                     it.inntekt.arbeidsInntektMaaned
                                         ?.flatMap { it.arbeidsInntektInformasjon?.inntektListe.orEmpty() }
-                                        ?.mapNotNull { it.virksomhet?.identifikator }
+                                        ?.filter { inntekt ->
+                                            inntekt.virksomhet?.aktoerType == AktoerType.ORGANISASJON &&
+                                                (inntekt.opptjeningsland == "NO" || inntekt.opptjeningsland == null)
+                                        }?.mapNotNull { it.virksomhet?.identifikator }
                                         ?.toTypedArray()
                                         ?.toList() ?: emptyList(),
                                 )
@@ -253,7 +257,7 @@ private suspend fun hentOrganisasjonNavn(
         }.onSuccess {
             val organisasjonsNavnOgIdMapping =
                 OrganisasjonNavnOgIdMapping(
-                    organisasjonsnummer = it,
+                    organisasjonsnummer = orgNr,
                     organisasjonNavn = it,
                 )
             organisasjonNavnOgIdMappingListe.add(organisasjonsNavnOgIdMapping)
