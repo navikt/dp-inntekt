@@ -28,6 +28,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
+import no.nav.dagpenger.inntekt.mapping.InntekterDto
 import no.nav.dagpenger.inntekt.mapping.Inntektsmottaker
 import no.nav.dagpenger.inntekt.mapping.OrganisasjonNavnOgIdMapping
 import no.nav.dagpenger.inntekt.mapping.dataGrunnlagKlassifiseringToVerdikode
@@ -165,6 +166,39 @@ fun Route.uklassifisertInntekt(
                         }.let {
                             call.respond(HttpStatusCode.OK, it)
                         }
+                }
+            }
+            post {
+                withContext(Dispatchers.IO) {
+                    val inntektId = call.parameters["inntektId"]!!
+                    mapToStoredInntekt(
+                        inntekterDto = call.receive<InntekterDto>(),
+                        inntektId = inntektId,
+                    ).let {
+                        val person = personOppslag.hentPerson(it.inntekt.ident.identifikator)
+                        val inntektPersonMapping = inntektStore.getInntektPersonMapping(inntektId)
+                        inntektStore.storeInntekt(
+                            StoreInntektCommand(
+                                inntektparametre =
+                                    Inntektparametre(
+                                        aktørId = person.aktørId,
+                                        fødselsnummer = person.fødselsnummer,
+                                        regelkontekst = RegelKontekst(inntektPersonMapping.kontekstId, inntektPersonMapping.kontekstType),
+                                        beregningsdato = inntektPersonMapping.beregningsdato,
+                                    ),
+                                inntekt = it.inntekt,
+                                manueltRedigert =
+                                    ManueltRedigert.from(
+                                        true,
+                                        call.getSubject(),
+                                    ),
+                            ),
+                        )
+                    }.let {
+                        call.respond(HttpStatusCode.OK, it.inntektId)
+                    }.also {
+                        inntektKorrigeringCounter.inc()
+                    }
                 }
             }
         }

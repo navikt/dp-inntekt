@@ -33,7 +33,7 @@ import no.nav.dagpenger.inntekt.mapping.GUIArbeidsInntektMaaned
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
 import no.nav.dagpenger.inntekt.mapping.GUIInntektsKomponentResponse
 import no.nav.dagpenger.inntekt.mapping.InntektMedVerdikode
-import no.nav.dagpenger.inntekt.mapping.InntekterResponse
+import no.nav.dagpenger.inntekt.mapping.InntekterDto
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
@@ -487,13 +487,13 @@ internal class UklassifisertInntektRouteTest {
 
             assertEquals(HttpStatusCode.OK, response.status)
             val storedInntekt =
-                jacksonObjectMapper.readValue<InntekterResponse>(response.bodyAsText())
-            assertEquals(2, storedInntekt.virksomhetsinntekt.size)
-            assertEquals(4, storedInntekt.virksomhetsinntekt[0].inntekter?.size)
-            assertEquals("1111111", storedInntekt.virksomhetsinntekt.first().virksomhetsnummer)
-            assertEquals("Test Org", storedInntekt.virksomhetsinntekt.first().virksomhetsnavn)
-            assertEquals("2222222", storedInntekt.virksomhetsinntekt[1].virksomhetsnummer)
-            assertEquals("", storedInntekt.virksomhetsinntekt[1].virksomhetsnavn)
+                jacksonObjectMapper.readValue<InntekterDto>(response.bodyAsText())
+            assertEquals(2, storedInntekt.virksomheter.size)
+            assertEquals(4, storedInntekt.virksomheter[0].inntekter?.size)
+            assertEquals("1111111", storedInntekt.virksomheter.first().virksomhetsnummer)
+            assertEquals("Test Org", storedInntekt.virksomheter.first().virksomhetsnavn)
+            assertEquals("2222222", storedInntekt.virksomheter[1].virksomhetsnummer)
+            assertEquals("", storedInntekt.virksomheter[1].virksomhetsnavn)
         }
     }
 }
