@@ -29,6 +29,8 @@ import no.nav.security.mock.oauth2.MockOAuth2Server
 @Suppress("ktlint:standard:function-naming")
 internal object TestApplication {
     private const val ISSUER_ID = "default"
+    const val TEST_OAUTH_USER = "user"
+
     val mockOAuth2Server: MockOAuth2Server by lazy {
         MockOAuth2Server().also {
             it.start()
@@ -37,7 +39,7 @@ internal object TestApplication {
     val testOAuthToken: String by lazy {
         mockOAuth2Server.issueToken(
             issuerId = ISSUER_ID,
-            subject = "user",
+            subject = TEST_OAUTH_USER,
         ).serialize()
     }
 

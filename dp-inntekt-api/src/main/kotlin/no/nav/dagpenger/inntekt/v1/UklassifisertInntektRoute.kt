@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import mu.withLoggingContext
+import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.Inntektparametre
@@ -39,7 +40,10 @@ import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
+import no.nav.dagpenger.inntekt.v1.models.InntekterDto
+import no.nav.dagpenger.inntekt.v1.models.mapToStoredInntekt
 import java.time.LocalDate
+import kotlin.coroutines.CoroutineContext
 
 private val logger = KotlinLogging.logger {}
 const val INNTEKT_KORRIGERING = "inntekt_korrigering"
@@ -69,11 +73,12 @@ fun Route.uklassifisertInntekt(
     inntektStore: InntektStore,
     personOppslag: PersonOppslag,
     enhetsregisterClient: EnhetsregisterClient,
+    coroutineContext: CoroutineContext = Dispatchers.IO,
 ) {
     authenticate("azure") {
         route("/uklassifisert/{aktørId}/{kontekstType}/{kontekstId}/{beregningsDato}") {
             get {
-                withContext(Dispatchers.IO) {
+                withContext(coroutineContext) {
                     call.withInntektRequest("GET /uklassifisert/") {
                         val person = personOppslag.hentPerson(this.aktørId)
                         inntektStore
@@ -96,7 +101,7 @@ fun Route.uklassifisertInntekt(
                 }
             }
             post {
-                withContext(Dispatchers.IO) {
+                withContext(coroutineContext) {
                     call.withInntektRequest("POST /uklassifisert/") {
                         val person = personOppslag.hentPerson(this.aktørId)
                         val guiInntekt = call.receive<GUIInntekt>()
@@ -138,12 +143,8 @@ fun Route.uklassifisertInntekt(
 
         route("/uklassifisert/{inntektId}") {
             get {
-                withContext(Dispatchers.IO) {
-                    val inntektId =
-                        call.parameters["inntektId"]?.let {
-                            no.nav.dagpenger.inntekt.db
-                                .InntektId(it)
-                        } ?: throw IllegalArgumentException("Missing inntektId")
+                withContext(coroutineContext) {
+                    val inntektId = InntektId(call.parameters["inntektId"]!!)
                     inntektStore
                         .getInntektMedPersonFnr(inntektId)
                         .let {
@@ -167,12 +168,49 @@ fun Route.uklassifisertInntekt(
                         }
                 }
             }
+            post {
+                withContext(coroutineContext) {
+                    val inntektId = call.parameters["inntektId"]!!
+                    call
+                        .receive<InntekterDto>()
+                        .mapToStoredInntekt(
+                            inntektId = inntektId,
+                        ).let {
+                            val inntektPersonMapping = inntektStore.getInntektPersonMapping(inntektId)
+                            inntektStore.storeInntekt(
+                                StoreInntektCommand(
+                                    inntektparametre =
+                                        Inntektparametre(
+                                            aktørId = inntektPersonMapping.aktørId,
+                                            fødselsnummer = it.inntekt.ident.identifikator,
+                                            regelkontekst =
+                                                RegelKontekst(
+                                                    inntektPersonMapping.kontekstId,
+                                                    inntektPersonMapping.kontekstType,
+                                                ),
+                                            beregningsdato = inntektPersonMapping.beregningsdato,
+                                        ),
+                                    inntekt = it.inntekt,
+                                    manueltRedigert =
+                                        ManueltRedigert.from(
+                                            true,
+                                            call.getSubject(),
+                                        ),
+                                ),
+                            )
+                        }.let {
+                            call.respond(HttpStatusCode.OK, it.inntektId.id)
+                        }.also {
+                            inntektKorrigeringCounter.inc()
+                        }
+                }
+            }
         }
 
         route("/uklassifisert/uncached/{aktørId}/{kontekstType}/{kontekstId}/{beregningsDato}") {
             get {
                 val callId = call.callId
-                withContext(Dispatchers.IO) {
+                withContext(coroutineContext) {
                     call.withInntektRequest("GET /uklassifisert/uncached/") {
                         val person = personOppslag.hentPerson(this.aktørId)
                         val opptjeningsperiode = Opptjeningsperiode(this.beregningsDato)
@@ -195,7 +233,7 @@ fun Route.uklassifisertInntekt(
             }
 
             post {
-                withContext(Dispatchers.IO) {
+                withContext(coroutineContext) {
                     call.withInntektRequest("POST /uklassifisert/uncached/") {
                         val guiInntekt = call.receive<GUIInntekt>()
                         val person = personOppslag.hentPerson(this.aktørId)
@@ -237,9 +275,7 @@ fun Route.uklassifisertInntekt(
     }
     route("/verdikoder") {
         get {
-            withContext(Dispatchers.IO) {
-                call.respond(HttpStatusCode.OK, dataGrunnlagKlassifiseringToVerdikode.values)
-            }
+            call.respond(HttpStatusCode.OK, dataGrunnlagKlassifiseringToVerdikode.values)
         }
     }
 }

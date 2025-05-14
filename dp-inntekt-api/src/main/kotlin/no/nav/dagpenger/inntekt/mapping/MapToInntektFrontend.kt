@@ -5,16 +5,18 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Avvik
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Periode
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
+import no.nav.dagpenger.inntekt.v1.models.InntekterDto
 import java.math.BigDecimal
 import java.time.YearMonth
 
 fun InntektkomponentResponse.mapToFrontend(
     person: Inntektsmottaker,
-    organisasjonsInfoListe: MutableList<OrganisasjonNavnOgIdMapping>,
-): InntekterResponse {
+    organisasjonsInfoListe: List<OrganisasjonNavnOgIdMapping>,
+): InntekterDto {
     val inntekt = arbeidsInntektMaaned
-    val virksomhetListe: MutableList<Virksomhet> = mutableListOf()
+    val virksomheter: MutableList<Virksomhet> = mutableListOf()
 
     inntekt?.forEach { arbeidsInntektMaaned ->
         val inntektsInformasjon = arbeidsInntektMaaned.arbeidsInntektInformasjon
@@ -34,10 +36,12 @@ fun InntektkomponentResponse.mapToFrontend(
                     fordel = inntekt.fordel,
                     beskrivelse = inntekt.beskrivelse,
                     inntektsstatus = inntekt.inntektsstatus,
+                    inntektsperiodetype = inntekt.inntektsperiodetype,
                     utbetaltIMaaned = inntekt.utbetaltIMaaned,
                     inntektType = inntekt.inntektType,
                     leveringstidspunkt = inntekt.leveringstidspunkt,
                     opptjeningsland = inntekt.opptjeningsland,
+                    opptjeningsperiode = inntekt.opptjeningsperiode,
                     skattemessigBosattLand = inntekt.skattemessigBosattLand,
                     inntektsinnsender = inntekt.inntektsinnsender,
                     virksomhet = inntekt.virksomhet,
@@ -50,7 +54,7 @@ fun InntektkomponentResponse.mapToFrontend(
             )
 
             val eksisterendeVirksomhet =
-                virksomhetListe.find { it.virksomhetsnummer == virksomhet?.identifikator }
+                virksomheter.find { it.virksomhetsnummer == virksomhet?.identifikator }
             if (eksisterendeVirksomhet != null) {
                 eksisterendeVirksomhet.inntekter?.addAll(inntekter)
                 eksisterendeVirksomhet.periode =
@@ -60,7 +64,7 @@ fun InntektkomponentResponse.mapToFrontend(
                     )
                 eksisterendeVirksomhet.totalBeløp = eksisterendeVirksomhet.inntekter.sumOf { it.belop }
             } else {
-                virksomhetListe.add(
+                virksomheter.add(
                     Virksomhet(
                         virksomhetsnummer = virksomhet?.identifikator ?: "",
                         virksomhetsnavn = virksomhetNavn,
@@ -79,16 +83,11 @@ fun InntektkomponentResponse.mapToFrontend(
         }
     }
 
-    return InntekterResponse(
-        virksomhetsinntekt = virksomhetListe,
+    return InntekterDto(
+        virksomheter = virksomheter,
         mottaker = person,
     )
 }
-
-data class InntekterResponse(
-    val virksomhetsinntekt: List<Virksomhet>,
-    val mottaker: Inntektsmottaker,
-)
 
 data class Virksomhet(
     val virksomhetsnummer: String,
@@ -110,10 +109,13 @@ data class InntektMaaned(
     val beskrivelse: InntektBeskrivelse,
     val inntektskilde: String,
     val inntektsstatus: String,
+    val inntektsperiodetype: String?,
     val leveringstidspunkt: YearMonth? = null,
     val opptjeningsland: String? = null,
+    val opptjeningsperiode: Periode? = null,
     val skattemessigBosattLand: String? = null,
     val utbetaltIMaaned: YearMonth,
+    val opplysningspliktig: Aktoer? = null,
     val inntektsinnsender: Aktoer? = null,
     val virksomhet: Aktoer? = null,
     val inntektsmottaker: Aktoer? = null,
