@@ -1,7 +1,6 @@
 package no.nav.dagpenger.inntekt.mapping
 
 import de.huxhorn.sulky.ulid.ULID
-import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.StoredInntekt
@@ -11,9 +10,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
-
-private val logg = KotlinLogging.logger {}
-private val sikkerlogg = KotlinLogging.logger("tjenestekall.MapFromGUIInntekt")
 
 fun mapToStoredInntekt(guiInntekt: GUIInntekt): StoredInntekt =
     StoredInntekt(
@@ -36,13 +32,13 @@ fun mapToDetachedInntekt(guiInntekt: GUIInntekt): DetachedInntekt =
         guiInntekt.manueltRedigert,
     )
 
-private fun mapToArbeidsInntektMaaneder(arbeidsMaaneder: List<GUIArbeidsInntektMaaned>?): List<ArbeidsInntektMaaned>? {
-    return arbeidsMaaneder?.map { GUIarbeidsInntektMaaned ->
+private fun mapToArbeidsInntektMaaneder(arbeidsMaaneder: List<GUIArbeidsInntektMaaned>?): List<ArbeidsInntektMaaned>? =
+    arbeidsMaaneder?.map { guiArbeidsInntektMaaned ->
         ArbeidsInntektMaaned(
-            GUIarbeidsInntektMaaned.aarMaaned,
-            GUIarbeidsInntektMaaned.avvikListe,
+            guiArbeidsInntektMaaned.aarMaaned,
+            guiArbeidsInntektMaaned.avvikListe,
             ArbeidsInntektInformasjon(
-                GUIarbeidsInntektMaaned.arbeidsInntektInformasjon?.inntektListe?.map { inntekt ->
+                guiArbeidsInntektMaaned.arbeidsInntektInformasjon?.inntektListe?.map { inntekt ->
                     val datagrunnlagForVerdikode: DatagrunnlagKlassifisering = dataGrunnlag(inntekt.verdikode)
                     Inntekt(
                         inntekt.beloep,
@@ -78,4 +74,3 @@ private fun mapToArbeidsInntektMaaneder(arbeidsMaaneder: List<GUIArbeidsInntektM
             ),
         )
     }
-}

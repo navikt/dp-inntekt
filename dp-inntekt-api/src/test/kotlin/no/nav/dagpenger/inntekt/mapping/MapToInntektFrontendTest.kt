@@ -191,16 +191,16 @@ class MapToInntektFrontendTest {
                 organisasjonNavnOgIdMappingForTesting,
             )
 
-        assertEquals(2, mappedToInntektFrontend.virksomhetsinntekt.size)
+        assertEquals(2, mappedToInntektFrontend.virksomheter.size)
         assertEquals(mottaker, mappedToInntektFrontend.mottaker)
 
-        assertTrue { mappedToInntektFrontend.virksomhetsinntekt.any { it.virksomhetsnummer == "896929119" } }
-        assertTrue { mappedToInntektFrontend.virksomhetsinntekt.any { it.virksomhetsnummer == "896929120" } }
-        assertFalse { mappedToInntektFrontend.virksomhetsinntekt.any { it.virksomhetsnummer == "8969291001" } }
+        assertTrue { mappedToInntektFrontend.virksomheter.any { it.virksomhetsnummer == "896929119" } }
+        assertTrue { mappedToInntektFrontend.virksomheter.any { it.virksomhetsnummer == "896929120" } }
+        assertFalse { mappedToInntektFrontend.virksomheter.any { it.virksomhetsnummer == "8969291001" } }
 
         assertEquals(
             2,
-            mappedToInntektFrontend.virksomhetsinntekt
+            mappedToInntektFrontend.virksomheter
                 .filter { it.virksomhetsnummer == "896929119" }[0]
                 .inntekter
                 ?.size,
@@ -208,14 +208,14 @@ class MapToInntektFrontendTest {
 
         assertEquals(
             BigDecimal(100000),
-            mappedToInntektFrontend.virksomhetsinntekt
+            mappedToInntektFrontend.virksomheter
                 .filter { it.virksomhetsnummer == "896929119" }[0]
                 .totalBeløp,
         )
 
         assertEquals(
             1,
-            mappedToInntektFrontend.virksomhetsinntekt
+            mappedToInntektFrontend.virksomheter
                 .filter { it.virksomhetsnummer == "896929120" }[0]
                 .inntekter
                 ?.size,
@@ -223,7 +223,7 @@ class MapToInntektFrontendTest {
 
         assertEquals(
             BigDecimal(50000),
-            mappedToInntektFrontend.virksomhetsinntekt
+            mappedToInntektFrontend.virksomheter
                 .filter { it.virksomhetsnummer == "896929120" }[0]
                 .totalBeløp,
         )
@@ -332,9 +332,9 @@ class MapToInntektFrontendTest {
 
         val mapTilFrontendMedNullVirksomhet =
             inntektkomponentResponseMedTomVirksomhet.mapToFrontend(mottaker, organisasjonNavnOgIdMappingForTesting)
-        assertEquals(3, mapTilFrontendMedNullVirksomhet.virksomhetsinntekt.size)
-        assertEquals(2, mapTilFrontendMedNullVirksomhet.virksomhetsinntekt.filter { it.virksomhetsnummer == "" }.size)
-        assertEquals(1, mapTilFrontendMedNullVirksomhet.virksomhetsinntekt.filter { it.virksomhetsnummer == "896929120" }.size)
+        assertEquals(3, mapTilFrontendMedNullVirksomhet.virksomheter.size)
+        assertEquals(2, mapTilFrontendMedNullVirksomhet.virksomheter.filter { it.virksomhetsnummer == "" }.size)
+        assertEquals(1, mapTilFrontendMedNullVirksomhet.virksomheter.filter { it.virksomhetsnummer == "896929120" }.size)
 
         jacksonObjectMapper.writeValueAsString(mapTilFrontendMedNullVirksomhet)
         println(

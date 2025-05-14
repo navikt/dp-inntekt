@@ -1,0 +1,313 @@
+{
+  "virksomheter": [
+    {
+      "virksomhetsnummer": "123456789",
+      "virksomhetsnavn": "Test Virksomhet",
+      "periode": {
+        "fra": "2023-01",
+        "til": "2024-12"
+      },
+      "inntekter": [
+        {
+          "belop": 50000.00,
+          "fordel": "kontantytelse",
+          "beskrivelse": "bil",
+          "inntektskilde": "A-ordningen",
+          "inntektsstatus": "LoependeInnrapportert",
+          "inntektsperiodetype": "Maaned",
+          "leveringstidspunkt": "2023-01",
+          "opptjeningsland": "NO",
+          "opptjeningsperiode": {
+            "startDato": "2023-01-04T00:00:00",
+            "sluttDato": "2023-01-25T00:00:00"
+          },
+          "skattemessigBosattLand": "NO",
+          "utbetaltIMaaned": "2023-02",
+          "opplysningspliktig": {
+            "aktoerType": "NATURLIG_IDENT",
+            "identifikator": "06221841830"
+          },
+          "inntektsinnsender": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "561235623"
+          },
+          "virksomhet": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "123456789"
+          },
+          "inntektsmottaker": {
+            "aktoerType": "AKTOER_ID",
+            "identifikator": "287631"
+          },
+          "inngaarIGrunnlagForTrekk": true,
+          "utloeserArbeidsgiveravgift": false,
+          "informasjonsstatus": "InngaarAlltid",
+          "inntektType": "LOENNSINNTEKT",
+          "tilleggsinformasjon": {
+            "kategori": "enKategori",
+            "tilleggsinformasjonDetaljer": {
+              "detaljerType": "enDetaljerType",
+              "spesielleInntjeningsforhold": "loennVedKonkursEllerStatsgarantiOsv"
+            }
+          },
+          "redigert": true,
+          "begrunnelse": "Standard",
+          "aarMaaned": "2023-01"
+        },
+        {
+          "belop": 10000.00,
+          "fordel": "kontantytelse",
+          "beskrivelse": "bil",
+          "inntektskilde": "A-ordningen",
+          "inntektsstatus": "LoependeInnrapportert",
+          "inntektsperiodetype": "Maaned",
+          "leveringstidspunkt": "2024-01",
+          "opptjeningsland": "SE",
+          "opptjeningsperiode": {
+            "startDato": "2024-01-01T00:00:00",
+            "sluttDato": "2024-01-31T00:00:00"
+          },
+          "skattemessigBosattLand": "NO",
+          "utbetaltIMaaned": "2024-01",
+          "opplysningspliktig": {
+            "aktoerType": "NATURLIG_IDENT",
+            "identifikator": "06221841830"
+          },
+          "inntektsinnsender": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "123456789"
+          },
+          "virksomhet": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "123456789"
+          },
+          "inntektsmottaker": {
+            "aktoerType": "AKTOER_ID",
+            "identifikator": "287631"
+          },
+          "inngaarIGrunnlagForTrekk": true,
+          "utloeserArbeidsgiveravgift": true,
+          "informasjonsstatus": "InngaarAlltid",
+          "inntektType": "NAERINGSINNTEKT",
+          "tilleggsinformasjon": null,
+          "redigert": false,
+          "begrunnelse": "Ikke Standard",
+          "aarMaaned": "2024-01"
+        }
+      ],
+      "totalBeløp": 60000.00,
+      "avvikListe": [
+        {
+          "ident": {
+            "aktoerType": "AKTOER_ID",
+            "identifikator": "287631"
+          },
+          "opplysningspliktig": {
+            "aktoerType": "NATURLIG_IDENT",
+            "identifikator": "06221841830"
+          },
+          "virksomhet": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "123456789"
+          },
+          "avvikPeriode": "2024-01",
+          "tekst": "Dette er et avvik"
+        },
+        {
+          "ident": {
+            "aktoerType": "AKTOER_ID",
+            "identifikator": "287631"
+          },
+          "opplysningspliktig": {
+            "aktoerType": "NATURLIG_IDENT",
+            "identifikator": "06221841830"
+          },
+          "virksomhet": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "123456789"
+          },
+          "avvikPeriode": "2023-01",
+          "tekst": "Dette er et avvik for 2023-01"
+        }
+      ]
+    },
+    {
+      "virksomhetsnummer": "987654321",
+      "virksomhetsnavn": "Virksomheten Test",
+      "periode": {
+        "fra": "2024-01",
+        "til": "2025-03"
+      },
+      "inntekter": [
+        {
+          "belop": 40000.00,
+          "fordel": "kontantytelse",
+          "beskrivelse": "bil",
+          "inntektskilde": "A-ordningen",
+          "inntektsstatus": "LoependeInnrapportert",
+          "inntektsperiodetype": "Maaned",
+          "leveringstidspunkt": "2023-01",
+          "opptjeningsland": "NO",
+          "opptjeningsperiode": {
+            "startDato": "2025-03-15T00:00:00",
+            "sluttDato": "2025-03-15T00:00:00"
+          },
+          "skattemessigBosattLand": "NO",
+          "utbetaltIMaaned": "2025-03",
+          "opplysningspliktig": {
+            "aktoerType": "NATURLIG_IDENT",
+            "identifikator": "06221841830"
+          },
+          "inntektsinnsender": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "987654321"
+          },
+          "virksomhet": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "987654321"
+          },
+          "inntektsmottaker": {
+            "aktoerType": "AKTOER_ID",
+            "identifikator": "287631"
+          },
+          "inngaarIGrunnlagForTrekk": true,
+          "utloeserArbeidsgiveravgift": true,
+          "informasjonsstatus": "InngaarAlltid",
+          "inntektType": "LOENNSINNTEKT",
+          "tilleggsinformasjon": null,
+          "redigert": true,
+          "begrunnelse": "Standard",
+          "aarMaaned": "2025-02"
+        },
+        {
+          "belop": 70000.00,
+          "fordel": "kontantytelse",
+          "beskrivelse": "bil",
+          "inntektskilde": "A-ordningen",
+          "inntektsstatus": "LoependeInnrapportert",
+          "inntektsperiodetype": "Maaned",
+          "leveringstidspunkt": "2024-01",
+          "opptjeningsland": "SE",
+          "opptjeningsperiode": {
+            "startDato": "2025-04-03T00:00:00",
+            "sluttDato": "2025-04-18T00:00:00"
+          },
+          "skattemessigBosattLand": "NO",
+          "utbetaltIMaaned": "2025-04",
+          "opplysningspliktig": {
+            "aktoerType": "NATURLIG_IDENT",
+            "identifikator": "06221841830"
+          },
+          "inntektsinnsender": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "123456789"
+          },
+          "virksomhet": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "123456789"
+          },
+          "inntektsmottaker": {
+            "aktoerType": "AKTOER_ID",
+            "identifikator": "287631"
+          },
+          "inngaarIGrunnlagForTrekk": true,
+          "utloeserArbeidsgiveravgift": true,
+          "informasjonsstatus": "InngaarAlltid",
+          "inntektType": "NAERINGSINNTEKT",
+          "tilleggsinformasjon": null,
+          "redigert": true,
+          "begrunnelse": "Ikke Standard",
+          "aarMaaned": "2025-03"
+        },
+        {
+          "belop": 20000.00,
+          "fordel": "kontantytelse",
+          "beskrivelse": "bil",
+          "inntektskilde": "A-ordningen",
+          "inntektsstatus": "LoependeInnrapportert",
+          "inntektsperiodetype": "Maaned",
+          "leveringstidspunkt": "2024-01",
+          "opptjeningsland": "SE",
+          "opptjeningsperiode": {
+            "startDato": "2024-01-01T00:00:00",
+            "sluttDato": "2024-01-31T00:00:00"
+          },
+          "skattemessigBosattLand": "NO",
+          "utbetaltIMaaned": "2024-01",
+          "opplysningspliktig": null,
+          "inntektsinnsender": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "987654321"
+          },
+          "virksomhet": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "987654321"
+          },
+          "inntektsmottaker": {
+            "aktoerType": "AKTOER_ID",
+            "identifikator": "287631"
+          },
+          "inngaarIGrunnlagForTrekk": true,
+          "utloeserArbeidsgiveravgift": true,
+          "informasjonsstatus": "InngaarAlltid",
+          "inntektType": "NAERINGSINNTEKT",
+          "tilleggsinformasjon": null,
+          "redigert": false,
+          "begrunnelse": "Ikke Standard",
+          "aarMaaned": "2024-01"
+        }
+      ],
+      "totalBeløp": 130000.00,
+      "avvikListe": [
+        {
+          "ident": {
+            "aktoerType": "AKTOER_ID",
+            "identifikator": "287631"
+          },
+          "opplysningspliktig": {
+            "aktoerType": "NATURLIG_IDENT",
+            "identifikator": "06221841830"
+          },
+          "virksomhet": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "987654321"
+          },
+          "avvikPeriode": "2024-01",
+          "tekst": "Dette er et annet avvik"
+        }
+      ]
+    },
+    {
+      "virksomhetsnummer": "550475189",
+      "virksomhetsnavn": "Virksomheten Test",
+      "periode": {
+        "fra": "2000-12",
+        "til": "2000-12"
+      },
+      "inntekter": [],
+      "totalBeløp": 0,
+      "avvikListe": [
+        {
+          "ident": {
+            "aktoerType": "AKTOER_ID",
+            "identifikator": "287632"
+          },
+          "opplysningspliktig": {
+            "aktoerType": "NATURLIG_IDENT",
+            "identifikator": "25317924499"
+          },
+          "virksomhet": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "550475189"
+          },
+          "avvikPeriode": "2000-12",
+          "tekst": "Dette er et Y2K-avvik"
+        }
+      ]
+    }
+  ],
+  "mottaker": {
+    "pnr": "19876543210",
+    "navn": "Navn Navnesen"
+  }
+}

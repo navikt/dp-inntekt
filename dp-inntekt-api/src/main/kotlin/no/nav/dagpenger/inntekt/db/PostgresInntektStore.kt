@@ -93,6 +93,30 @@ internal class PostgresInntektStore(
         }
     }
 
+    override fun getInntektPersonMapping(inntektId: String): InntektPersonMapping {
+        @Language("sql")
+        val statement = "SELECT * FROM inntekt_V1_person_mapping WHERE inntektId = :inntektId)".trimMargin()
+
+        return using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(
+                    statement,
+                    mapOf("inntektId" to inntektId),
+                ).map { row ->
+                    InntektPersonMapping(
+                        inntektId = InntektId(row.string("inntektid")),
+                        aktørId = row.string("aktorid"),
+                        fnr = row.string("fnr"),
+                        kontekstId = row.string("kontekstid"),
+                        beregningsdato = row.zonedDateTime("beregningsdato").toLocalDate(),
+                        timestamp = row.zonedDateTime("timestamp").toLocalDateTime(),
+                        kontekstType = row.string("konteksttype"),
+                    )
+                }.asSingle,
+            ) ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
+        }
+    }
+
     override fun getBeregningsdato(inntektId: InntektId): LocalDate {
         @Language("sql")
         val statement =

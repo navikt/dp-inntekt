@@ -18,6 +18,8 @@ interface InntektStore {
 
     fun getBeregningsdato(inntektId: InntektId): LocalDate
 
+    fun getInntektPersonMapping(inntektId: String): InntektPersonMapping
+
     fun storeInntekt(
         command: StoreInntektCommand,
         created: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC),
@@ -50,6 +52,16 @@ data class StoreInntektCommand(
     val inntektparametre: Inntektparametre,
     val inntekt: InntektkomponentResponse,
     val manueltRedigert: ManueltRedigert? = null,
+)
+
+data class InntektPersonMapping(
+    val inntektId: InntektId,
+    val aktørId: String,
+    val fnr: String? = null,
+    val kontekstId: String,
+    val beregningsdato: LocalDate,
+    val timestamp: LocalDateTime,
+    val kontekstType: String,
 )
 
 data class ManueltRedigert(
