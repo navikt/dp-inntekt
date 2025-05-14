@@ -47,15 +47,16 @@ fun main() {
         val cachedInntektsGetter = BehandlingsInntektsGetter(inntektskomponentHttpClient, postgresInntektStore)
         // Marks inntekt as used
         val subsumsjonBruktDataConsumer =
-            KafkaSubsumsjonBruktDataConsumer(config, postgresInntektStore).apply {
-                listen()
-            }.also {
-                Runtime.getRuntime().addShutdownHook(
-                    Thread {
-                        it.stop()
-                    },
-                )
-            }
+            KafkaSubsumsjonBruktDataConsumer(config, postgresInntektStore)
+                .apply {
+                    listen()
+                }.also {
+                    Runtime.getRuntime().addShutdownHook(
+                        Thread {
+                            it.stop()
+                        },
+                    )
+                }
 
         // Provides a HTTP API for getting inntekt
         embeddedServer(Netty, port = config.application.httpPort) {
