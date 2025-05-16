@@ -28,6 +28,25 @@ fun InntekterDto.mapToStoredInntekt(inntektId: String): StoredInntekt =
 private fun mapToInntektkomponentResponse(inntekterDto: InntekterDto): InntektkomponentResponse {
     val arbeidsInntektMaaneder: MutableList<ArbeidsInntektMaaned> = mutableListOf()
 
+    /*
+    Dette må mappes om fra gruppering på virksomhet, til gruppering på aarMaaned (dvs hvert aarMaaned inneholder
+    inntekt for alle virksomhetene som har utbetalt inntekt for gitt aarMaaned). Strukturen som kommer fra frontend er
+    gruppert på virksomhet, og alle utbetalte inntekter for alle aarMaaned ligger inne i hver virksomhet.
+
+    Vi mistenker også at Avvik i datastrukturen som sendes til frontend (og som frontend da sender tilbake til backend),
+    ikke inneholder all informasjon og/eller ligger på feil sted i strukturen.
+
+    Løsningsforslag:
+
+    Lag en Map<YearMonth, List<Inntekt>>(), og map InntektMaaned-objekter til Inntekt-objekter, og legg i riktig
+    "bucket" i mappen -> opprett et ArbeidsInntektMaaned-objekt per key i map (key == maanedAar,
+    liste i value == arbeidsInntektInformasjon.
+
+    Hvis vi blir skikkelig tøffe: https://kotlinlang.org/docs/collection-grouping.html
+
+    I tillegg må vi se på mapping av avvik når vi har fått det på riktig plass i InntektDto.
+     */
+
     inntekterDto.virksomheter.forEach { virksomhet ->
         arbeidsInntektMaaneder.addAll(
             virksomhet.inntekter?.map {
@@ -48,12 +67,10 @@ private fun mapToInntektkomponentResponse(inntekterDto: InntekterDto): Inntektko
                                 inntektMaaned.opptjeningsperiode,
                                 inntektMaaned.skattemessigBosattLand,
                                 inntektMaaned.utbetaltIMaaned,
-                                // TODO: Er det mottaker som skal brukes her?
-                                mapToAktoerNaturligIdent(inntekterDto.mottaker.pnr),
-                                // TODO: Er det virksomhet som skal brukes her?
-                                mapToAktoerOrganisasjon(virksomhet),
-                                mapToAktoerOrganisasjon(virksomhet),
-                                mapToAktoerNaturligIdent(inntekterDto.mottaker.pnr),
+                                inntektMaaned.opplysningspliktig,
+                                inntektMaaned.inntektsinnsender,
+                                inntektMaaned.virksomhet,
+                                inntektMaaned.inntektsmottaker,
                                 inntektMaaned.inngaarIGrunnlagForTrekk,
                                 inntektMaaned.utloeserArbeidsgiveravgift,
                                 inntektMaaned.informasjonsstatus,
@@ -72,8 +89,6 @@ private fun mapToInntektkomponentResponse(inntekterDto: InntekterDto): Inntektko
         mapToAktoerNaturligIdent(inntekterDto.mottaker.pnr),
     )
 }
-
-private fun mapToAktoerOrganisasjon(virksomhet: Virksomhet): Aktoer = Aktoer(AktoerType.ORGANISASJON, virksomhet.virksomhetsnummer)
 
 private fun mapToAktoerNaturligIdent(fnr: String?): Aktoer =
     Aktoer(AktoerType.NATURLIG_IDENT, fnr ?: throw IllegalArgumentException("Fødselsenummer mangler"))

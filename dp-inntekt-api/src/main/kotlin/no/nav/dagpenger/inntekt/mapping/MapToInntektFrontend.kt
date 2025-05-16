@@ -115,6 +115,7 @@ data class InntektMaaned(
     val opptjeningsperiode: Periode? = null,
     val skattemessigBosattLand: String? = null,
     val utbetaltIMaaned: YearMonth,
+    val opplysningspliktig: Aktoer? = null,
     val inntektsinnsender: Aktoer? = null,
     val virksomhet: Aktoer? = null,
     val inntektsmottaker: Aktoer? = null,
