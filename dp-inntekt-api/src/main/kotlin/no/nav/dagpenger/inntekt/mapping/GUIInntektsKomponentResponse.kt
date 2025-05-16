@@ -21,7 +21,7 @@ data class GUIInntekt(
 )
 
 data class Inntektsmottaker(
-    val fnr: String?,
+    val pnr: String?,
     val navn: String?,
 )
 

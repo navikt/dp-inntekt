@@ -2,6 +2,7 @@ package no.nav.dagpenger.inntekt.v1
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.huxhorn.sulky.ulid.ULID
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
@@ -10,10 +11,13 @@ import io.ktor.http.HttpStatusCode
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
 import no.nav.dagpenger.inntekt.db.InntektId
+import no.nav.dagpenger.inntekt.db.InntektPersonMapping
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.ManueltRedigert
@@ -38,6 +42,7 @@ import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.v1.TestApplication.TEST_OAUTH_USER
 import no.nav.dagpenger.inntekt.v1.TestApplication.autentisert
 import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
 import no.nav.dagpenger.inntekt.v1.TestApplication.withMockAuthServerAndTestApplication
@@ -452,7 +457,7 @@ internal class UklassifisertInntektRouteTest {
         }
 
     @Test
-    fun `Get request for uklassifisert inntekt with inntektID should return 200 ok`() {
+    fun `Get request for uklassifisert inntekt med inntektID returnerer 200 ok`() {
         val enhetsregisterClientMock = mockk<EnhetsregisterClient>(relaxed = true)
         return withMockAuthServerAndTestApplication(
             mockInntektApi(
@@ -494,6 +499,55 @@ internal class UklassifisertInntektRouteTest {
             assertEquals("Test Org", storedInntekt.virksomheter.first().virksomhetsnavn)
             assertEquals("2222222", storedInntekt.virksomheter[1].virksomhetsnummer)
             assertEquals("", storedInntekt.virksomheter[1].virksomhetsnavn)
+        }
+    }
+
+    @Test
+    fun `Post request for uklassifisert inntekt med inntektId lagrer og returnerer ny ID`() {
+        return withMockAuthServerAndTestApplication(
+            moduleFunction =
+                mockInntektApi(
+                    inntektskomponentClient = inntektskomponentClientMock,
+                    inntektStore = inntektStoreMock,
+                ),
+        ) {
+            val body =
+                UklassifisertInntektRouteTest::class.java
+                    .getResource("/test-data/expected-uklassifisert-post-body.json")
+                    ?.readText()
+            val inntekterDto = jacksonObjectMapper.readValue<InntekterDto>(body!!)
+
+            val inntektPersonMapping =
+                InntektPersonMapping(
+                    inntektId = inntektId,
+                    aktørId = "123456789",
+                    fnr = null,
+                    kontekstId = "kontekstId",
+                    beregningsdato = LocalDate.now(),
+                    timestamp = LocalDateTime.now(),
+                    kontekstType = "kontekstType",
+                )
+            every { inntektStoreMock.getInntektPersonMapping(any()) } returns inntektPersonMapping
+
+            val storeInntektCommandSlot = slot<StoreInntektCommand>()
+            every { inntektStoreMock.storeInntekt(capture(storeInntektCommandSlot), any()) } returns storedInntekt
+
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Post,
+                    endepunkt = "$uklassifisertInntekt/${inntektId.id}",
+                    body = body,
+                )
+
+            response.bodyAsText() shouldBe storedInntekt.inntektId.id
+            verify(exactly = 1) { inntektStoreMock.storeInntekt(any(), any()) }
+            storeInntektCommandSlot.captured.inntektparametre.aktørId shouldBe inntektPersonMapping.aktørId
+            storeInntektCommandSlot.captured.inntektparametre.fødselsnummer shouldBe inntekterDto.mottaker.pnr
+            storeInntektCommandSlot.captured.inntektparametre.regelkontekst.id shouldBe inntektPersonMapping.kontekstId
+            storeInntektCommandSlot.captured.inntektparametre.regelkontekst.type shouldBe inntektPersonMapping.kontekstType
+            storeInntektCommandSlot.captured.inntektparametre.beregningsdato shouldBe inntektPersonMapping.beregningsdato
+            storeInntektCommandSlot.captured.manueltRedigert.shouldNotBeNull()
+            storeInntektCommandSlot.captured.manueltRedigert!!.redigertAv shouldBe TEST_OAUTH_USER
         }
     }
 }

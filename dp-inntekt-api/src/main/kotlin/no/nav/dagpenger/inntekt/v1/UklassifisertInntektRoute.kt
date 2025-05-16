@@ -175,14 +175,13 @@ fun Route.uklassifisertInntekt(
                         inntekterDto = call.receive<InntekterDto>(),
                         inntektId = inntektId,
                     ).let {
-                        val person = personOppslag.hentPerson(it.inntekt.ident.identifikator)
                         val inntektPersonMapping = inntektStore.getInntektPersonMapping(inntektId)
                         inntektStore.storeInntekt(
                             StoreInntektCommand(
                                 inntektparametre =
                                     Inntektparametre(
-                                        aktørId = person.aktørId,
-                                        fødselsnummer = person.fødselsnummer,
+                                        aktørId = inntektPersonMapping.aktørId,
+                                        fødselsnummer = it.inntekt.ident.identifikator,
                                         regelkontekst = RegelKontekst(inntektPersonMapping.kontekstId, inntektPersonMapping.kontekstType),
                                         beregningsdato = inntektPersonMapping.beregningsdato,
                                     ),
@@ -195,7 +194,7 @@ fun Route.uklassifisertInntekt(
                             ),
                         )
                     }.let {
-                        call.respond(HttpStatusCode.OK, it.inntektId)
+                        call.respond(HttpStatusCode.OK, it.inntektId.id)
                     }.also {
                         inntektKorrigeringCounter.inc()
                     }

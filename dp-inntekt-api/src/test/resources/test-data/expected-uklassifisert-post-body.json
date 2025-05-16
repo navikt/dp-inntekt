@@ -1,0 +1,44 @@
+{
+  "virksomheter": [
+    {
+      "virksomhetsnummer": "123456789",
+      "virksomhetsnavn": "Test Virksomhet",
+      "periode": {
+        "fra": "2023-01",
+        "til": "2023-12"
+      },
+      "inntekter": [
+        {
+          "belop": 50000.00,
+          "fordel": "kontantytelse",
+          "beskrivelse": "bil",
+          "inntektskilde": "A-ordningen",
+          "inntektsstatus": "LoependeInnrapportert",
+          "inntektsperiodetype": "Maaned",
+          "leveringstidspunkt": "2023-01",
+          "opptjeningsland": "NO",
+          "opptjeningsperiode": null,
+          "skattemessigBosattLand": "NO",
+          "utbetaltIMaaned": "2023-01",
+          "inntektsinnsender": null,
+          "virksomhet": null,
+          "inntektsmottaker": null,
+          "inngaarIGrunnlagForTrekk": true,
+          "utloeserArbeidsgiveravgift": true,
+          "informasjonsstatus": "InngaarAlltid",
+          "inntektType": "LOENNSINNTEKT",
+          "tilleggsinformasjon": null,
+          "redigert": true,
+          "begrunnelse": "Standard",
+          "aarMaaned": "2023-01"
+        }
+      ],
+      "totalBeløp": 50000.00,
+      "avvikListe": []
+    }
+  ],
+  "mottaker": {
+    "pnr": "19876543210",
+    "navn": "Navn Navnesen"
+  }
+}

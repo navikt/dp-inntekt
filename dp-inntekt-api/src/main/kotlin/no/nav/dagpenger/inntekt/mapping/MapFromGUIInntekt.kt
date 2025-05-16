@@ -70,11 +70,11 @@ private fun mapToInntektkomponentResponse(inntekterDto: InntekterDto): Inntektko
                                 inntektMaaned.skattemessigBosattLand,
                                 inntektMaaned.utbetaltIMaaned,
                                 // TODO: Er det mottaker som skal brukes her?
-                                mapToAktoerNaturligIdent(inntekterDto.mottaker.fnr),
+                                mapToAktoerNaturligIdent(inntekterDto.mottaker.pnr),
                                 // TODO: Er det virksomhet som skal brukes her?
                                 mapToAktoerOrganisasjon(virksomhet),
                                 mapToAktoerOrganisasjon(virksomhet),
-                                mapToAktoerNaturligIdent(inntekterDto.mottaker.fnr),
+                                mapToAktoerNaturligIdent(inntekterDto.mottaker.pnr),
                                 inntektMaaned.inngaarIGrunnlagForTrekk,
                                 inntektMaaned.utloeserArbeidsgiveravgift,
                                 inntektMaaned.informasjonsstatus,
@@ -90,7 +90,7 @@ private fun mapToInntektkomponentResponse(inntekterDto: InntekterDto): Inntektko
 
     return InntektkomponentResponse(
         arbeidsInntektMaaneder,
-        mapToAktoerNaturligIdent(inntekterDto.mottaker.fnr),
+        mapToAktoerNaturligIdent(inntekterDto.mottaker.pnr),
     )
 }
 

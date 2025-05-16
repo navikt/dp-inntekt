@@ -166,7 +166,7 @@ val inntektkomponentResponse =
 
 val mottaker =
     Inntektsmottaker(
-        fnr = "2044350291600",
+        pnr = "2044350291600",
         navn = "Ola Nordmann",
     )
 

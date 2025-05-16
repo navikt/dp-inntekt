@@ -56,7 +56,7 @@ data class StoreInntektCommand(
 
 data class InntektPersonMapping(
     val inntektId: InntektId,
-    val aktoerId: String,
+    val aktørId: String,
     val fnr: String? = null,
     val kontekstId: String,
     val beregningsdato: LocalDate,
