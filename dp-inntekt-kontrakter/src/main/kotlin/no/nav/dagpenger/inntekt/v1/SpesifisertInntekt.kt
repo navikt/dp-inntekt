@@ -46,7 +46,9 @@ data class Postering(
     val posteringsType: PosteringsType,
 )
 
-data class InntektId(val id: String) {
+data class InntektId(
+    val id: String,
+) {
     init {
         try {
             ULID.parseULID(id)
@@ -72,4 +74,7 @@ enum class AktørType {
     ORGANISASJON,
 }
 
-class IllegalInntektIdException(override val message: String, override val cause: Throwable?) : java.lang.RuntimeException(message, cause)
+class IllegalInntektIdException(
+    override val message: String,
+    override val cause: Throwable?,
+) : java.lang.RuntimeException(message, cause)
