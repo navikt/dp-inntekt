@@ -7,6 +7,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Periode
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
+import no.nav.dagpenger.inntekt.v1.models.InntekterDto
 import java.math.BigDecimal
 import java.time.YearMonth
 
@@ -87,11 +88,6 @@ fun InntektkomponentResponse.mapToFrontend(
         mottaker = person,
     )
 }
-
-data class InntekterDto(
-    val virksomheter: List<Virksomhet>,
-    val mottaker: Inntektsmottaker,
-)
 
 data class Virksomhet(
     val virksomhetsnummer: String,

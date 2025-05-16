@@ -4,15 +4,12 @@ import de.huxhorn.sulky.ulid.ULID
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.StoredInntekt
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
-import java.time.LocalDateTime.now
 
 fun mapToStoredInntekt(guiInntekt: GUIInntekt): StoredInntekt =
     StoredInntekt(
@@ -25,17 +22,6 @@ fun mapToStoredInntekt(guiInntekt: GUIInntekt): StoredInntekt =
         guiInntekt.manueltRedigert,
     )
 
-fun mapToStoredInntekt(
-    inntekterDto: InntekterDto,
-    inntektId: String,
-): StoredInntekt =
-    StoredInntekt(
-        inntektId = InntektId(id = inntektId),
-        inntekt = mapToInntektkomponentResponse(inntekterDto),
-        manueltRedigert = true,
-        timestamp = now(),
-    )
-
 fun mapToDetachedInntekt(guiInntekt: GUIInntekt): DetachedInntekt =
     DetachedInntekt(
         InntektkomponentResponse(
@@ -45,59 +31,6 @@ fun mapToDetachedInntekt(guiInntekt: GUIInntekt): DetachedInntekt =
         ),
         guiInntekt.manueltRedigert,
     )
-
-private fun mapToInntektkomponentResponse(inntekterDto: InntekterDto): InntektkomponentResponse {
-    val arbeidsInntektMaaneder: MutableList<ArbeidsInntektMaaned> = mutableListOf()
-
-    inntekterDto.virksomheter.forEach { virksomhet ->
-        arbeidsInntektMaaneder.addAll(
-            virksomhet.inntekter?.map {
-                ArbeidsInntektMaaned(
-                    it.aarMaaned,
-                    virksomhet.avvikListe,
-                    ArbeidsInntektInformasjon(
-                        virksomhet.inntekter.map { inntektMaaned ->
-                            Inntekt(
-                                inntektMaaned.belop,
-                                inntektMaaned.inntektskilde,
-                                inntektMaaned.beskrivelse,
-                                inntektMaaned.inntektskilde,
-                                inntektMaaned.inntektsstatus,
-                                inntektMaaned.inntektsperiodetype ?: "Maaned",
-                                inntektMaaned.leveringstidspunkt,
-                                inntektMaaned.opptjeningsland,
-                                inntektMaaned.opptjeningsperiode,
-                                inntektMaaned.skattemessigBosattLand,
-                                inntektMaaned.utbetaltIMaaned,
-                                // TODO: Er det mottaker som skal brukes her?
-                                mapToAktoerNaturligIdent(inntekterDto.mottaker.pnr),
-                                // TODO: Er det virksomhet som skal brukes her?
-                                mapToAktoerOrganisasjon(virksomhet),
-                                mapToAktoerOrganisasjon(virksomhet),
-                                mapToAktoerNaturligIdent(inntekterDto.mottaker.pnr),
-                                inntektMaaned.inngaarIGrunnlagForTrekk,
-                                inntektMaaned.utloeserArbeidsgiveravgift,
-                                inntektMaaned.informasjonsstatus,
-                                inntektMaaned.inntektType,
-                                inntektMaaned.tilleggsinformasjon,
-                            )
-                        },
-                    ),
-                )
-            } ?: listOf(),
-        )
-    }
-
-    return InntektkomponentResponse(
-        arbeidsInntektMaaneder,
-        mapToAktoerNaturligIdent(inntekterDto.mottaker.pnr),
-    )
-}
-
-private fun mapToAktoerOrganisasjon(virksomhet: Virksomhet): Aktoer = Aktoer(AktoerType.ORGANISASJON, virksomhet.virksomhetsnummer)
-
-private fun mapToAktoerNaturligIdent(fnr: String?): Aktoer =
-    Aktoer(AktoerType.NATURLIG_IDENT, fnr ?: throw IllegalArgumentException("Fødselsenummer mangler"))
 
 private fun mapToArbeidsInntektMaaneder(arbeidsMaaneder: List<GUIArbeidsInntektMaaned>?): List<ArbeidsInntektMaaned>? =
     arbeidsMaaneder?.map { guiArbeidsInntektMaaned ->

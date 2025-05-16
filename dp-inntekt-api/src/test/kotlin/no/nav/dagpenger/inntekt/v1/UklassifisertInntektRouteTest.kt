@@ -2,12 +2,15 @@ package no.nav.dagpenger.inntekt.v1
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.huxhorn.sulky.ulid.ULID
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.HttpStatusCode.Companion.BadRequest
+import io.ktor.http.HttpStatusCode.Companion.OK
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -37,7 +40,6 @@ import no.nav.dagpenger.inntekt.mapping.GUIArbeidsInntektMaaned
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
 import no.nav.dagpenger.inntekt.mapping.GUIInntektsKomponentResponse
 import no.nav.dagpenger.inntekt.mapping.InntektMedVerdikode
-import no.nav.dagpenger.inntekt.mapping.InntekterDto
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
@@ -46,6 +48,7 @@ import no.nav.dagpenger.inntekt.v1.TestApplication.TEST_OAUTH_USER
 import no.nav.dagpenger.inntekt.v1.TestApplication.autentisert
 import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
 import no.nav.dagpenger.inntekt.v1.TestApplication.withMockAuthServerAndTestApplication
+import no.nav.dagpenger.inntekt.v1.models.InntekterDto
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -212,7 +215,7 @@ internal class UklassifisertInntektRouteTest {
                     "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/blabla",
                 )
 
-            assertEquals(HttpStatusCode.BadRequest, response.status)
+            assertEquals(BadRequest, response.status)
         }
 
     @Test
@@ -230,7 +233,7 @@ internal class UklassifisertInntektRouteTest {
                     endepunkt = "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
                 )
 
-            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(OK, response.status)
             val storedInntekt =
                 jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
             assertEquals(storedInntekt.inntektId, inntektId)
@@ -250,7 +253,7 @@ internal class UklassifisertInntektRouteTest {
                     httpMethod = HttpMethod.Get,
                     endepunkt = "$uklassifisertInntekt/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
                 )
-            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(OK, response.status)
             val uncachedInntekt =
                 jacksonObjectMapper.readValue<DetachedInntekt>(response.bodyAsText())
             assertEquals(emptyInntekt.ident, uncachedInntekt.inntekt.ident)
@@ -280,7 +283,7 @@ internal class UklassifisertInntektRouteTest {
                     endepunkt = "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
                     body = jacksonObjectMapper.writeValueAsString(guiInntekt),
                 )
-            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(OK, response.status)
             val uncachedInntekt =
                 jacksonObjectMapper.readValue<DetachedInntekt>(response.bodyAsText())
             assertEquals(emptyInntekt.ident, uncachedInntekt.inntekt.ident)
@@ -310,7 +313,7 @@ internal class UklassifisertInntektRouteTest {
                     endepunkt = "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
                     body = jacksonObjectMapper.writeValueAsString(guiInntekt),
                 )
-            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(OK, response.status)
             val storedInntekt =
                 jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
             assertEquals(storedInntekt.inntektId, inntektId)
@@ -372,7 +375,7 @@ internal class UklassifisertInntektRouteTest {
                     body = body.replace(oldValue = "123", newValue = ""),
                 )
 
-            response.status shouldBe HttpStatusCode.BadRequest
+            response.status shouldBe BadRequest
         }
 
     @Test
@@ -399,7 +402,7 @@ internal class UklassifisertInntektRouteTest {
                     endepunkt = "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
                     body = jacksonObjectMapper.writeValueAsString(guiInntekt),
                 )
-            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(OK, response.status)
             val storedInntekt =
                 jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
             assertEquals(storedInntekt.inntektId, inntektId)
@@ -430,7 +433,7 @@ internal class UklassifisertInntektRouteTest {
                     endepunkt = "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
                     body = jacksonObjectMapper.writeValueAsString(guiInntekt),
                 )
-            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(OK, response.status)
             val storedInntekt =
                 jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
             assertEquals(storedInntekt.inntektId, inntektId)
@@ -451,9 +454,28 @@ internal class UklassifisertInntektRouteTest {
                     httpMethod = HttpMethod.Get,
                     endepunkt = "v1/inntekt/verdikoder",
                 )
-            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals(OK, response.status)
             assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
             assertTrue(runCatching { jacksonObjectMapper.readValue<Set<String>>(response.bodyAsText()) }.isSuccess)
+        }
+
+    @Test
+    fun `Get request for uklassifisert inntekt med ugyldig inntektID returnerer 400 BAD REQUEST`() =
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                inntektskomponentClient = inntektskomponentClientMock,
+                inntektStore = inntektStoreMock,
+                personOppslag = personOppslagMock,
+                enhetsregisterClient = mockk<EnhetsregisterClient>(),
+            ),
+        ) {
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Get,
+                    endepunkt = "$uklassifisertInntekt/UGYLDIG_ID",
+                )
+
+            response.status shouldBe BadRequest
         }
 
     @Test
@@ -490,21 +512,20 @@ internal class UklassifisertInntektRouteTest {
                     endepunkt = "$uklassifisertInntekt/${inntektId.id}",
                 )
 
-            assertEquals(HttpStatusCode.OK, response.status)
-            val storedInntekt =
-                jacksonObjectMapper.readValue<InntekterDto>(response.bodyAsText())
-            assertEquals(2, storedInntekt.virksomheter.size)
-            assertEquals(4, storedInntekt.virksomheter[0].inntekter?.size)
-            assertEquals("1111111", storedInntekt.virksomheter.first().virksomhetsnummer)
-            assertEquals("Test Org", storedInntekt.virksomheter.first().virksomhetsnavn)
-            assertEquals("2222222", storedInntekt.virksomheter[1].virksomhetsnummer)
-            assertEquals("", storedInntekt.virksomheter[1].virksomhetsnavn)
+            response.status shouldBe OK
+            val storedInntekt = jacksonObjectMapper.readValue<InntekterDto>(response.bodyAsText())
+            storedInntekt.virksomheter shouldHaveSize 2
+            storedInntekt.virksomheter[0].inntekter?.shouldHaveSize(4)
+            storedInntekt.virksomheter.first().virksomhetsnummer shouldBe "1111111"
+            storedInntekt.virksomheter.first().virksomhetsnavn shouldBe "Test Org"
+            storedInntekt.virksomheter[1].virksomhetsnummer shouldBe "2222222"
+            storedInntekt.virksomheter[1].virksomhetsnavn shouldBe ""
         }
     }
 
     @Test
-    fun `Post request for uklassifisert inntekt med inntektId lagrer og returnerer ny ID`() {
-        return withMockAuthServerAndTestApplication(
+    fun `Post request for uklassifisert inntekt med inntektId lagrer og returnerer ny ID`() =
+        withMockAuthServerAndTestApplication(
             moduleFunction =
                 mockInntektApi(
                     inntektskomponentClient = inntektskomponentClientMock,
@@ -549,5 +570,4 @@ internal class UklassifisertInntektRouteTest {
             storeInntektCommandSlot.captured.manueltRedigert.shouldNotBeNull()
             storeInntektCommandSlot.captured.manueltRedigert!!.redigertAv shouldBe TEST_OAUTH_USER
         }
-    }
 }

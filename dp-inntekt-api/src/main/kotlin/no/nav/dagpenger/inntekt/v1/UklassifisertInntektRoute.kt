@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import mu.withLoggingContext
+import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.Inntektparametre
@@ -28,7 +29,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
-import no.nav.dagpenger.inntekt.mapping.InntekterDto
 import no.nav.dagpenger.inntekt.mapping.Inntektsmottaker
 import no.nav.dagpenger.inntekt.mapping.OrganisasjonNavnOgIdMapping
 import no.nav.dagpenger.inntekt.mapping.dataGrunnlagKlassifiseringToVerdikode
@@ -40,6 +40,8 @@ import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
+import no.nav.dagpenger.inntekt.v1.models.InntekterDto
+import no.nav.dagpenger.inntekt.v1.models.mapToStoredInntekt
 import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
@@ -140,11 +142,7 @@ fun Route.uklassifisertInntekt(
         route("/uklassifisert/{inntektId}") {
             get {
                 withContext(Dispatchers.IO) {
-                    val inntektId =
-                        call.parameters["inntektId"]?.let {
-                            no.nav.dagpenger.inntekt.db
-                                .InntektId(it)
-                        } ?: throw IllegalArgumentException("Missing inntektId")
+                    val inntektId = InntektId(call.parameters["inntektId"]!!)
                     inntektStore
                         .getInntektMedPersonFnr(inntektId)
                         .let {
@@ -171,33 +169,38 @@ fun Route.uklassifisertInntekt(
             post {
                 withContext(Dispatchers.IO) {
                     val inntektId = call.parameters["inntektId"]!!
-                    mapToStoredInntekt(
-                        inntekterDto = call.receive<InntekterDto>(),
-                        inntektId = inntektId,
-                    ).let {
-                        val inntektPersonMapping = inntektStore.getInntektPersonMapping(inntektId)
-                        inntektStore.storeInntekt(
-                            StoreInntektCommand(
-                                inntektparametre =
-                                    Inntektparametre(
-                                        aktørId = inntektPersonMapping.aktørId,
-                                        fødselsnummer = it.inntekt.ident.identifikator,
-                                        regelkontekst = RegelKontekst(inntektPersonMapping.kontekstId, inntektPersonMapping.kontekstType),
-                                        beregningsdato = inntektPersonMapping.beregningsdato,
-                                    ),
-                                inntekt = it.inntekt,
-                                manueltRedigert =
-                                    ManueltRedigert.from(
-                                        true,
-                                        call.getSubject(),
-                                    ),
-                            ),
-                        )
-                    }.let {
-                        call.respond(HttpStatusCode.OK, it.inntektId.id)
-                    }.also {
-                        inntektKorrigeringCounter.inc()
-                    }
+                    call
+                        .receive<InntekterDto>()
+                        .mapToStoredInntekt(
+                            inntektId = inntektId,
+                        ).let {
+                            val inntektPersonMapping = inntektStore.getInntektPersonMapping(inntektId)
+                            inntektStore.storeInntekt(
+                                StoreInntektCommand(
+                                    inntektparametre =
+                                        Inntektparametre(
+                                            aktørId = inntektPersonMapping.aktørId,
+                                            fødselsnummer = it.inntekt.ident.identifikator,
+                                            regelkontekst =
+                                                RegelKontekst(
+                                                    inntektPersonMapping.kontekstId,
+                                                    inntektPersonMapping.kontekstType,
+                                                ),
+                                            beregningsdato = inntektPersonMapping.beregningsdato,
+                                        ),
+                                    inntekt = it.inntekt,
+                                    manueltRedigert =
+                                        ManueltRedigert.from(
+                                            true,
+                                            call.getSubject(),
+                                        ),
+                                ),
+                            )
+                        }.let {
+                            call.respond(HttpStatusCode.OK, it.inntektId.id)
+                        }.also {
+                            inntektKorrigeringCounter.inc()
+                        }
                 }
             }
         }
