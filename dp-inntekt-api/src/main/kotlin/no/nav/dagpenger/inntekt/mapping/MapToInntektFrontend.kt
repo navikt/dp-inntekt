@@ -74,9 +74,24 @@ fun InntektkomponentResponse.mapToFrontend(
                                 til = arbeidsInntektMaaned.aarMaaned,
                             ),
                         inntekter = inntekter,
-                        avvikListe =
-                            arbeidsInntektMaaned.avvikListe?.filter { it.virksomhet?.identifikator == virksomhet?.identifikator }
-                                ?: emptyList(),
+                        avvikListe = mutableListOf(),
+                    ),
+                )
+            }
+        }
+
+        arbeidsInntektMaaned.avvikListe?.forEach { avvik ->
+            val virksomhet = virksomheter.find { it.virksomhetsnummer == avvik.virksomhet?.identifikator }
+            if (virksomhet != null) {
+                virksomhet.avvikListe.add(avvik)
+            } else {
+                virksomheter.add(
+                    Virksomhet(
+                        virksomhetsnummer = avvik.virksomhet?.identifikator ?: "",
+                        virksomhetsnavn = "",
+                        periode = null,
+                        inntekter = null,
+                        avvikListe = mutableListOf(avvik),
                     ),
                 )
             }
@@ -95,7 +110,7 @@ data class Virksomhet(
     var periode: InntektPeriode?,
     val inntekter: MutableList<InntektMaaned>?,
     var totalBeløp: BigDecimal? = inntekter?.sumOf { it.belop } ?: BigDecimal.ZERO,
-    val avvikListe: List<Avvik>,
+    val avvikListe: MutableList<Avvik>,
 )
 
 data class InntektPeriode(

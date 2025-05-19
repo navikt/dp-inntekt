@@ -66,7 +66,7 @@ private fun mapToInntektkomponentResponse(inntekterDto: InntekterDto): Inntektko
             avvik.add(it)
             inntektPerÅrOgMåned.put(
                 it.avvikPeriode,
-                Pair(inntektPerÅrOgMåned[it.avvikPeriode]?.first ?: mutableListOf(), avvik),
+                Pair(inntektPerÅrOgMåned[it.avvikPeriode]?.first, avvik),
             )
         }
     }
