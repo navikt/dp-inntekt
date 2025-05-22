@@ -18,6 +18,7 @@ spec:
   webproxy: true
   liveness:
     path: /isAlive
+    initialDelay: 60
   readiness:
     path: /isReady
   prometheus:
