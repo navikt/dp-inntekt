@@ -13,7 +13,7 @@ import java.time.YearMonth
 
 fun InntektkomponentResponse.mapToFrontend(
     person: Inntektsmottaker,
-    organisasjonsInfoListe: List<OrganisasjonNavnOgIdMapping>,
+    organisasjoner: List<Organisasjon>,
 ): InntekterDto {
     val inntekt = arbeidsInntektMaaned
     val virksomheter: MutableList<Virksomhet> = mutableListOf()
@@ -22,9 +22,7 @@ fun InntektkomponentResponse.mapToFrontend(
         val inntektsInformasjon = arbeidsInntektMaaned.arbeidsInntektInformasjon
         inntektsInformasjon?.inntektListe?.forEach { inntekt ->
             val virksomhet = inntekt.virksomhet
-            val virksomhetNavn =
-                organisasjonsInfoListe.find { it.organisasjonsnummer == virksomhet?.identifikator }?.organisasjonNavn
-                    ?: ""
+            val virksomhetNavn = organisasjoner.find { it.organisasjonsnummer == virksomhet?.identifikator }?.navn ?: ""
             val inntekter = mutableListOf<InntektMaaned>()
             inntekter.add(
                 InntektMaaned(
@@ -142,4 +140,9 @@ data class InntektMaaned(
     val redigert: Boolean,
     val begrunnelse: String,
     val aarMaaned: YearMonth,
+)
+
+data class Organisasjon(
+    val organisasjonsnummer: String,
+    val navn: String,
 )
