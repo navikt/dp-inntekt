@@ -65,8 +65,3 @@ data class InntektMedVerdikode(
     val tilleggsinformasjon: TilleggInformasjon? = null,
     val verdikode: String,
 )
-
-data class OrganisasjonNavnOgIdMapping(
-    val organisasjonsnummer: String,
-    val organisasjonNavn: String,
-)

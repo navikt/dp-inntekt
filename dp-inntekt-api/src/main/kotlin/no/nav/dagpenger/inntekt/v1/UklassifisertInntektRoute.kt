@@ -30,7 +30,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
 import no.nav.dagpenger.inntekt.mapping.Inntektsmottaker
-import no.nav.dagpenger.inntekt.mapping.OrganisasjonNavnOgIdMapping
+import no.nav.dagpenger.inntekt.mapping.Organisasjon
 import no.nav.dagpenger.inntekt.mapping.dataGrunnlagKlassifiseringToVerdikode
 import no.nav.dagpenger.inntekt.mapping.mapToDetachedInntekt
 import no.nav.dagpenger.inntekt.mapping.mapToFrontend
@@ -150,8 +150,8 @@ fun Route.uklassifisertInntekt(
                         .let {
                             val person = personOppslag.hentPerson(it.fødselsnummer)
                             val inntektsmottaker = Inntektsmottaker(it.fødselsnummer, person.sammensattNavn())
-                            val hentOrganisasjonsInfoListe =
-                                hentOrganisasjonNavn(
+                            val organisasjoner =
+                                hentOrganisasjoner(
                                     enhetsregisterClient,
                                     it.inntekt.arbeidsInntektMaaned
                                         ?.flatMap { it.arbeidsInntektInformasjon?.inntektListe.orEmpty() }
@@ -162,7 +162,7 @@ fun Route.uklassifisertInntekt(
                                         ?.toTypedArray()
                                         ?.toList() ?: emptyList(),
                                 )
-                            it.inntekt.mapToFrontend(inntektsmottaker, hentOrganisasjonsInfoListe)
+                            it.inntekt.mapToFrontend(inntektsmottaker, organisasjoner)
                         }.let {
                             call.respond(HttpStatusCode.OK, it)
                         }
@@ -280,11 +280,11 @@ fun Route.uklassifisertInntekt(
     }
 }
 
-private suspend fun hentOrganisasjonNavn(
+private suspend fun hentOrganisasjoner(
     enhetsregisterClient: EnhetsregisterClient,
     organisasjonsNummerListe: List<String>?,
-): MutableList<OrganisasjonNavnOgIdMapping> {
-    val organisasjonNavnOgIdMappingListe = mutableListOf<OrganisasjonNavnOgIdMapping>()
+): List<Organisasjon> {
+    val organisasjoner = mutableListOf<Organisasjon>()
     organisasjonsNummerListe?.forEach { orgNr ->
         runCatching {
             enhetsregisterClient.hentEnhet(orgNr)
@@ -292,15 +292,15 @@ private suspend fun hentOrganisasjonNavn(
             logger.error(it) { "Feil ved henting av organisasjonsnavn for $it" }
         }.onSuccess {
             val organisasjonsNavnOgIdMapping =
-                OrganisasjonNavnOgIdMapping(
+                Organisasjon(
                     organisasjonsnummer = orgNr,
-                    organisasjonNavn = it,
+                    navn = it,
                 )
-            organisasjonNavnOgIdMappingListe.add(organisasjonsNavnOgIdMapping)
+            organisasjoner.add(organisasjonsNavnOgIdMapping)
         }
     }
 
-    return organisasjonNavnOgIdMappingListe
+    return organisasjoner
 }
 
 private fun ApplicationCall.getSubject(): String {
