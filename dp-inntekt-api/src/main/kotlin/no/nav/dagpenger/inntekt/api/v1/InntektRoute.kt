@@ -1,7 +1,6 @@
-package no.nav.dagpenger.inntekt.v1
+package no.nav.dagpenger.inntekt.api.v1
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.plugins.MissingRequestParameterException
 import io.ktor.server.plugins.callid.callId
 import io.ktor.server.request.receive

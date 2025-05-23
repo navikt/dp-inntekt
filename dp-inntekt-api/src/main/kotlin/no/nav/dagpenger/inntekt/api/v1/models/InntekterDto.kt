@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.v1.models
+package no.nav.dagpenger.inntekt.api.v1.models
 
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.StoredInntekt

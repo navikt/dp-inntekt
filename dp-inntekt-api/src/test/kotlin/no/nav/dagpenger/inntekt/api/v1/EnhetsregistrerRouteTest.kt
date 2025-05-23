@@ -1,13 +1,13 @@
-package no.nav.dagpenger.inntekt.v1
+package no.nav.dagpenger.inntekt.api.v1
 
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
 import io.mockk.coEvery
 import io.mockk.mockk
+import no.nav.dagpenger.inntekt.api.v1.TestApplication.mockInntektApi
+import no.nav.dagpenger.inntekt.api.v1.TestApplication.withMockAuthServerAndTestApplication
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
-import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
-import no.nav.dagpenger.inntekt.v1.TestApplication.withMockAuthServerAndTestApplication
 import org.junit.jupiter.api.Test
 
 internal class EnhetsregistrerRouteTest {

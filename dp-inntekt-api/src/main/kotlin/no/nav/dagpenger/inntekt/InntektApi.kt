@@ -32,6 +32,10 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
 import mu.KotlinLogging
+import no.nav.dagpenger.inntekt.api.v1.enhetsregisteret
+import no.nav.dagpenger.inntekt.api.v1.inntekt
+import no.nav.dagpenger.inntekt.api.v1.opptjeningsperiodeApi
+import no.nav.dagpenger.inntekt.api.v1.uklassifisertInntekt
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -41,10 +45,6 @@ import no.nav.dagpenger.inntekt.oppslag.PersonNotFoundException
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
-import no.nav.dagpenger.inntekt.v1.enhetsregisteret
-import no.nav.dagpenger.inntekt.v1.inntekt
-import no.nav.dagpenger.inntekt.v1.opptjeningsperiodeApi
-import no.nav.dagpenger.inntekt.v1.uklassifisertInntekt
 import org.slf4j.event.Level
 import java.net.URI
 

@@ -299,5 +299,9 @@
   "mottaker": {
     "pnr": "19876543210",
     "navn": "Navn Navnesen"
+  },
+  "periode": {
+    "fraOgMed": "2000-12",
+    "tilOgMed": "2025-04"
   }
 }
