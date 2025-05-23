@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.v1
+package no.nav.dagpenger.inntekt.api.v1
 
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode

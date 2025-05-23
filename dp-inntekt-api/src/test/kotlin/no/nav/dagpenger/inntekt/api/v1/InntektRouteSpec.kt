@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.v1
+package no.nav.dagpenger.inntekt.api.v1
 
 import de.huxhorn.sulky.ulid.ULID
 import io.kotest.assertions.assertSoftly
@@ -18,6 +18,10 @@ import io.mockk.mockk
 import io.mockk.spyk
 import no.bekk.bekkopen.person.FodselsnummerCalculator.getFodselsnummerForDate
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
+import no.nav.dagpenger.inntekt.api.v1.TestApplication.autentisert
+import no.nav.dagpenger.inntekt.api.v1.TestApplication.mockInntektApi
+import no.nav.dagpenger.inntekt.api.v1.TestApplication.testOAuthToken
+import no.nav.dagpenger.inntekt.api.v1.TestApplication.withMockAuthServerAndTestApplication
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.Inntektparametre
@@ -30,10 +34,10 @@ import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonNotFoundException
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
-import no.nav.dagpenger.inntekt.v1.TestApplication.autentisert
-import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
-import no.nav.dagpenger.inntekt.v1.TestApplication.testOAuthToken
-import no.nav.dagpenger.inntekt.v1.TestApplication.withMockAuthServerAndTestApplication
+import no.nav.dagpenger.inntekt.v1.Inntekt
+import no.nav.dagpenger.inntekt.v1.InntektKlasse
+import no.nav.dagpenger.inntekt.v1.KlassifisertInntekt
+import no.nav.dagpenger.inntekt.v1.KlassifisertInntektMåned
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.YearMonth
@@ -45,7 +49,11 @@ internal class InntektRouteSpec {
     private val fnr =
         getFodselsnummerForDate(
             Date.from(
-                LocalDate.now().minusYears(20).atStartOfDay(ZoneId.systemDefault()).toInstant(),
+                LocalDate
+                    .now()
+                    .minusYears(20)
+                    .atStartOfDay(ZoneId.systemDefault())
+                    .toInstant(),
             ),
         ).personnummer
     private val ulid = ULID().nextULID()
