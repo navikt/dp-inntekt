@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.v1
+package no.nav.dagpenger.inntekt.api.v1
 
 import com.natpryce.konfig.Configuration
 import com.natpryce.konfig.ConfigurationMap
@@ -37,14 +37,15 @@ internal object TestApplication {
         }
     }
     val testOAuthToken: String by lazy {
-        mockOAuth2Server.issueToken(
-            issuerId = ISSUER_ID,
-            subject = TEST_OAUTH_USER,
-        ).serialize()
+        mockOAuth2Server
+            .issueToken(
+                issuerId = ISSUER_ID,
+                subject = TEST_OAUTH_USER,
+            ).serialize()
     }
 
-    private fun config(): Configuration {
-        return Config.config overriding
+    private fun config(): Configuration =
+        Config.config overriding
             ConfigurationMap(
                 mapOf(
                     "AZURE_OPENID_CONFIG_JWKS_URI" to mockOAuth2Server.jwksUrl(ISSUER_ID).toString(),
@@ -52,7 +53,6 @@ internal object TestApplication {
                     "AZURE_APP_CLIENT_ID" to ISSUER_ID,
                 ),
             )
-    }
 
     internal fun mockInntektApi(
         inntektskomponentClient: InntektskomponentClient = mockk(),
@@ -78,11 +78,9 @@ internal object TestApplication {
     internal fun withMockAuthServerAndTestApplication(
         moduleFunction: Application.() -> Unit = mockInntektApi(),
         test: suspend ApplicationTestBuilder.() -> Unit,
-    ) {
-        return testApplication {
-            application(moduleFunction)
-            test()
-        }
+    ) = testApplication {
+        application(moduleFunction)
+        test()
     }
 
     internal suspend fun ApplicationTestBuilder.autentisert(

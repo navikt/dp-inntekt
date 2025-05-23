@@ -1,7 +1,6 @@
-package no.nav.dagpenger.inntekt.v1
+package no.nav.dagpenger.inntekt.api.v1
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -9,11 +8,11 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import no.nav.dagpenger.inntekt.api.v1.models.InntjeningsperiodeParametre
+import no.nav.dagpenger.inntekt.api.v1.models.InntjeningsperiodeResultat
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
-import no.nav.dagpenger.inntekt.v1.models.InntjeningsperiodeParametre
-import no.nav.dagpenger.inntekt.v1.models.InntjeningsperiodeResultat
 import java.time.LocalDate
 
 fun Route.opptjeningsperiodeApi(inntektStore: InntektStore) {

@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.v1
+package no.nav.dagpenger.inntekt.api.v1
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.huxhorn.sulky.ulid.ULID
@@ -18,6 +18,11 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.Problem
+import no.nav.dagpenger.inntekt.api.v1.TestApplication.TEST_OAUTH_USER
+import no.nav.dagpenger.inntekt.api.v1.TestApplication.autentisert
+import no.nav.dagpenger.inntekt.api.v1.TestApplication.mockInntektApi
+import no.nav.dagpenger.inntekt.api.v1.TestApplication.withMockAuthServerAndTestApplication
+import no.nav.dagpenger.inntekt.api.v1.models.InntekterDto
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektPersonMapping
@@ -27,7 +32,7 @@ import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.db.StoredInntekt
-import no.nav.dagpenger.inntekt.db.StoredInntektMedFnr
+import no.nav.dagpenger.inntekt.db.StoredInntektMedMetadata
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
@@ -44,11 +49,6 @@ import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
-import no.nav.dagpenger.inntekt.v1.TestApplication.TEST_OAUTH_USER
-import no.nav.dagpenger.inntekt.v1.TestApplication.autentisert
-import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
-import no.nav.dagpenger.inntekt.v1.TestApplication.withMockAuthServerAndTestApplication
-import no.nav.dagpenger.inntekt.v1.models.InntekterDto
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -495,9 +495,9 @@ internal class UklassifisertInntektRouteTest {
                     .getResource("/test-data/example-inntekt-med-inntektId-payload.json")
                     ?.readText()
             every {
-                inntektStoreMock.getInntektMedPersonFnr(inntektId)
+                inntektStoreMock.getStoredInntektMedMetadata(inntektId)
             } returns
-                StoredInntektMedFnr(
+                StoredInntektMedMetadata(
                     inntektId,
                     inntekt =
                         jacksonObjectMapper.readValue(body!!),

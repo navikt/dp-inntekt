@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.v1.models
+package no.nav.dagpenger.inntekt.api.v1.models
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.huxhorn.sulky.ulid.ULID

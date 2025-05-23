@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.v1
+package no.nav.dagpenger.inntekt.api.v1
 
 import com.auth0.jwt.exceptions.JWTDecodeException
 import io.ktor.http.HttpStatusCode
@@ -18,6 +18,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import mu.withLoggingContext
+import no.nav.dagpenger.inntekt.api.v1.models.InntekterDto
+import no.nav.dagpenger.inntekt.api.v1.models.mapToStoredInntekt
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -40,8 +42,6 @@ import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
-import no.nav.dagpenger.inntekt.v1.models.InntekterDto
-import no.nav.dagpenger.inntekt.v1.models.mapToStoredInntekt
 import java.time.LocalDate
 import kotlin.coroutines.CoroutineContext
 
