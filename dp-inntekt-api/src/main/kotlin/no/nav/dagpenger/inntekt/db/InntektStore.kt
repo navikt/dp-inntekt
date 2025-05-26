@@ -29,7 +29,7 @@ interface InntektStore {
 
     fun markerInntektBrukt(inntektId: InntektId): Int
 
-    fun getInntektMedPersonFnr(inntektId: InntektId): StoredInntektMedFnr
+    fun getStoredInntektMedMetadata(inntektId: InntektId): StoredInntektMedMetadata
 }
 
 data class Inntektparametre(
@@ -102,7 +102,7 @@ data class InntektId(
     }
 }
 
-data class StoredInntektMedFnr(
+data class StoredInntektMedMetadata(
     val inntektId: InntektId,
     val inntekt: InntektkomponentResponse,
     val manueltRedigert: Boolean,
