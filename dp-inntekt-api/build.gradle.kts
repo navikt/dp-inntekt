@@ -41,7 +41,7 @@ dependencies {
 
     implementation("io.prometheus:client_java:1.3.7")
     implementation("io.prometheus:prometheus-metrics-core:1.3.7")
-    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.3.7")
+    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.3.8")
 
     implementation("com.expediagroup:graphql-kotlin-client:$expediaGraphqlVersion")
     implementation("com.expediagroup:graphql-kotlin-ktor-client:$expediaGraphqlVersion")
