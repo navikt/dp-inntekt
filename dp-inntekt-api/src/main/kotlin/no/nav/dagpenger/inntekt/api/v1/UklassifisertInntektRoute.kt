@@ -146,7 +146,7 @@ fun Route.uklassifisertInntekt(
                 withContext(coroutineContext) {
                     val inntektId = InntektId(call.parameters["inntektId"]!!)
                     inntektStore
-                        .getInntektMedPersonFnr(inntektId)
+                        .getStoredInntektMedMetadata(inntektId)
                         .let {
                             val person = personOppslag.hentPerson(it.fødselsnummer)
                             val inntektsmottaker = Inntektsmottaker(it.fødselsnummer, person.sammensattNavn())

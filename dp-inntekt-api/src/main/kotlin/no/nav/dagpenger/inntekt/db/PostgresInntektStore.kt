@@ -187,7 +187,7 @@ internal class PostgresInntektStore(
         return mapToSpesifisertInntekt(stored.first, Opptjeningsperiode(stored.second).sisteAvsluttendeKalenderMåned)
     }
 
-    override fun getInntektMedPersonFnr(inntektId: InntektId): StoredInntektMedFnr {
+    override fun getStoredInntektMedMetadata(inntektId: InntektId): StoredInntektMedMetadata {
         @Language("sql")
         val statement =
             """ 
@@ -202,7 +202,7 @@ internal class PostgresInntektStore(
             session.run(
                 queryOf(statement, inntektId.id)
                     .map {
-                        StoredInntektMedFnr(
+                        StoredInntektMedMetadata(
                             inntektId = InntektId(it.string("id")),
                             inntekt = it.binaryStream("inntekt").use { jacksonObjectMapper.readValue<InntektkomponentResponse>(it) },
                             manueltRedigert = it.boolean("manuelt_redigert"),

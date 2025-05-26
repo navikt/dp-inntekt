@@ -36,6 +36,7 @@ import no.nav.dagpenger.inntekt.api.v1.enhetsregisteret
 import no.nav.dagpenger.inntekt.api.v1.inntekt
 import no.nav.dagpenger.inntekt.api.v1.opptjeningsperiodeApi
 import no.nav.dagpenger.inntekt.api.v1.uklassifisertInntekt
+import no.nav.dagpenger.inntekt.api.v3.inntektV3
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -60,7 +61,12 @@ internal fun Application.inntektApi(
     enhetsregisterClient: EnhetsregisterClient,
     healthChecks: List<HealthCheck>,
     collectorRegistry: PrometheusRegistry = PrometheusRegistry.defaultRegistry,
-    meterRegistry: PrometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, collectorRegistry, Clock.SYSTEM),
+    meterRegistry: PrometheusMeterRegistry =
+        PrometheusMeterRegistry(
+            PrometheusConfig.DEFAULT,
+            collectorRegistry,
+            Clock.SYSTEM,
+        ),
 ) {
     install(DefaultHeaders)
     install(MicrometerMetrics) {
@@ -230,6 +236,11 @@ internal fun Application.inntektApi(
                 authenticate("azure") {
                     inntekt(behandlingsInntektsGetter, personOppslag)
                 }
+            }
+        }
+        authenticate("azure") {
+            route("/v3/inntekt") {
+                inntektV3(behandlingsInntektsGetter, personOppslag)
             }
         }
         naischecks(healthChecks, meterRegistry)
