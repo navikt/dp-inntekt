@@ -73,7 +73,7 @@ spec:
       - collation: nb_NO.UTF8
         databases:
           - envVarPrefix: DB
-            name: inntekt-gjustering5
+            name: inntekt-gjustering6
         diskAutoresize: true
         diskType: SSD
         highAvailability: false
