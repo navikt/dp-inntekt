@@ -6,7 +6,9 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Date
 
-data class Opptjeningsperiode(val beregningsdato: LocalDate) {
+data class Opptjeningsperiode(
+    val beregningsdato: LocalDate,
+) {
     private val antattRapporteringsFrist = LocalDate.of(beregningsdato.year, beregningsdato.month, 5)
     private val reellRapporteringsFrist: LocalDate =
         finnFørsteArbeidsdagEtterRapporterteringsFrist(antattRapporteringsFrist)
@@ -16,21 +18,20 @@ data class Opptjeningsperiode(val beregningsdato: LocalDate) {
             else -> 1
         }
 
-    val sisteAvsluttendeKalenderMåned: YearMonth = beregningsdato.minusMonths(månedSubtraksjon).toYearMonth()
-    val førsteMåned: YearMonth = sisteAvsluttendeKalenderMåned.minusMonths(35)
+    var sisteAvsluttendeKalenderMåned: YearMonth = beregningsdato.minusMonths(månedSubtraksjon).toYearMonth()
+    var førsteMåned: YearMonth = sisteAvsluttendeKalenderMåned.minusMonths(35)
 
     fun sammeOpptjeningsPeriode(other: Opptjeningsperiode): Boolean =
         this.sisteAvsluttendeKalenderMåned == other.sisteAvsluttendeKalenderMåned
 
-    private tailrec fun finnFørsteArbeidsdagEtterRapporterteringsFrist(rapporteringsFrist: LocalDate): LocalDate {
-        return if (rapporteringsFrist.erArbeidsdag()) {
+    private tailrec fun finnFørsteArbeidsdagEtterRapporterteringsFrist(rapporteringsFrist: LocalDate): LocalDate =
+        if (rapporteringsFrist.erArbeidsdag()) {
             rapporteringsFrist
         } else {
             finnFørsteArbeidsdagEtterRapporterteringsFrist(
                 rapporteringsFrist.plusDays(1),
             )
         }
-    }
 
     private fun LocalDate.erArbeidsdag(): Boolean =
         NorwegianDateUtil.isWorkingDay(Date.from(this.atStartOfDay(ZoneId.systemDefault()).toInstant()))
