@@ -1,6 +1,8 @@
 package no.nav.dagpenger.inntekt.mapping
 
 import no.nav.dagpenger.inntekt.api.v1.models.InntekterDto
+import no.nav.dagpenger.inntekt.api.v1.models.PeriodeDto
+import no.nav.dagpenger.inntekt.db.StoredInntektPeriode
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Avvik
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
@@ -8,12 +10,16 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Periode
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
+import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.YearMonth
 
 fun InntektkomponentResponse.mapToFrontend(
     person: Inntektsmottaker,
     organisasjoner: List<Organisasjon>,
+    beregningsdato: LocalDate,
+    storedInntektPeriode: StoredInntektPeriode?,
 ): InntekterDto {
     val inntekt = arbeidsInntektMaaned
     val virksomheter: MutableList<Virksomhet> = mutableListOf()
@@ -97,6 +103,18 @@ fun InntektkomponentResponse.mapToFrontend(
     return InntekterDto(
         virksomheter = virksomheter,
         mottaker = person,
+        periode = getPeriode(storedInntektPeriode, beregningsdato),
+    )
+}
+
+private fun getPeriode(
+    storedInntektPeriode: StoredInntektPeriode?,
+    beregningsdato: LocalDate,
+): PeriodeDto {
+    val opptjeningsperiode = Opptjeningsperiode(beregningsdato)
+    return PeriodeDto(
+        storedInntektPeriode?.fraOgMed ?: opptjeningsperiode.førsteMåned,
+        storedInntektPeriode?.tilOgMed ?: opptjeningsperiode.sisteAvsluttendeKalenderMåned,
     )
 }
 

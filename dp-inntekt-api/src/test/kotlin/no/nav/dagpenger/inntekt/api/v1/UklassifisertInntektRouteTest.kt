@@ -52,6 +52,7 @@ import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalDate.now
 import java.time.LocalDateTime
 import java.time.YearMonth
 import kotlin.test.assertEquals
@@ -499,11 +500,12 @@ internal class UklassifisertInntektRouteTest {
             } returns
                 StoredInntektMedMetadata(
                     inntektId,
-                    inntekt =
-                        jacksonObjectMapper.readValue(body!!),
+                    inntekt = jacksonObjectMapper.readValue(body!!),
                     manueltRedigert = false,
                     timestamp = LocalDateTime.now(),
                     fødselsnummer = fødselsnummer,
+                    beregningsdato = now(),
+                    storedInntektPeriode = null,
                 )
 
             val response =
@@ -544,7 +546,7 @@ internal class UklassifisertInntektRouteTest {
                     aktørId = "123456789",
                     fnr = null,
                     kontekstId = "kontekstId",
-                    beregningsdato = LocalDate.now(),
+                    beregningsdato = now(),
                     timestamp = LocalDateTime.now(),
                     kontekstType = "kontekstType",
                 )
