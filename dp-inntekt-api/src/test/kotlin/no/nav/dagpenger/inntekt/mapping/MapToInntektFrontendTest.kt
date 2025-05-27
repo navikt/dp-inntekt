@@ -12,6 +12,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
+import java.time.LocalDate.now
 import java.time.YearMonth
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -189,6 +190,8 @@ class MapToInntektFrontendTest {
             inntektkomponentResponse.mapToFrontend(
                 mottaker,
                 organisasjoner,
+                beregningsdato = now(),
+                storedInntektPeriode = null,
             )
 
         assertEquals(2, mappedToInntektFrontend.virksomheter.size)
@@ -331,7 +334,12 @@ class MapToInntektFrontendTest {
             )
 
         val mapTilFrontendMedNullVirksomhet =
-            inntektkomponentResponseMedTomVirksomhet.mapToFrontend(mottaker, organisasjoner)
+            inntektkomponentResponseMedTomVirksomhet.mapToFrontend(
+                mottaker,
+                organisasjoner,
+                beregningsdato = now(),
+                storedInntektPeriode = null,
+            )
         assertEquals(3, mapTilFrontendMedNullVirksomhet.virksomheter.size)
         assertEquals(2, mapTilFrontendMedNullVirksomhet.virksomheter.filter { it.virksomhetsnummer == "" }.size)
         assertEquals(1, mapTilFrontendMedNullVirksomhet.virksomheter.filter { it.virksomhetsnummer == "896929120" }.size)

@@ -6,6 +6,7 @@ import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import no.nav.dagpenger.inntekt.v1.SpesifisertInntekt
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.YearMonth
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
@@ -108,6 +109,13 @@ data class StoredInntektMedMetadata(
     val manueltRedigert: Boolean,
     val timestamp: LocalDateTime? = null,
     val fødselsnummer: String,
+    val beregningsdato: LocalDate,
+    val storedInntektPeriode: StoredInntektPeriode?,
+)
+
+data class StoredInntektPeriode(
+    val fraOgMed: YearMonth?,
+    val tilOgMed: YearMonth?,
 )
 
 class InntektNotFoundException(
