@@ -29,7 +29,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = PostgresDataSourceBuilder.runMigration()
-            assertEquals(16, migrations, "Wrong number of migrations")
+            assertEquals(17, migrations, "Wrong number of migrations")
         }
     }
 
@@ -45,7 +45,7 @@ internal class PostgresTest {
     fun `Migration of testdata `() {
         withCleanDb {
             val migrations = PostgresDataSourceBuilder.runMigration(locations = listOf("db/migration", "db/testdata"))
-            assertEquals(21, migrations, "Wrong number of migrations")
+            assertEquals(22, migrations, "Wrong number of migrations")
         }
     }
 }
@@ -474,7 +474,9 @@ internal class InntektsStorePropertyTest : StringSpec() {
                         regelkontekst = RegelKontekst(kontekstId.next(it), "vedtak"),
                         fødselsnummer = aktørId.next(it),
                         beregningsdato =
-                            Arb.localDateTime(minYear = 2010, maxYear = LocalDate.now().year).next(it)
+                            Arb
+                                .localDateTime(minYear = 2010, maxYear = LocalDate.now().year)
+                                .next(it)
                                 .toLocalDate(),
                     ),
                 inntekt =
