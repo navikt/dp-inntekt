@@ -147,13 +147,13 @@ fun Route.uklassifisertInntekt(
                     val inntektId = InntektId(call.parameters["inntektId"]!!)
                     inntektStore
                         .getStoredInntektMedMetadata(inntektId)
-                        .let {
-                            val person = personOppslag.hentPerson(it.fødselsnummer)
-                            val inntektsmottaker = Inntektsmottaker(it.fødselsnummer, person.sammensattNavn())
+                        .let { storedInntektMedMetadata ->
+                            val person = personOppslag.hentPerson(storedInntektMedMetadata.fødselsnummer)
+                            val inntektsmottaker = Inntektsmottaker(storedInntektMedMetadata.fødselsnummer, person.sammensattNavn())
                             val organisasjoner =
                                 hentOrganisasjoner(
                                     enhetsregisterClient,
-                                    it.inntekt.arbeidsInntektMaaned
+                                    storedInntektMedMetadata.inntekt.arbeidsInntektMaaned
                                         ?.flatMap { it.arbeidsInntektInformasjon?.inntektListe.orEmpty() }
                                         ?.filter { inntekt ->
                                             inntekt.virksomhet?.aktoerType == AktoerType.ORGANISASJON &&
@@ -162,7 +162,12 @@ fun Route.uklassifisertInntekt(
                                         ?.toTypedArray()
                                         ?.toList() ?: emptyList(),
                                 )
-                            it.inntekt.mapToFrontend(inntektsmottaker, organisasjoner)
+                            storedInntektMedMetadata.inntekt.mapToFrontend(
+                                person = inntektsmottaker,
+                                organisasjoner = organisasjoner,
+                                beregningsdato = storedInntektMedMetadata.beregningsdato,
+                                storedInntektPeriode = storedInntektMedMetadata.storedInntektPeriode,
+                            )
                         }.let {
                             call.respond(HttpStatusCode.OK, it)
                         }

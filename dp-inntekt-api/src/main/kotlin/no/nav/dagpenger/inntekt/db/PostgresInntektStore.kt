@@ -18,6 +18,7 @@ import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZonedDateTime
 import javax.sql.DataSource
 
@@ -208,6 +209,12 @@ internal class PostgresInntektStore(
                             manueltRedigert = it.boolean("manuelt_redigert"),
                             timestamp = it.zonedDateTime("timestamp").toLocalDateTime(),
                             fødselsnummer = it.string("fnr"),
+                            beregningsdato = it.localDate("beregningsdato"),
+                            storedInntektPeriode =
+                                StoredInntektPeriode(
+                                    fraOgMed = it.localDateOrNull("periodeFraOgMed")?.let { localDate -> YearMonth.from(localDate) },
+                                    tilOgMed = it.localDateOrNull("periodeTilOgMed")?.let { localDate -> YearMonth.from(localDate) },
+                                ),
                         )
                     }.asSingle,
             ) ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
