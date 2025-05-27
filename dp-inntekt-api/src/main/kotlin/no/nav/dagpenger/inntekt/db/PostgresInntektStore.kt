@@ -242,7 +242,10 @@ internal class PostgresInntektStore(
                     )
                     tx.run(
                         queryOf(
-                            "INSERT INTO inntekt_V1_person_mapping(inntektId, aktørId, fnr, kontekstId, beregningsdato, kontekstType) VALUES (:inntektId, :aktorId, :fnr, :kontekstId, :beregningsdato, :kontekstType::kontekstTypeNavn)",
+                            """
+                            INSERT INTO inntekt_V1_person_mapping(inntektId, aktørId, fnr, kontekstId, beregningsdato, kontekstType, periodeFraOgMed, periodeTilOgMed) 
+                            VALUES (:inntektId, :aktorId, :fnr, :kontekstId, :beregningsdato, :kontekstType::kontekstTypeNavn, :periodeFraOgMed, :periodeTilOgMed)
+                            """.trimIndent(),
                             mapOf(
                                 "inntektId" to inntektId.id,
                                 "aktorId" to command.inntektparametre.aktørId,
@@ -250,6 +253,14 @@ internal class PostgresInntektStore(
                                 "kontekstId" to command.inntektparametre.regelkontekst.id,
                                 "kontekstType" to command.inntektparametre.regelkontekst.type,
                                 "beregningsdato" to command.inntektparametre.beregningsdato,
+                                "periodeFraOgMed" to
+                                    command.inntektparametre.opptjeningsperiode.førsteMåned.let {
+                                        LocalDate.of(it.year, it.month, 1)
+                                    },
+                                "periodeTilOgMed" to
+                                    command.inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned.let {
+                                        LocalDate.of(it.year, it.month, 1)
+                                    },
                             ),
                         ).asUpdate,
                     )
