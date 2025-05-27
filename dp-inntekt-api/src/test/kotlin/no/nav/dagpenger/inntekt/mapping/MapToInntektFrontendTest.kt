@@ -210,7 +210,7 @@ class MapToInntektFrontendTest {
             BigDecimal(100000),
             mappedToInntektFrontend.virksomheter
                 .filter { it.virksomhetsnummer == "896929119" }[0]
-                .totalBeløp,
+                .totalBelop,
         )
 
         assertEquals(
@@ -225,7 +225,7 @@ class MapToInntektFrontendTest {
             BigDecimal(50000),
             mappedToInntektFrontend.virksomheter
                 .filter { it.virksomhetsnummer == "896929120" }[0]
-                .totalBeløp,
+                .totalBelop,
         )
     }
 

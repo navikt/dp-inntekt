@@ -28,8 +28,6 @@ fun InntektkomponentResponse.mapToFrontend(
                 InntektMaaned(
                     belop = inntekt.beloep,
                     inntektskilde = inntekt.inntektskilde,
-                    redigert = false,
-                    begrunnelse = inntekt.beskrivelse.name,
                     aarMaaned = arbeidsInntektMaaned.aarMaaned,
                     fordel = inntekt.fordel,
                     beskrivelse = inntekt.beskrivelse,
@@ -60,7 +58,7 @@ fun InntektkomponentResponse.mapToFrontend(
                         fra = eksisterendeVirksomhet.inntekter!!.minOf { it.aarMaaned },
                         til = eksisterendeVirksomhet.inntekter.maxOf { it.aarMaaned },
                     )
-                eksisterendeVirksomhet.totalBeløp = eksisterendeVirksomhet.inntekter.sumOf { it.belop }
+                eksisterendeVirksomhet.totalBelop = eksisterendeVirksomhet.inntekter.sumOf { it.belop }
             } else {
                 virksomheter.add(
                     Virksomhet(
@@ -107,7 +105,7 @@ data class Virksomhet(
     val virksomhetsnavn: String,
     var periode: InntektPeriode?,
     val inntekter: MutableList<InntektMaaned>?,
-    var totalBeløp: BigDecimal? = inntekter?.sumOf { it.belop } ?: BigDecimal.ZERO,
+    var totalBelop: BigDecimal? = inntekter?.sumOf { it.belop } ?: BigDecimal.ZERO,
     val avvikListe: MutableList<Avvik>,
 )
 
@@ -137,8 +135,6 @@ data class InntektMaaned(
     val informasjonsstatus: String? = null,
     val inntektType: InntektType,
     val tilleggsinformasjon: TilleggInformasjon? = null,
-    val redigert: Boolean,
-    val begrunnelse: String,
     val aarMaaned: YearMonth,
 )
 

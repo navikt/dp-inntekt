@@ -50,8 +50,6 @@
               "spesielleInntjeningsforhold": "loennVedKonkursEllerStatsgarantiOsv"
             }
           },
-          "redigert": true,
-          "begrunnelse": "Standard",
           "aarMaaned": "2023-01"
         },
         {
@@ -90,12 +88,10 @@
           "informasjonsstatus": "InngaarAlltid",
           "inntektType": "NAERINGSINNTEKT",
           "tilleggsinformasjon": null,
-          "redigert": false,
-          "begrunnelse": "Ikke Standard",
           "aarMaaned": "2024-01"
         }
       ],
-      "totalBeløp": 60000.00,
+      "totalBelop": 60000.00,
       "avvikListe": [
         {
           "ident": {
@@ -175,8 +171,6 @@
           "informasjonsstatus": "InngaarAlltid",
           "inntektType": "LOENNSINNTEKT",
           "tilleggsinformasjon": null,
-          "redigert": true,
-          "begrunnelse": "Standard",
           "aarMaaned": "2025-02"
         },
         {
@@ -215,8 +209,6 @@
           "informasjonsstatus": "InngaarAlltid",
           "inntektType": "NAERINGSINNTEKT",
           "tilleggsinformasjon": null,
-          "redigert": true,
-          "begrunnelse": "Ikke Standard",
           "aarMaaned": "2025-03"
         },
         {
@@ -252,12 +244,10 @@
           "informasjonsstatus": "InngaarAlltid",
           "inntektType": "NAERINGSINNTEKT",
           "tilleggsinformasjon": null,
-          "redigert": false,
-          "begrunnelse": "Ikke Standard",
           "aarMaaned": "2024-01"
         }
       ],
-      "totalBeløp": 130000.00,
+      "totalBelop": 130000.00,
       "avvikListe": [
         {
           "ident": {
@@ -285,7 +275,7 @@
         "til": "2000-12"
       },
       "inntekter": [],
-      "totalBeløp": 0,
+      "totalBelop": 0,
       "avvikListe": [
         {
           "ident": {
