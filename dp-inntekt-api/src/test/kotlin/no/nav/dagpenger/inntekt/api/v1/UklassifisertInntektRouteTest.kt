@@ -569,6 +569,9 @@ internal class UklassifisertInntektRouteTest {
             storeInntektCommandSlot.captured.inntektparametre.regelkontekst.id shouldBe inntektPersonMapping.kontekstId
             storeInntektCommandSlot.captured.inntektparametre.regelkontekst.type shouldBe inntektPersonMapping.kontekstType
             storeInntektCommandSlot.captured.inntektparametre.beregningsdato shouldBe inntektPersonMapping.beregningsdato
+            storeInntektCommandSlot.captured.inntektparametre.opptjeningsperiode.førsteMåned shouldBe YearMonth.of(2000, 12)
+            storeInntektCommandSlot.captured.inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned shouldBe
+                YearMonth.of(2025, 4)
             storeInntektCommandSlot.captured.manueltRedigert.shouldNotBeNull()
             storeInntektCommandSlot.captured.manueltRedigert!!.redigertAv shouldBe TEST_OAUTH_USER
         }
