@@ -192,11 +192,10 @@ internal class PostgresInntektStore(
         @Language("sql")
         val statement =
             """ 
-            SELECT inntekt.id, inntekt.inntekt, inntekt.manuelt_redigert, inntekt.timestamp, mapping.fnr 
-            from inntekt_V1 inntekt 
-            inner join inntekt_V1_person_mapping mapping on inntekt.id = mapping.inntektid 
-            where inntekt.id = ?
-            
+            SELECT inntekt.id, inntekt.inntekt, inntekt.manuelt_redigert, inntekt.timestamp, mapping.fnr, mapping.beregningsdato, mapping.periodeFraOgMed, mapping.periodeTilOgMed
+            FROM inntekt_V1 inntekt
+            INNER JOIN inntekt_V1_person_mapping mapping ON inntekt.id = mapping.inntektid 
+            WHERE inntekt.id = ?
             """.trimIndent()
 
         return using(sessionOf(dataSource)) { session ->
