@@ -76,6 +76,7 @@ internal fun Application.inntektApi(
     install(StatusPages) {
         exception<Throwable> { call, cause ->
             LOGGER.error("Request failed!", cause)
+            LOGGER.error("Request failed! Cause: ${cause.message}")
             val error =
                 Problem(
                     type = URI("urn:dp:error:inntekt"),
