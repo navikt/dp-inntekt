@@ -165,8 +165,7 @@ fun Route.uklassifisertInntekt(
                             storedInntektMedMetadata.inntekt.mapToFrontend(
                                 person = inntektsmottaker,
                                 organisasjoner = organisasjoner,
-                                beregningsdato = storedInntektMedMetadata.beregningsdato,
-                                storedInntektPeriode = storedInntektMedMetadata.storedInntektPeriode,
+                                storedInntektMedMetadata,
                             )
                         }.let {
                             call.respond(HttpStatusCode.OK, it)
@@ -201,8 +200,9 @@ fun Route.uklassifisertInntekt(
                                     inntekt = it.inntekt,
                                     manueltRedigert =
                                         ManueltRedigert.from(
-                                            true,
-                                            call.getSubject(),
+                                            bool = true,
+                                            redigertAv = call.getSubject(),
+                                            begrunnelse = inntekterDto.begrunnelse,
                                         ),
                                 ),
                             )

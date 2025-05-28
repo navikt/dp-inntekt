@@ -42,7 +42,7 @@ internal class PostgresInntektStore(
         @Language("sql")
         val statement =
             """
-            SELECT redigert_av
+            SELECT redigert_av, begrunnelse
                 FROM inntekt_V1_manuelt_redigert
             WHERE inntekt_id = ?
             """.trimMargin()
@@ -51,7 +51,7 @@ internal class PostgresInntektStore(
                 session.run(
                     queryOf(statement, inntektId.id)
                         .map { row ->
-                            ManueltRedigert(row.string(1))
+                            ManueltRedigert(row.string("redigert_av"), row.string("begrunnelse"))
                         }.asSingle,
                 )
             }
@@ -192,9 +192,10 @@ internal class PostgresInntektStore(
         @Language("sql")
         val statement =
             """ 
-            SELECT inntekt.id, inntekt.inntekt, inntekt.manuelt_redigert, inntekt.timestamp, mapping.fnr, mapping.beregningsdato, mapping.periodeFraOgMed, mapping.periodeTilOgMed
+            SELECT inntekt.id, inntekt.inntekt, inntekt.manuelt_redigert, inntekt.timestamp, mapping.fnr, mapping.beregningsdato, mapping.periodeFraOgMed, mapping.periodeTilOgMed, manuelt_redigert.begrunnelse
             FROM inntekt_V1 inntekt
-            INNER JOIN inntekt_V1_person_mapping mapping ON inntekt.id = mapping.inntektid 
+            INNER JOIN inntekt_V1_person_mapping mapping ON inntekt.id = mapping.inntektid
+            LEFT JOIN inntekt_V1_manuelt_redigert manuelt_redigert ON inntekt.id = manuelt_redigert.inntektid
             WHERE inntekt.id = ?
             """.trimIndent()
 
@@ -214,6 +215,7 @@ internal class PostgresInntektStore(
                                     fraOgMed = it.localDateOrNull("periodeFraOgMed")?.let { localDate -> YearMonth.from(localDate) },
                                     tilOgMed = it.localDateOrNull("periodeTilOgMed")?.let { localDate -> YearMonth.from(localDate) },
                                 ),
+                            begrunnelse = it.stringOrNull("begrunnelse"),
                         )
                     }.asSingle,
             ) ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
@@ -272,12 +274,17 @@ internal class PostgresInntektStore(
                     )
 
                     command.manueltRedigert?.let {
+                        it.begrunnelse?.length?.let { lengde ->
+                            require(lengde <= 1024) { "Begrunnelsen kan ikke være lengre enn 1024 tegn." }
+                        }
+
                         tx.run(
                             queryOf(
-                                "INSERT INTO inntekt_V1_manuelt_redigert VALUES(:id,:redigert)",
+                                "INSERT INTO inntekt_V1_manuelt_redigert (inntekt_id, redigert_av, begrunnelse) VALUES(:id, :redigert, :begrunnelse)",
                                 mapOf(
                                     "id" to inntektId.id,
                                     "redigert" to it.redigertAv,
+                                    "begrunnelse" to it.begrunnelse,
                                 ),
                             ).asUpdate,
                         )

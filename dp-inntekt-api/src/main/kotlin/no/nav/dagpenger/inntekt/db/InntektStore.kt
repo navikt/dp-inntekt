@@ -67,13 +67,15 @@ data class InntektPersonMapping(
 
 data class ManueltRedigert(
     val redigertAv: String,
+    val begrunnelse: String? = null,
 ) {
     companion object {
         fun from(
             bool: Boolean,
             redigertAv: String,
+            begrunnelse: String? = null,
         ) = when (bool) {
-            true -> ManueltRedigert(redigertAv)
+            true -> ManueltRedigert(redigertAv, begrunnelse)
             false -> null
         }
     }
@@ -111,6 +113,7 @@ data class StoredInntektMedMetadata(
     val fødselsnummer: String,
     val beregningsdato: LocalDate,
     val storedInntektPeriode: StoredInntektPeriode?,
+    val begrunnelse: String? = null,
 )
 
 data class StoredInntektPeriode(
