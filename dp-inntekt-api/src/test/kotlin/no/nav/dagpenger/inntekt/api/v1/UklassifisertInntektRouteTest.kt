@@ -581,5 +581,6 @@ internal class UklassifisertInntektRouteTest {
                 YearMonth.of(2025, 4)
             storeInntektCommandSlot.captured.manueltRedigert.shouldNotBeNull()
             storeInntektCommandSlot.captured.manueltRedigert!!.redigertAv shouldBe TEST_OAUTH_USER
+            storeInntektCommandSlot.captured.manueltRedigert!!.begrunnelse shouldBe "Dette er en begrunnelse."
         }
 }

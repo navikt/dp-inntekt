@@ -18,6 +18,7 @@ data class InntekterDto(
     val virksomheter: List<Virksomhet>,
     val mottaker: Inntektsmottaker,
     val periode: PeriodeDto,
+    val begrunnelse: String? = null,
 )
 
 data class PeriodeDto(
