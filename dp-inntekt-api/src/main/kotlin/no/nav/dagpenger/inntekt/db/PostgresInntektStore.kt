@@ -95,7 +95,7 @@ internal class PostgresInntektStore(
 
     override fun getInntektPersonMapping(inntektId: String): InntektPersonMapping {
         @Language("sql")
-        val statement = "SELECT * FROM inntekt_V1_person_mapping WHERE inntektId = :inntektId)".trimMargin()
+        val statement = "SELECT * FROM inntekt_V1_person_mapping WHERE inntektId = :inntektId".trimMargin()
 
         return using(sessionOf(dataSource)) { session ->
             session.run(
@@ -105,7 +105,7 @@ internal class PostgresInntektStore(
                 ).map { row ->
                     InntektPersonMapping(
                         inntektId = InntektId(row.string("inntektid")),
-                        aktørId = row.string("aktorid"),
+                        aktørId = row.string("aktørid"),
                         fnr = row.string("fnr"),
                         kontekstId = row.string("kontekstid"),
                         beregningsdato = row.zonedDateTime("beregningsdato").toLocalDate(),
