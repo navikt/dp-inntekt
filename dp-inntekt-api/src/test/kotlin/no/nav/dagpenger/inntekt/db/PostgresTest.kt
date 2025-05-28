@@ -442,6 +442,43 @@ internal class PostgresInntektStoreTest {
     }
 
     @Test
+    fun `Hent inntekt_person_mapping`() {
+        withMigratedDb {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
+                val hentInntektListeResponse =
+                    InntektkomponentResponse(
+                        emptyList(),
+                        Aktoer(AktoerType.AKTOER_ID, "1234"),
+                    )
+                val inntektparametre =
+                    Inntektparametre(
+                        aktørId = "12345",
+                        fødselsnummer = "0987654321",
+                        beregningsdato = LocalDate.now(),
+                        regelkontekst = RegelKontekst("432", "vedtak"),
+                    )
+                val storedInntekt =
+                    storeInntekt(
+                        StoreInntektCommand(
+                            inntektparametre = inntektparametre,
+                            inntekt = hentInntektListeResponse,
+                        ),
+                    )
+
+                val inntektPersonMapping = getInntektPersonMapping(storedInntekt.inntektId.id)
+
+                inntektPersonMapping.inntektId.id shouldBe storedInntekt.inntektId.id
+                inntektPersonMapping.aktørId shouldBe inntektparametre.aktørId
+                inntektPersonMapping.fnr shouldBe inntektparametre.fødselsnummer
+                inntektPersonMapping.kontekstId shouldBe inntektparametre.regelkontekst.id
+                inntektPersonMapping.beregningsdato shouldBe inntektparametre.beregningsdato
+                inntektPersonMapping.timestamp shouldNotBe null
+                inntektPersonMapping.kontekstType shouldBe inntektparametre.regelkontekst.type
+            }
+        }
+    }
+
+    @Test
     fun `getStoredInntektMedMetadata returnerer forventet respons`() {
         withMigratedDb {
             with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {

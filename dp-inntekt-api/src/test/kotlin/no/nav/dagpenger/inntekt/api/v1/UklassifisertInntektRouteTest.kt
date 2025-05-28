@@ -33,6 +33,7 @@ import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.db.StoredInntektMedMetadata
+import no.nav.dagpenger.inntekt.db.StoredInntektPeriode
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
@@ -505,7 +506,11 @@ internal class UklassifisertInntektRouteTest {
                     timestamp = LocalDateTime.now(),
                     fødselsnummer = fødselsnummer,
                     beregningsdato = now(),
-                    storedInntektPeriode = null,
+                    storedInntektPeriode =
+                        StoredInntektPeriode(
+                            fraOgMed = YearMonth.of(2023, 1),
+                            tilOgMed = YearMonth.of(2025, 5),
+                        ),
                 )
 
             val response =
@@ -516,6 +521,8 @@ internal class UklassifisertInntektRouteTest {
 
             response.status shouldBe OK
             val storedInntekt = jacksonObjectMapper.readValue<InntekterDto>(response.bodyAsText())
+            storedInntekt.periode.fraOgMed shouldBe YearMonth.of(2023, 1)
+            storedInntekt.periode.tilOgMed shouldBe YearMonth.of(2025, 5)
             storedInntekt.virksomheter shouldHaveSize 2
             storedInntekt.virksomheter[0].inntekter?.shouldHaveSize(4)
             storedInntekt.virksomheter.first().virksomhetsnummer shouldBe "1111111"
