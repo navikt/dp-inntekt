@@ -303,5 +303,6 @@
   "periode": {
     "fraOgMed": "2000-12",
     "tilOgMed": "2025-04"
-  }
+  },
+  "begrunnelse": "Dette er en begrunnelse."
 }

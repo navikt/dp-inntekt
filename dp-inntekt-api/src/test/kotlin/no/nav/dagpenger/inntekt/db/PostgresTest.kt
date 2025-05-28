@@ -1,9 +1,11 @@
 package no.nav.dagpenger.inntekt.db
 
 import io.kotest.assertions.assertSoftly
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.throwable.shouldHaveMessage
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.localDateTime
@@ -29,7 +31,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = PostgresDataSourceBuilder.runMigration()
-            assertEquals(17, migrations, "Wrong number of migrations")
+            assertEquals(18, migrations, "Wrong number of migrations")
         }
     }
 
@@ -45,7 +47,7 @@ internal class PostgresTest {
     fun `Migration of testdata `() {
         withCleanDb {
             val migrations = PostgresDataSourceBuilder.runMigration(locations = listOf("db/migration", "db/testdata"))
-            assertEquals(22, migrations, "Wrong number of migrations")
+            assertEquals(23, migrations, "Wrong number of migrations")
         }
     }
 }
@@ -209,7 +211,7 @@ internal class PostgresInntektStoreTest {
                         emptyList(),
                         Aktoer(AktoerType.AKTOER_ID, "1234"),
                     )
-                val manueltRedigert = ManueltRedigert("user")
+                val manueltRedigert = ManueltRedigert("user", "Dette er en begrunnelse.")
 
                 val storedInntekt =
                     storeInntekt(
@@ -219,14 +221,82 @@ internal class PostgresInntektStoreTest {
                             manueltRedigert = manueltRedigert,
                         ),
                     )
-                assertTrue(storedInntekt.manueltRedigert)
-
                 val storedInntektByRequest = getInntekt(storedInntekt.inntektId)
-                assertTrue(storedInntektByRequest.manueltRedigert)
-
                 val storedManueltRedigert = getManueltRedigert(storedInntekt.inntektId)
-                assertNotNull(storedManueltRedigert)
-                assertEquals(manueltRedigert, storedManueltRedigert)
+                storedManueltRedigert shouldNotBe null
+                storedManueltRedigert shouldBe manueltRedigert
+                storedInntekt.manueltRedigert shouldBe true
+                storedInntektByRequest.manueltRedigert shouldBe true
+            }
+        }
+    }
+
+    @Test
+    fun `Lagring av inntekt skal kaste IllegalArgumentException når begrunnelse er lengre enn 1024 tegn`() {
+        withMigratedDb {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
+                val parameters = Inntektparametre("1234", "1234", LocalDate.now(), RegelKontekst("1234", "vedtak"))
+                val hentInntektListeResponse =
+                    InntektkomponentResponse(
+                        emptyList(),
+                        Aktoer(AktoerType.AKTOER_ID, "1234"),
+                    )
+                val manueltRedigert = ManueltRedigert("user", "A".repeat(1025))
+
+                val exception =
+                    shouldThrow<IllegalArgumentException> {
+                        storeInntekt(
+                            StoreInntektCommand(
+                                inntektparametre = parameters,
+                                inntekt = hentInntektListeResponse,
+                                manueltRedigert = manueltRedigert,
+                            ),
+                        )
+                    }
+                exception shouldHaveMessage "Begrunnelsen kan ikke være lengre enn 1024 tegn."
+            }
+        }
+    }
+
+    @Test
+    fun `getStoredInntektMedMetadata returnerer forventet resultat når inntekten ikke er manuelt redigert`() {
+        withMigratedDb {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
+                val parameters = Inntektparametre("1234", "1234", LocalDate.now(), RegelKontekst("1234", "vedtak"))
+                val hentInntektListeResponse =
+                    InntektkomponentResponse(
+                        emptyList(),
+                        Aktoer(AktoerType.AKTOER_ID, "1234"),
+                    )
+                storeInntekt(
+                    StoreInntektCommand(
+                        inntektparametre = parameters,
+                        inntekt = hentInntektListeResponse,
+                        manueltRedigert = null,
+                    ),
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `getStoredInntektMedMetadata returnerer forventet resultat når inntekten er manuelt redigert`() {
+        withMigratedDb {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
+                val parameters = Inntektparametre("1234", "1234", LocalDate.now(), RegelKontekst("1234", "vedtak"))
+                val hentInntektListeResponse =
+                    InntektkomponentResponse(
+                        emptyList(),
+                        Aktoer(AktoerType.AKTOER_ID, "1234"),
+                    )
+                val manueltRedigert = ManueltRedigert("user", "Dette er en begrunnelse.")
+                storeInntekt(
+                    StoreInntektCommand(
+                        inntektparametre = parameters,
+                        inntekt = hentInntektListeResponse,
+                        manueltRedigert = manueltRedigert,
+                    ),
+                )
             }
         }
     }
