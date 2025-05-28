@@ -176,8 +176,8 @@ fun Route.uklassifisertInntekt(
             post {
                 withContext(coroutineContext) {
                     val inntektId = call.parameters["inntektId"]!!
-                    call
-                        .receive<InntekterDto>()
+                    val inntekterDto = call.receive<InntekterDto>()
+                    inntekterDto
                         .mapToStoredInntekt(
                             inntektId = inntektId,
                         ).let {
@@ -194,7 +194,10 @@ fun Route.uklassifisertInntekt(
                                                     inntektPersonMapping.kontekstType,
                                                 ),
                                             beregningsdato = inntektPersonMapping.beregningsdato,
-                                        ),
+                                        ).apply {
+                                            this.opptjeningsperiode.førsteMåned = inntekterDto.periode.fraOgMed
+                                            this.opptjeningsperiode.sisteAvsluttendeKalenderMåned = inntekterDto.periode.tilOgMed
+                                        },
                                     inntekt = it.inntekt,
                                     manueltRedigert =
                                         ManueltRedigert.from(
