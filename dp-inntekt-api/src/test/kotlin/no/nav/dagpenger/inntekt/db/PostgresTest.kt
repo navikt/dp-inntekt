@@ -573,6 +573,42 @@ internal class PostgresInntektStoreTest {
                 storedInntektMedMetadata.manueltRedigert shouldBe false
                 storedInntektMedMetadata.fødselsnummer shouldBe "1234"
                 storedInntektMedMetadata.timestamp shouldNotBe null
+                storedInntektMedMetadata.begrunnelse shouldBe null
+            }
+        }
+    }
+
+    @Test
+    fun `getStoredInntektMedMetadata inkluderer begrunnelse når det finnes`() {
+        withMigratedDb {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
+                val hentInntektListeResponse =
+                    InntektkomponentResponse(
+                        emptyList(),
+                        Aktoer(AktoerType.AKTOER_ID, "1234"),
+                    )
+                val inntektparametre = Inntektparametre("1234", "1234", LocalDate.now(), RegelKontekst("12345", "vedtak"))
+                val storedInntekt =
+                    storeInntekt(
+                        StoreInntektCommand(
+                            inntektparametre = inntektparametre,
+                            inntekt = hentInntektListeResponse,
+                            manueltRedigert =
+                                ManueltRedigert(
+                                    redigertAv = "user",
+                                    begrunnelse = "Dette er en begrunnelse.",
+                                ),
+                        ),
+                    )
+
+                val storedInntektMedMetadata = getStoredInntektMedMetadata(storedInntekt.inntektId)
+
+                storedInntektMedMetadata.inntektId shouldBe storedInntekt.inntektId
+                storedInntektMedMetadata.inntekt shouldBe hentInntektListeResponse
+                storedInntektMedMetadata.manueltRedigert shouldBe true
+                storedInntektMedMetadata.fødselsnummer shouldBe "1234"
+                storedInntektMedMetadata.timestamp shouldNotBe null
+                storedInntektMedMetadata.begrunnelse shouldBe "Dette er en begrunnelse."
             }
         }
     }
