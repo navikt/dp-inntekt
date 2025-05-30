@@ -440,6 +440,35 @@ internal class PostgresInntektStoreTest {
             }
         }
     }
+
+    @Test
+    fun `getStoredInntektMedMetadata returnerer forventet respons`() {
+        withMigratedDb {
+            with(PostgresInntektStore(PostgresDataSourceBuilder.dataSource)) {
+                val hentInntektListeResponse =
+                    InntektkomponentResponse(
+                        emptyList(),
+                        Aktoer(AktoerType.AKTOER_ID, "1234"),
+                    )
+                val inntektparametre = Inntektparametre("1234", "1234", LocalDate.now(), RegelKontekst("12345", "vedtak"))
+                val storedInntekt =
+                    storeInntekt(
+                        StoreInntektCommand(
+                            inntektparametre = inntektparametre,
+                            inntekt = hentInntektListeResponse,
+                        ),
+                    )
+
+                val storedInntektMedMetadata = getStoredInntektMedMetadata(storedInntekt.inntektId)
+
+                storedInntektMedMetadata.inntektId shouldBe storedInntekt.inntektId
+                storedInntektMedMetadata.inntekt shouldBe hentInntektListeResponse
+                storedInntektMedMetadata.manueltRedigert shouldBe false
+                storedInntektMedMetadata.fødselsnummer shouldBe "1234"
+                storedInntektMedMetadata.timestamp shouldNotBe null
+            }
+        }
+    }
 }
 
 internal class InntektsStorePropertyTest : StringSpec() {
