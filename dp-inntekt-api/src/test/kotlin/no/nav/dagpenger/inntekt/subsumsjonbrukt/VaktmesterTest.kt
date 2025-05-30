@@ -16,12 +16,14 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
+import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZonedDateTime
 
+@Order(0)
 internal class VaktmesterTest {
     private val parameters =
         Inntektparametre(
@@ -121,7 +123,9 @@ internal class VaktmesterTest {
             assertThrows<InntektNotFoundException> { inntektStore.getInntekt(ubruktEldreEnn180Dager.inntektId) }
             inntektStore.getInntekt(ubruktYngreEnn180Dager.inntektId) shouldBe ubruktYngreEnn180Dager
         }
-        PrometheusRegistry.defaultRegistry.scrape().find { it.metadata.name == "inntekt_slettet" }
+        PrometheusRegistry.defaultRegistry
+            .scrape()
+            .find { it.metadata.name == "inntekt_slettet" }
             ?.let { metric ->
                 metric.dataPoints[0].labels shouldNotBe null
                 metric.dataPoints[0].scrapeTimestampMillis shouldNotBe null

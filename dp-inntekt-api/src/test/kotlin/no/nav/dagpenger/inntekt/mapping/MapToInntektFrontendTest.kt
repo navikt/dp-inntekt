@@ -1,5 +1,10 @@
 package no.nav.dagpenger.inntekt.mapping
 
+import de.huxhorn.sulky.ulid.ULID
+import io.kotest.matchers.shouldBe
+import no.nav.dagpenger.inntekt.db.InntektId
+import no.nav.dagpenger.inntekt.db.StoredInntektMedMetadata
+import no.nav.dagpenger.inntekt.db.StoredInntektPeriode
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
@@ -12,6 +17,8 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
+import java.time.LocalDate.now
+import java.time.LocalDateTime
 import java.time.YearMonth
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -187,10 +194,21 @@ class MapToInntektFrontendTest {
     fun `Map inntekt til InntektForVirksomhetMedPersonInformasjon`() {
         val mappedToInntektFrontend =
             inntektkomponentResponse.mapToFrontend(
-                mottaker,
-                organisasjoner,
+                person = mottaker,
+                organisasjoner = organisasjoner,
+                StoredInntektMedMetadata(
+                    InntektId(ULID().nextULID().toString()),
+                    inntektkomponentResponse,
+                    true,
+                    LocalDateTime.now(),
+                    "01234567890",
+                    now(),
+                    StoredInntektPeriode(YearMonth.now(), YearMonth.now()),
+                    "Dette er en begrunnelse.",
+                ),
             )
 
+        mappedToInntektFrontend.begrunnelse shouldBe "Dette er en begrunnelse."
         assertEquals(2, mappedToInntektFrontend.virksomheter.size)
         assertEquals(mottaker, mappedToInntektFrontend.mottaker)
 
@@ -331,7 +349,20 @@ class MapToInntektFrontendTest {
             )
 
         val mapTilFrontendMedNullVirksomhet =
-            inntektkomponentResponseMedTomVirksomhet.mapToFrontend(mottaker, organisasjoner)
+            inntektkomponentResponseMedTomVirksomhet.mapToFrontend(
+                mottaker,
+                organisasjoner,
+                StoredInntektMedMetadata(
+                    InntektId(ULID().nextULID().toString()),
+                    inntektkomponentResponse,
+                    true,
+                    LocalDateTime.now(),
+                    "01234567890",
+                    now(),
+                    StoredInntektPeriode(YearMonth.now(), YearMonth.now()),
+                    "Dette er en begrunnelse.",
+                ),
+            )
         assertEquals(3, mapTilFrontendMedNullVirksomhet.virksomheter.size)
         assertEquals(2, mapTilFrontendMedNullVirksomhet.virksomheter.filter { it.virksomhetsnummer == "" }.size)
         assertEquals(1, mapTilFrontendMedNullVirksomhet.virksomheter.filter { it.virksomhetsnummer == "896929120" }.size)
