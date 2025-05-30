@@ -195,7 +195,7 @@ internal class PostgresInntektStore(
             SELECT inntekt.id, inntekt.inntekt, inntekt.manuelt_redigert, inntekt.timestamp, mapping.fnr, mapping.beregningsdato, mapping.periodeFraOgMed, mapping.periodeTilOgMed, manuelt_redigert.begrunnelse
             FROM inntekt_V1 inntekt
             INNER JOIN inntekt_V1_person_mapping mapping ON inntekt.id = mapping.inntektid
-            LEFT JOIN inntekt_V1_manuelt_redigert manuelt_redigert ON inntekt.id = manuelt_redigert.inntektid
+            LEFT JOIN inntekt_V1_manuelt_redigert manuelt_redigert ON inntekt.id = manuelt_redigert.inntekt_id
             WHERE inntekt.id = ?
             """.trimIndent()
 
