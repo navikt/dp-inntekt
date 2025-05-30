@@ -2,7 +2,7 @@ package no.nav.dagpenger.inntekt.api.v3
 
 import io.kotest.matchers.shouldBe
 import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.HttpStatusCode.Companion.OK
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -49,7 +49,7 @@ class KlassifisertInntektRouteV3Test {
     }
 
     @Test
-    fun `Inntektparametre is created with expected values`() {
+    fun `Inntektparametre opprettes med forventede verdier`() {
         val regelkontekst = RegelKontekst("id", "type")
         val beregningsDato = LocalDate.of(2018, 5, 27)
         val periodeFraOgMed = YearMonth.of(2017, 1)
@@ -77,7 +77,7 @@ class KlassifisertInntektRouteV3Test {
                         ),
                 )
 
-            response.status shouldBe HttpStatusCode.OK
+            response.status shouldBe OK
             val inntektparametre = inntektParametreCapture.first()
             inntektparametre.aktørId shouldBe aktørId
             inntektparametre.fødselsnummer shouldBe fødselsnummer
