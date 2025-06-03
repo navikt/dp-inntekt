@@ -59,8 +59,8 @@ fun InntektkomponentResponse.mapToFrontend(
                 eksisterendeVirksomhet.inntekter?.addAll(inntekter)
                 eksisterendeVirksomhet.periode =
                     InntektPeriode(
-                        fra = eksisterendeVirksomhet.inntekter!!.minOf { it.aarMaaned },
-                        til = eksisterendeVirksomhet.inntekter.maxOf { it.aarMaaned },
+                        fraOgMed = eksisterendeVirksomhet.inntekter!!.minOf { it.aarMaaned },
+                        tilOgMed = eksisterendeVirksomhet.inntekter.maxOf { it.aarMaaned },
                     )
                 eksisterendeVirksomhet.totalBelop = eksisterendeVirksomhet.inntekter.sumOf { it.belop }
             } else {
@@ -70,8 +70,8 @@ fun InntektkomponentResponse.mapToFrontend(
                         virksomhetsnavn = virksomhetNavn,
                         periode =
                             InntektPeriode(
-                                fra = arbeidsInntektMaaned.aarMaaned,
-                                til = arbeidsInntektMaaned.aarMaaned,
+                                fraOgMed = arbeidsInntektMaaned.aarMaaned,
+                                tilOgMed = arbeidsInntektMaaned.aarMaaned,
                             ),
                         inntekter = inntekter,
                         avvikListe = mutableListOf(),
@@ -124,8 +124,8 @@ data class Virksomhet(
 )
 
 data class InntektPeriode(
-    val fra: YearMonth,
-    val til: YearMonth,
+    val fraOgMed: YearMonth,
+    val tilOgMed: YearMonth,
 )
 
 data class InntektMaaned(

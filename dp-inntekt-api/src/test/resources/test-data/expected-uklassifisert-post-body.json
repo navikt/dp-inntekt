@@ -4,8 +4,8 @@
       "virksomhetsnummer": "123456789",
       "virksomhetsnavn": "Test Virksomhet",
       "periode": {
-        "fra": "2023-01",
-        "til": "2024-12"
+        "fraOgMed": "2023-01",
+        "tilOgMed": "2024-12"
       },
       "inntekter": [
         {
@@ -131,8 +131,8 @@
       "virksomhetsnummer": "987654321",
       "virksomhetsnavn": "Virksomheten Test",
       "periode": {
-        "fra": "2024-01",
-        "til": "2025-03"
+        "fraOgMed": "2024-01",
+        "tilOgMed": "2025-03"
       },
       "inntekter": [
         {
@@ -271,8 +271,8 @@
       "virksomhetsnummer": "550475189",
       "virksomhetsnavn": "Virksomheten Test",
       "periode": {
-        "fra": "2000-12",
-        "til": "2000-12"
+        "fraOgMed": "2000-12",
+        "tilOgMed": "2000-12"
       },
       "inntekter": [],
       "totalBelop": 0,
