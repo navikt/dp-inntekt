@@ -22,8 +22,8 @@ object Config {
                 "application.profile" to "LOCAL",
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret",
                 "flyway.locations" to "db/migration,db/testdata",
-                "hentinntektliste.url" to "https://localhost/proxy/inntektskomponenten-ws/rs/api/v1/hentinntektliste",
-                "inntektskomponenten.api.scope" to "api://dev-fss.team-inntekt.team-inntekt-proxy/.default",
+                "hentinntektliste.url" to "https://inntektskomponenten-ws/rs/api/v1/hentinntektliste",
+                "inntektskomponenten.api.scope" to "api://dev-fss.team-inntekt.ikomp-q1/.default",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://dev-fss.pdl.pdl-api/.default",
                 "pdl.url" to "https://pdl-api.dev-fss-pub.nais.io/graphql",
@@ -37,8 +37,8 @@ object Config {
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret",
                 @Suppress("ktlint:standard:max-line-length")
                 "hentinntektliste.url"
-                    to "https://team-inntekt-proxy.dev-fss-pub.nais.io/proxy/inntektskomponenten-q1/rs/api/v1/hentinntektliste",
-                "inntektskomponenten.api.scope" to "api://dev-fss.team-inntekt.inntektskomponenten/.default",
+                    to "https://ikomp-q1.dev-fss-pub.nais.io/rs/api/v1/hentinntektliste",
+                "inntektskomponenten.api.scope" to "api://dev-fss.team-inntekt.ikomp-q1/.default",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://dev-fss.pdl.pdl-api-q1/.default",
                 "pdl.url" to "https://pdl-api-q1.dev-fss-pub.nais.io/graphql",
@@ -52,8 +52,8 @@ object Config {
                 "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret",
                 @Suppress("ktlint:standard:max-line-length")
                 "hentinntektliste.url"
-                    to "https://team-inntekt-proxy.prod-fss-pub.nais.io/proxy/inntektskomponenten/rs/api/v1/hentinntektliste",
-                "inntektskomponenten.api.scope" to "api://prod-fss.team-inntekt.inntektskomponenten/.default",
+                    to "https://ikomp.prod-fss-pub.nais.io/rs/api/v1/hentinntektliste",
+                "inntektskomponenten.api.scope" to "api://prod-fss.team-inntekt.ikomp/.default",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://prod-fss.pdl.pdl-api/.default",
                 "pdl.url" to "https://pdl-api.prod-fss-pub.nais.io/graphql",
