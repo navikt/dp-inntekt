@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.v1
+package no.nav.dagpenger.inntekt.api.v1
 
 import com.auth0.jwt.exceptions.JWTDecodeException
 import io.ktor.http.HttpStatusCode
@@ -18,6 +18,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import mu.withLoggingContext
+import no.nav.dagpenger.inntekt.api.v1.models.InntekterDto
+import no.nav.dagpenger.inntekt.api.v1.models.mapToStoredInntekt
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
@@ -40,8 +42,6 @@ import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
-import no.nav.dagpenger.inntekt.v1.models.InntekterDto
-import no.nav.dagpenger.inntekt.v1.models.mapToStoredInntekt
 import java.time.LocalDate
 import kotlin.coroutines.CoroutineContext
 
@@ -146,14 +146,14 @@ fun Route.uklassifisertInntekt(
                 withContext(coroutineContext) {
                     val inntektId = InntektId(call.parameters["inntektId"]!!)
                     inntektStore
-                        .getInntektMedPersonFnr(inntektId)
-                        .let {
-                            val person = personOppslag.hentPerson(it.fødselsnummer)
-                            val inntektsmottaker = Inntektsmottaker(it.fødselsnummer, person.sammensattNavn())
+                        .getStoredInntektMedMetadata(inntektId)
+                        .let { storedInntektMedMetadata ->
+                            val person = personOppslag.hentPerson(storedInntektMedMetadata.fødselsnummer)
+                            val inntektsmottaker = Inntektsmottaker(storedInntektMedMetadata.fødselsnummer, person.sammensattNavn())
                             val organisasjoner =
                                 hentOrganisasjoner(
                                     enhetsregisterClient,
-                                    it.inntekt.arbeidsInntektMaaned
+                                    storedInntektMedMetadata.inntekt.arbeidsInntektMaaned
                                         ?.flatMap { it.arbeidsInntektInformasjon?.inntektListe.orEmpty() }
                                         ?.filter { inntekt ->
                                             inntekt.virksomhet?.aktoerType == AktoerType.ORGANISASJON &&
@@ -162,7 +162,11 @@ fun Route.uklassifisertInntekt(
                                         ?.toTypedArray()
                                         ?.toList() ?: emptyList(),
                                 )
-                            it.inntekt.mapToFrontend(inntektsmottaker, organisasjoner)
+                            storedInntektMedMetadata.inntekt.mapToFrontend(
+                                person = inntektsmottaker,
+                                organisasjoner = organisasjoner,
+                                storedInntektMedMetadata,
+                            )
                         }.let {
                             call.respond(HttpStatusCode.OK, it)
                         }
@@ -171,8 +175,8 @@ fun Route.uklassifisertInntekt(
             post {
                 withContext(coroutineContext) {
                     val inntektId = call.parameters["inntektId"]!!
-                    call
-                        .receive<InntekterDto>()
+                    val inntekterDto = call.receive<InntekterDto>()
+                    inntekterDto
                         .mapToStoredInntekt(
                             inntektId = inntektId,
                         ).let {
@@ -189,12 +193,16 @@ fun Route.uklassifisertInntekt(
                                                     inntektPersonMapping.kontekstType,
                                                 ),
                                             beregningsdato = inntektPersonMapping.beregningsdato,
-                                        ),
+                                        ).apply {
+                                            this.opptjeningsperiode.førsteMåned = inntekterDto.periode.fraOgMed
+                                            this.opptjeningsperiode.sisteAvsluttendeKalenderMåned = inntekterDto.periode.tilOgMed
+                                        },
                                     inntekt = it.inntekt,
                                     manueltRedigert =
                                         ManueltRedigert.from(
-                                            true,
-                                            call.getSubject(),
+                                            bool = true,
+                                            redigertAv = call.getSubject(),
+                                            begrunnelse = inntekterDto.begrunnelse,
                                         ),
                                 ),
                             )

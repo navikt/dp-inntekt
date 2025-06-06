@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.v1
+package no.nav.dagpenger.inntekt.api.v1
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.huxhorn.sulky.ulid.ULID
@@ -18,6 +18,11 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.Problem
+import no.nav.dagpenger.inntekt.api.v1.TestApplication.TEST_OAUTH_USER
+import no.nav.dagpenger.inntekt.api.v1.TestApplication.autentisert
+import no.nav.dagpenger.inntekt.api.v1.TestApplication.mockInntektApi
+import no.nav.dagpenger.inntekt.api.v1.TestApplication.withMockAuthServerAndTestApplication
+import no.nav.dagpenger.inntekt.api.v1.models.InntekterDto
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektPersonMapping
@@ -27,7 +32,8 @@ import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.db.StoredInntekt
-import no.nav.dagpenger.inntekt.db.StoredInntektMedFnr
+import no.nav.dagpenger.inntekt.db.StoredInntektMedMetadata
+import no.nav.dagpenger.inntekt.db.StoredInntektPeriode
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
@@ -44,14 +50,10 @@ import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
-import no.nav.dagpenger.inntekt.v1.TestApplication.TEST_OAUTH_USER
-import no.nav.dagpenger.inntekt.v1.TestApplication.autentisert
-import no.nav.dagpenger.inntekt.v1.TestApplication.mockInntektApi
-import no.nav.dagpenger.inntekt.v1.TestApplication.withMockAuthServerAndTestApplication
-import no.nav.dagpenger.inntekt.v1.models.InntekterDto
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalDate.now
 import java.time.LocalDateTime
 import java.time.YearMonth
 import kotlin.test.assertEquals
@@ -495,15 +497,20 @@ internal class UklassifisertInntektRouteTest {
                     .getResource("/test-data/example-inntekt-med-inntektId-payload.json")
                     ?.readText()
             every {
-                inntektStoreMock.getInntektMedPersonFnr(inntektId)
+                inntektStoreMock.getStoredInntektMedMetadata(inntektId)
             } returns
-                StoredInntektMedFnr(
+                StoredInntektMedMetadata(
                     inntektId,
-                    inntekt =
-                        jacksonObjectMapper.readValue(body!!),
+                    inntekt = jacksonObjectMapper.readValue(body!!),
                     manueltRedigert = false,
                     timestamp = LocalDateTime.now(),
                     fødselsnummer = fødselsnummer,
+                    beregningsdato = now(),
+                    storedInntektPeriode =
+                        StoredInntektPeriode(
+                            fraOgMed = YearMonth.of(2023, 1),
+                            tilOgMed = YearMonth.of(2025, 5),
+                        ),
                 )
 
             val response =
@@ -514,6 +521,8 @@ internal class UklassifisertInntektRouteTest {
 
             response.status shouldBe OK
             val storedInntekt = jacksonObjectMapper.readValue<InntekterDto>(response.bodyAsText())
+            storedInntekt.periode.fraOgMed shouldBe YearMonth.of(2023, 1)
+            storedInntekt.periode.tilOgMed shouldBe YearMonth.of(2025, 5)
             storedInntekt.virksomheter shouldHaveSize 2
             storedInntekt.virksomheter[0].inntekter?.shouldHaveSize(4)
             storedInntekt.virksomheter.first().virksomhetsnummer shouldBe "1111111"
@@ -544,7 +553,7 @@ internal class UklassifisertInntektRouteTest {
                     aktørId = "123456789",
                     fnr = null,
                     kontekstId = "kontekstId",
-                    beregningsdato = LocalDate.now(),
+                    beregningsdato = now(),
                     timestamp = LocalDateTime.now(),
                     kontekstType = "kontekstType",
                 )
@@ -567,7 +576,11 @@ internal class UklassifisertInntektRouteTest {
             storeInntektCommandSlot.captured.inntektparametre.regelkontekst.id shouldBe inntektPersonMapping.kontekstId
             storeInntektCommandSlot.captured.inntektparametre.regelkontekst.type shouldBe inntektPersonMapping.kontekstType
             storeInntektCommandSlot.captured.inntektparametre.beregningsdato shouldBe inntektPersonMapping.beregningsdato
+            storeInntektCommandSlot.captured.inntektparametre.opptjeningsperiode.førsteMåned shouldBe YearMonth.of(2000, 12)
+            storeInntektCommandSlot.captured.inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned shouldBe
+                YearMonth.of(2025, 4)
             storeInntektCommandSlot.captured.manueltRedigert.shouldNotBeNull()
             storeInntektCommandSlot.captured.manueltRedigert!!.redigertAv shouldBe TEST_OAUTH_USER
+            storeInntektCommandSlot.captured.manueltRedigert!!.begrunnelse shouldBe "Dette er en begrunnelse."
         }
 }

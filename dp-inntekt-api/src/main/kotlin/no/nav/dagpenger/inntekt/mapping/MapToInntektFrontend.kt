@@ -1,5 +1,8 @@
 package no.nav.dagpenger.inntekt.mapping
 
+import no.nav.dagpenger.inntekt.api.v1.models.InntekterDto
+import no.nav.dagpenger.inntekt.api.v1.models.PeriodeDto
+import no.nav.dagpenger.inntekt.db.StoredInntektMedMetadata
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Avvik
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
@@ -7,13 +10,14 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Periode
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
-import no.nav.dagpenger.inntekt.v1.models.InntekterDto
+import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.math.BigDecimal
 import java.time.YearMonth
 
 fun InntektkomponentResponse.mapToFrontend(
     person: Inntektsmottaker,
     organisasjoner: List<Organisasjon>,
+    storedInntektMedMetadata: StoredInntektMedMetadata,
 ): InntekterDto {
     val inntekt = arbeidsInntektMaaned
     val virksomheter: MutableList<Virksomhet> = mutableListOf()
@@ -55,8 +59,8 @@ fun InntektkomponentResponse.mapToFrontend(
                 eksisterendeVirksomhet.inntekter?.addAll(inntekter)
                 eksisterendeVirksomhet.periode =
                     InntektPeriode(
-                        fra = eksisterendeVirksomhet.inntekter!!.minOf { it.aarMaaned },
-                        til = eksisterendeVirksomhet.inntekter.maxOf { it.aarMaaned },
+                        fraOgMed = eksisterendeVirksomhet.inntekter!!.minOf { it.aarMaaned },
+                        tilOgMed = eksisterendeVirksomhet.inntekter.maxOf { it.aarMaaned },
                     )
                 eksisterendeVirksomhet.totalBelop = eksisterendeVirksomhet.inntekter.sumOf { it.belop }
             } else {
@@ -66,8 +70,8 @@ fun InntektkomponentResponse.mapToFrontend(
                         virksomhetsnavn = virksomhetNavn,
                         periode =
                             InntektPeriode(
-                                fra = arbeidsInntektMaaned.aarMaaned,
-                                til = arbeidsInntektMaaned.aarMaaned,
+                                fraOgMed = arbeidsInntektMaaned.aarMaaned,
+                                tilOgMed = arbeidsInntektMaaned.aarMaaned,
                             ),
                         inntekter = inntekter,
                         avvikListe = mutableListOf(),
@@ -97,6 +101,16 @@ fun InntektkomponentResponse.mapToFrontend(
     return InntekterDto(
         virksomheter = virksomheter,
         mottaker = person,
+        periode = getPeriode(storedInntektMedMetadata),
+        begrunnelse = storedInntektMedMetadata.begrunnelse,
+    )
+}
+
+private fun getPeriode(storedInntektMedMetadata: StoredInntektMedMetadata): PeriodeDto {
+    val opptjeningsperiode = Opptjeningsperiode(beregningsdato = storedInntektMedMetadata.beregningsdato)
+    return PeriodeDto(
+        fraOgMed = storedInntektMedMetadata.storedInntektPeriode?.fraOgMed ?: opptjeningsperiode.førsteMåned,
+        tilOgMed = storedInntektMedMetadata.storedInntektPeriode?.tilOgMed ?: opptjeningsperiode.sisteAvsluttendeKalenderMåned,
     )
 }
 
@@ -110,8 +124,8 @@ data class Virksomhet(
 )
 
 data class InntektPeriode(
-    val fra: YearMonth,
-    val til: YearMonth,
+    val fraOgMed: YearMonth,
+    val tilOgMed: YearMonth,
 )
 
 data class InntektMaaned(

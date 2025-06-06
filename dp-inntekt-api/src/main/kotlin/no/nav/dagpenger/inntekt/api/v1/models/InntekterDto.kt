@@ -1,4 +1,4 @@
-package no.nav.dagpenger.inntekt.v1.models
+package no.nav.dagpenger.inntekt.api.v1.models
 
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.StoredInntekt
@@ -17,6 +17,13 @@ import java.time.YearMonth
 data class InntekterDto(
     val virksomheter: List<Virksomhet>,
     val mottaker: Inntektsmottaker,
+    val periode: PeriodeDto,
+    val begrunnelse: String? = null,
+)
+
+data class PeriodeDto(
+    val fraOgMed: YearMonth,
+    val tilOgMed: YearMonth,
 )
 
 fun InntekterDto.mapToStoredInntekt(inntektId: String): StoredInntekt =

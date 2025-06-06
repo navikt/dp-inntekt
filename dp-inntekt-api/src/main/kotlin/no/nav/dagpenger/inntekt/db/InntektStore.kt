@@ -6,6 +6,7 @@ import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import no.nav.dagpenger.inntekt.v1.SpesifisertInntekt
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.YearMonth
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
@@ -29,7 +30,7 @@ interface InntektStore {
 
     fun markerInntektBrukt(inntektId: InntektId): Int
 
-    fun getInntektMedPersonFnr(inntektId: InntektId): StoredInntektMedFnr
+    fun getStoredInntektMedMetadata(inntektId: InntektId): StoredInntektMedMetadata
 }
 
 data class Inntektparametre(
@@ -66,13 +67,15 @@ data class InntektPersonMapping(
 
 data class ManueltRedigert(
     val redigertAv: String,
+    val begrunnelse: String? = null,
 ) {
     companion object {
         fun from(
             bool: Boolean,
             redigertAv: String,
+            begrunnelse: String? = null,
         ) = when (bool) {
-            true -> ManueltRedigert(redigertAv)
+            true -> ManueltRedigert(redigertAv, begrunnelse)
             false -> null
         }
     }
@@ -102,12 +105,20 @@ data class InntektId(
     }
 }
 
-data class StoredInntektMedFnr(
+data class StoredInntektMedMetadata(
     val inntektId: InntektId,
     val inntekt: InntektkomponentResponse,
     val manueltRedigert: Boolean,
     val timestamp: LocalDateTime? = null,
     val fødselsnummer: String,
+    val beregningsdato: LocalDate,
+    val storedInntektPeriode: StoredInntektPeriode?,
+    val begrunnelse: String? = null,
+)
+
+data class StoredInntektPeriode(
+    val fraOgMed: YearMonth?,
+    val tilOgMed: YearMonth?,
 )
 
 class InntektNotFoundException(

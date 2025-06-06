@@ -18,6 +18,7 @@ import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZonedDateTime
 import javax.sql.DataSource
 
@@ -41,7 +42,7 @@ internal class PostgresInntektStore(
         @Language("sql")
         val statement =
             """
-            SELECT redigert_av
+            SELECT redigert_av, begrunnelse
                 FROM inntekt_V1_manuelt_redigert
             WHERE inntekt_id = ?
             """.trimMargin()
@@ -50,7 +51,7 @@ internal class PostgresInntektStore(
                 session.run(
                     queryOf(statement, inntektId.id)
                         .map { row ->
-                            ManueltRedigert(row.string(1))
+                            ManueltRedigert(row.string("redigert_av"), row.string("begrunnelse"))
                         }.asSingle,
                 )
             }
@@ -187,27 +188,34 @@ internal class PostgresInntektStore(
         return mapToSpesifisertInntekt(stored.first, Opptjeningsperiode(stored.second).sisteAvsluttendeKalenderMåned)
     }
 
-    override fun getInntektMedPersonFnr(inntektId: InntektId): StoredInntektMedFnr {
+    override fun getStoredInntektMedMetadata(inntektId: InntektId): StoredInntektMedMetadata {
         @Language("sql")
         val statement =
             """ 
-            SELECT inntekt.id, inntekt.inntekt, inntekt.manuelt_redigert, inntekt.timestamp, mapping.fnr 
-            from inntekt_V1 inntekt 
-            inner join inntekt_V1_person_mapping mapping on inntekt.id = mapping.inntektid 
-            where inntekt.id = ?
-            
+            SELECT inntekt.id, inntekt.inntekt, inntekt.manuelt_redigert, inntekt.timestamp, mapping.fnr, mapping.beregningsdato, mapping.periodeFraOgMed, mapping.periodeTilOgMed, manuelt_redigert.begrunnelse
+            FROM inntekt_V1 inntekt
+            INNER JOIN inntekt_V1_person_mapping mapping ON inntekt.id = mapping.inntektid
+            LEFT JOIN inntekt_V1_manuelt_redigert manuelt_redigert ON inntekt.id = manuelt_redigert.inntekt_id
+            WHERE inntekt.id = ?
             """.trimIndent()
 
         return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(statement, inntektId.id)
                     .map {
-                        StoredInntektMedFnr(
+                        StoredInntektMedMetadata(
                             inntektId = InntektId(it.string("id")),
                             inntekt = it.binaryStream("inntekt").use { jacksonObjectMapper.readValue<InntektkomponentResponse>(it) },
                             manueltRedigert = it.boolean("manuelt_redigert"),
                             timestamp = it.zonedDateTime("timestamp").toLocalDateTime(),
                             fødselsnummer = it.string("fnr"),
+                            beregningsdato = it.localDate("beregningsdato"),
+                            storedInntektPeriode =
+                                StoredInntektPeriode(
+                                    fraOgMed = it.localDateOrNull("periodeFraOgMed")?.let { localDate -> YearMonth.from(localDate) },
+                                    tilOgMed = it.localDateOrNull("periodeTilOgMed")?.let { localDate -> YearMonth.from(localDate) },
+                                ),
+                            begrunnelse = it.stringOrNull("begrunnelse"),
                         )
                     }.asSingle,
             ) ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
@@ -242,7 +250,10 @@ internal class PostgresInntektStore(
                     )
                     tx.run(
                         queryOf(
-                            "INSERT INTO inntekt_V1_person_mapping(inntektId, aktørId, fnr, kontekstId, beregningsdato, kontekstType) VALUES (:inntektId, :aktorId, :fnr, :kontekstId, :beregningsdato, :kontekstType::kontekstTypeNavn)",
+                            """
+                            INSERT INTO inntekt_V1_person_mapping(inntektId, aktørId, fnr, kontekstId, beregningsdato, kontekstType, periodeFraOgMed, periodeTilOgMed) 
+                            VALUES (:inntektId, :aktorId, :fnr, :kontekstId, :beregningsdato, :kontekstType::kontekstTypeNavn, :periodeFraOgMed, :periodeTilOgMed)
+                            """.trimIndent(),
                             mapOf(
                                 "inntektId" to inntektId.id,
                                 "aktorId" to command.inntektparametre.aktørId,
@@ -250,17 +261,30 @@ internal class PostgresInntektStore(
                                 "kontekstId" to command.inntektparametre.regelkontekst.id,
                                 "kontekstType" to command.inntektparametre.regelkontekst.type,
                                 "beregningsdato" to command.inntektparametre.beregningsdato,
+                                "periodeFraOgMed" to
+                                    command.inntektparametre.opptjeningsperiode.førsteMåned.let {
+                                        LocalDate.of(it.year, it.month, 1)
+                                    },
+                                "periodeTilOgMed" to
+                                    command.inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned.let {
+                                        LocalDate.of(it.year, it.month, 1)
+                                    },
                             ),
                         ).asUpdate,
                     )
 
                     command.manueltRedigert?.let {
+                        it.begrunnelse?.length?.let { lengde ->
+                            require(lengde <= 1024) { "Begrunnelsen kan ikke være lengre enn 1024 tegn." }
+                        }
+
                         tx.run(
                             queryOf(
-                                "INSERT INTO inntekt_V1_manuelt_redigert VALUES(:id,:redigert)",
+                                "INSERT INTO inntekt_V1_manuelt_redigert (inntekt_id, redigert_av, begrunnelse) VALUES(:id, :redigert, :begrunnelse)",
                                 mapOf(
                                     "id" to inntektId.id,
                                     "redigert" to it.redigertAv,
+                                    "begrunnelse" to it.begrunnelse,
                                 ),
                             ).asUpdate,
                         )
