@@ -73,7 +73,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(libs.ktor.server.test.host)
 
-    testImplementation("no.nav.security:mock-oauth2-server:2.2.0")
+    testImplementation("no.nav.security:mock-oauth2-server:2.2.1")
     testImplementation("io.ktor:ktor-client-mock:${libs.versions.ktor.get()}")
 
     testImplementation("org.wiremock:wiremock-standalone:3.13.0")
