@@ -76,7 +76,7 @@ dependencies {
     testImplementation("no.nav.security:mock-oauth2-server:2.2.1")
     testImplementation("io.ktor:ktor-client-mock:${libs.versions.ktor.get()}")
 
-    testImplementation("org.wiremock:wiremock-standalone:3.13.0")
+    testImplementation("org.wiremock:wiremock-standalone:3.13.1")
 
     testImplementation(libs.bundles.kotest.assertions)
     testImplementation("io.kotest:kotest-property:${libs.versions.kotest.get()}")
