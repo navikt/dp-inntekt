@@ -17,12 +17,19 @@ fun verdiKode(datagrunnlagKlassifisering: DatagrunnlagKlassifisering): String {
 private fun shouldTryGenericMappingWithoutForhold(datagrunnlagKlassifisering: DatagrunnlagKlassifisering) =
     !dataGrunnlagKlassifiseringToVerdikode.contains(datagrunnlagKlassifisering) && datagrunnlagKlassifisering.forhold != null
 
-fun dataGrunnlag(verdiKode: String): DatagrunnlagKlassifisering {
-    return dataGrunnlagKlassifiseringToVerdikode.inverse[verdiKode]
+fun dataGrunnlag(verdiKode: String): DatagrunnlagKlassifisering =
+    dataGrunnlagKlassifiseringToVerdikode.inverse[verdiKode]
         ?: throw VerdiKodeMappingException("No datagrunnlag found for verdikode=$verdiKode")
-}
 
-class VerdiKodeMappingException(message: String) : RuntimeException(message)
+fun utledInntektType(inntektBeskrivelse: InntektBeskrivelse): InntektType =
+    dataGrunnlagKlassifiseringToVerdikode.keys
+        .find { it.beskrivelse == inntektBeskrivelse }
+        ?.type
+        ?: throw IllegalArgumentException("Klarte ikke å utlede inntekttype fra inntektbeskrivelse \"$inntektBeskrivelse\".")
+
+class VerdiKodeMappingException(
+    message: String,
+) : RuntimeException(message)
 
 @Suppress("ktlint:standard:max-line-length")
 val dataGrunnlagKlassifiseringToVerdikode =

@@ -15,7 +15,9 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType.ORGANISASJON
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Avvik
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse.BIL
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse.SVANGERSKAPSPENGER_FERIEPENGER
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType.LOENNSINNTEKT
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType.YTELSE_FRA_OFFENTLIGE
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Periode
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold.LOENN_VED_KONKURS_ELLER_STATSGARANTI_OSV
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
@@ -125,6 +127,24 @@ class InntekterDtoTest {
             it?.aarMaaned shouldBe YearMonth.of(2000, 12)
             it?.avvikListe?.shouldHaveSize(1)
             it?.arbeidsInntektInformasjon?.inntektListe?.shouldBeEmpty()
+        }
+    }
+
+    @Test
+    fun `mapToStoredInntekt mapper til forventet resultat når inntektType er null`() {
+        val inntektId = ULID().nextULID()
+        val inntekterDto =
+            jacksonObjectMapper.readValue<InntekterDto>(
+                this::class.java
+                    .getResource("/test-data/expected-uklassifisert-post-body-inntektType-er-null.json")
+                    ?.readText()!!,
+            )
+
+        val storedInntekt = inntekterDto.mapToStoredInntekt(inntektId = inntektId)
+
+        storedInntekt.inntekt.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first().let {
+            it?.beskrivelse shouldBe SVANGERSKAPSPENGER_FERIEPENGER
+            it?.inntektType shouldBe YTELSE_FRA_OFFENTLIGE
         }
     }
 }

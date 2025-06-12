@@ -147,7 +147,7 @@ data class InntektMaaned(
     val inngaarIGrunnlagForTrekk: Boolean? = null,
     val utloeserArbeidsgiveravgift: Boolean? = null,
     val informasjonsstatus: String? = null,
-    val inntektType: InntektType,
+    val inntektType: InntektType? = null,
     val tilleggsinformasjon: TilleggInformasjon? = null,
     val aarMaaned: YearMonth,
 )
