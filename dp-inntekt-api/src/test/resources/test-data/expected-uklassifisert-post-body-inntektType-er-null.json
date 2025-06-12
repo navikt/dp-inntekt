@@ -1,0 +1,69 @@
+{
+  "virksomheter": [
+    {
+      "virksomhetsnummer": "123456789",
+      "virksomhetsnavn": "Test Virksomhet",
+      "periode": {
+        "fraOgMed": "2023-01",
+        "tilOgMed": "2024-12"
+      },
+      "inntekter": [
+        {
+          "belop": 50000.00,
+          "fordel": "kontantytelse",
+          "beskrivelse": "feriepengerSvangerskapspenger",
+          "inntektskilde": "A-ordningen",
+          "inntektsstatus": "LoependeInnrapportert",
+          "inntektsperiodetype": "Maaned",
+          "leveringstidspunkt": "2023-01",
+          "opptjeningsland": "NO",
+          "opptjeningsperiode": {
+            "startDato": "2023-01-04T00:00:00",
+            "sluttDato": "2023-01-25T00:00:00"
+          },
+          "skattemessigBosattLand": "NO",
+          "utbetaltIMaaned": "2023-02",
+          "opplysningspliktig": {
+            "aktoerType": "NATURLIG_IDENT",
+            "identifikator": "06221841830"
+          },
+          "inntektsinnsender": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "561235623"
+          },
+          "virksomhet": {
+            "aktoerType": "ORGANISASJON",
+            "identifikator": "123456789"
+          },
+          "inntektsmottaker": {
+            "aktoerType": "AKTOER_ID",
+            "identifikator": "287631"
+          },
+          "inngaarIGrunnlagForTrekk": true,
+          "utloeserArbeidsgiveravgift": false,
+          "informasjonsstatus": "InngaarAlltid",
+          "inntektType": null,
+          "tilleggsinformasjon": {
+            "kategori": "enKategori",
+            "tilleggsinformasjonDetaljer": {
+              "detaljerType": "enDetaljerType",
+              "spesielleInntjeningsforhold": "loennVedKonkursEllerStatsgarantiOsv"
+            }
+          },
+          "aarMaaned": "2023-01"
+        }
+      ],
+      "totalBelop": 50000.00,
+      "avvikListe": []
+    }
+  ],
+  "mottaker": {
+    "pnr": "19876543210",
+    "navn": "Navn Navnesen"
+  },
+  "periode": {
+    "fraOgMed": "2000-12",
+    "tilOgMed": "2025-04"
+  },
+  "begrunnelse": "Dette er en begrunnelse."
+}

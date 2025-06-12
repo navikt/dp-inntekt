@@ -11,6 +11,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.mapping.Inntektsmottaker
 import no.nav.dagpenger.inntekt.mapping.Virksomhet
+import no.nav.dagpenger.inntekt.mapping.utledInntektType
 import java.time.LocalDateTime.now
 import java.time.YearMonth
 
@@ -39,6 +40,7 @@ private fun mapToInntektkomponentResponse(inntekterDto: InntekterDto): Inntektko
     inntekterDto.virksomheter.forEach { virksomhet ->
         virksomhet.inntekter?.map { inntektMaaned ->
             val inntekter = inntektPerÅrOgMåned[inntektMaaned.aarMaaned]?.first ?: mutableListOf()
+            val inntektType = inntektMaaned.inntektType ?: utledInntektType(inntektMaaned.beskrivelse)
             inntekter.add(
                 Inntekt(
                     inntektMaaned.belop,
@@ -59,7 +61,7 @@ private fun mapToInntektkomponentResponse(inntekterDto: InntekterDto): Inntektko
                     inntektMaaned.inngaarIGrunnlagForTrekk,
                     inntektMaaned.utloeserArbeidsgiveravgift,
                     inntektMaaned.informasjonsstatus,
-                    inntektMaaned.inntektType,
+                    inntektType,
                     inntektMaaned.tilleggsinformasjon,
                 ),
             )
