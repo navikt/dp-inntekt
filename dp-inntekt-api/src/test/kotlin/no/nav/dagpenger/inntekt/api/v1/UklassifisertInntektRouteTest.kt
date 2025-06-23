@@ -22,6 +22,7 @@ import no.nav.dagpenger.inntekt.api.v1.TestApplication.TEST_OAUTH_USER
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.autentisert
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.mockInntektApi
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.withMockAuthServerAndTestApplication
+import no.nav.dagpenger.inntekt.api.v1.models.FullVirksomhetsInformasjon
 import no.nav.dagpenger.inntekt.api.v1.models.InntekterDto
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
 import no.nav.dagpenger.inntekt.db.InntektId
@@ -491,7 +492,11 @@ internal class UklassifisertInntektRouteTest {
                 enhetsregisterClient = enhetsregisterClientMock,
             ),
         ) {
-            coEvery { enhetsregisterClientMock.hentEnhet("1111111") } returns "Test Org"
+            val bodyFraEr =
+                FullVirksomhetsInformasjon::class.java
+                    .getResource("/test-data/example-virksomhet-info.json")!!
+                    .readText()
+            coEvery { enhetsregisterClientMock.hentEnhet("1111111") } returns bodyFraEr
             val body =
                 UklassifisertInntektRouteTest::class.java
                     .getResource("/test-data/example-inntekt-med-inntektId-payload.json")
