@@ -1,6 +1,7 @@
 package no.nav.dagpenger.inntekt.api.v1
 
 import com.auth0.jwt.exceptions.JWTDecodeException
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.authenticate
@@ -18,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import mu.withLoggingContext
+import no.nav.dagpenger.inntekt.api.v1.models.FullVirksomhetsInformasjon
 import no.nav.dagpenger.inntekt.api.v1.models.InntekterDto
 import no.nav.dagpenger.inntekt.api.v1.models.mapToStoredInntekt
 import no.nav.dagpenger.inntekt.db.InntektId
@@ -42,6 +44,7 @@ import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
+import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import java.time.LocalDate
 import kotlin.coroutines.CoroutineContext
 
@@ -299,10 +302,11 @@ private suspend fun hentOrganisasjoner(
         }.onFailure {
             logger.error(it) { "Feil ved henting av organisasjonsnavn for $it" }
         }.onSuccess {
+            var organisasjon = jacksonObjectMapper.readValue<FullVirksomhetsInformasjon>(it)
             val organisasjonsNavnOgIdMapping =
                 Organisasjon(
                     organisasjonsnummer = orgNr,
-                    navn = it,
+                    navn = organisasjon.navn,
                 )
             organisasjoner.add(organisasjonsNavnOgIdMapping)
         }
