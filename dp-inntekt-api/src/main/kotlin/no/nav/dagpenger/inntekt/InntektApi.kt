@@ -240,7 +240,7 @@ internal fun Application.inntektApi(
         }
         authenticate("azure") {
             route("/v3/inntekt") {
-                inntektV3(behandlingsInntektsGetter, personOppslag, inntektStore)
+                inntektV3(behandlingsInntektsGetter, personOppslag, inntektStore, inntektskomponentHttpClient)
             }
         }
         naischecks(healthChecks, meterRegistry)

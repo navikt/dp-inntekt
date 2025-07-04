@@ -18,6 +18,11 @@ import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.db.RegelKontekst
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
@@ -25,7 +30,6 @@ import no.nav.dagpenger.inntekt.v1.Inntekt
 import no.nav.dagpenger.inntekt.v1.KlassifisertInntektMåned
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.YearMonth.now
 import kotlin.test.Test
 
 class KlassifisertInntektRouteV3Test {
@@ -40,7 +44,7 @@ class KlassifisertInntektRouteV3Test {
     private val periodeFraOgMed = YearMonth.of(2017, 1)!!
     private val periodeTilOgMed = YearMonth.of(2018, 12)!!
     private val inntektsId = ULID().nextULID()
-    private val sisteAvsluttendeKalenderMåned = now()
+    private val sisteAvsluttendeKalenderMåned = YearMonth.now()
 
     init {
         coEvery {
@@ -187,11 +191,46 @@ class KlassifisertInntektRouteV3Test {
         }
     }
 
+    @Test
+    fun `harInntekt-endepunktet returnerer true når det finnes inntekt`() {
+        val inntektskomponent = mockk<InntektskomponentClient>()
+
+        coEvery {
+            inntektskomponent.getInntekt(request = any())
+        } returns
+            InntektkomponentResponse(
+                listOf(ArbeidsInntektMaaned(YearMonth.now(), null, null)),
+                Aktoer(AktoerType.NATURLIG_IDENT, fødselsnummer),
+            )
+
+        withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                personOppslag = personOppslagMock,
+                inntektskomponentClient = inntektskomponent,
+            ),
+        ) {
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Post,
+                    endepunkt = "/v3/inntekt/harInntekt",
+                    body =
+                        jacksonObjectMapper.writeValueAsString(
+                            HarInntektRequestDto(fødselsnummer, sisteAvsluttendeKalenderMåned),
+                        ),
+                )
+
+            response.status shouldBe OK
+            val inntekt = jacksonObjectMapper.readValue<Boolean>(response.bodyAsText())
+
+            inntekt shouldBe true
+        }
+    }
+
     private fun createInntekt(manueltRedigert: Boolean): Inntekt =
         Inntekt(
             inntektsId,
-            listOf(KlassifisertInntektMåned(now(), listOf())),
+            listOf(KlassifisertInntektMåned(YearMonth.now(), listOf())),
             manueltRedigert,
-            now(),
+            YearMonth.now(),
         )
 }
