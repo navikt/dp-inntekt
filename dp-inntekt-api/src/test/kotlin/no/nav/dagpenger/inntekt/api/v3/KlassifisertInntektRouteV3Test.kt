@@ -136,13 +136,13 @@ class KlassifisertInntektRouteV3Test {
                 )
 
             response.status shouldBe OK
-            val klassifisertInntektResponseDto =
-                jacksonObjectMapper.readValue<KlassifisertInntektResponseDto>(response.bodyAsText())
-            klassifisertInntektResponseDto.inntektsId shouldBe inntektsId
-            klassifisertInntektResponseDto.inntektsListe.shouldNotBeEmpty()
-            klassifisertInntektResponseDto.manueltRedigert shouldBe true
-            klassifisertInntektResponseDto.begrunnelseManueltRedigert shouldBe "Dette er en begrunnelse."
-            klassifisertInntektResponseDto.sisteAvsluttendeKalenderMåned shouldBe sisteAvsluttendeKalenderMåned
+            val inntektDTO =
+                jacksonObjectMapper.readValue<Inntekt>(response.bodyAsText())
+            inntektDTO.inntektsId shouldBe inntektsId
+            inntektDTO.inntektsListe.shouldNotBeEmpty()
+            inntektDTO.manueltRedigert shouldBe true
+            inntektDTO.begrunnelseManueltRedigert shouldBe "Dette er en begrunnelse."
+            inntektDTO.sisteAvsluttendeKalenderMåned shouldBe sisteAvsluttendeKalenderMåned
         }
     }
 
@@ -182,7 +182,7 @@ class KlassifisertInntektRouteV3Test {
 
             response.status shouldBe OK
             val klassifisertInntektResponseDto =
-                jacksonObjectMapper.readValue<KlassifisertInntektResponseDto>(response.bodyAsText())
+                jacksonObjectMapper.readValue<Inntekt>(response.bodyAsText())
             klassifisertInntektResponseDto.inntektsId shouldBe inntektsId
             klassifisertInntektResponseDto.inntektsListe.shouldNotBeEmpty()
             klassifisertInntektResponseDto.manueltRedigert shouldBe false
@@ -231,6 +231,7 @@ class KlassifisertInntektRouteV3Test {
             inntektsId,
             listOf(KlassifisertInntektMåned(YearMonth.now(), listOf())),
             manueltRedigert,
+            null,
             YearMonth.now(),
         )
 }
