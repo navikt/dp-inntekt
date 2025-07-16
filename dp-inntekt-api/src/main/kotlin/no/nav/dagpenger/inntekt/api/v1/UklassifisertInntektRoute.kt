@@ -29,6 +29,7 @@ import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
+import no.nav.dagpenger.inntekt.db.StoredInntektMedMetadata
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
@@ -152,7 +153,8 @@ fun Route.uklassifisertInntekt(
                         .getStoredInntektMedMetadata(inntektId)
                         .let { storedInntektMedMetadata ->
                             val person = personOppslag.hentPerson(storedInntektMedMetadata.fødselsnummer)
-                            val inntektsmottaker = Inntektsmottaker(storedInntektMedMetadata.fødselsnummer, person.sammensattNavn())
+                            val inntektsmottaker =
+                                Inntektsmottaker(storedInntektMedMetadata.fødselsnummer, person.sammensattNavn())
                             val organisasjoner =
                                 hentOrganisasjoner(
                                     enhetsregisterClient,
@@ -198,7 +200,8 @@ fun Route.uklassifisertInntekt(
                                             beregningsdato = inntektPersonMapping.beregningsdato,
                                         ).apply {
                                             this.opptjeningsperiode.førsteMåned = inntekterDto.periode.fraOgMed
-                                            this.opptjeningsperiode.sisteAvsluttendeKalenderMåned = inntekterDto.periode.tilOgMed
+                                            this.opptjeningsperiode.sisteAvsluttendeKalenderMåned =
+                                                inntekterDto.periode.tilOgMed
                                         },
                                     inntekt = it.inntekt,
                                     manueltRedigert =
@@ -279,6 +282,66 @@ fun Route.uklassifisertInntekt(
                             }.also {
                                 inntektOppfriskingBruktCounter.inc()
                             }
+                    }
+                }
+            }
+        }
+
+        route("/uklassifisert/uncached/{inntektId}") {
+            get {
+                val callId = call.callId
+                withContext(coroutineContext) {
+                    val inntektId = InntektId(call.parameters["inntektId"]!!)
+                    logger.info { "Henter nye inntekt for $inntektId" }
+
+                    call.withInntektRequest("GET /uklassifisert/uncached/") {
+                        inntektStore
+                            .getStoredInntektMedMetadata(inntektId)
+                            .let { storedInntektMedMetadata ->
+                                logger.info { "Henter stored inntekt: ${storedInntektMedMetadata.inntektId}" }
+                                val person = personOppslag.hentPerson(storedInntektMedMetadata.fødselsnummer)
+                                val opptjeningsperiode = Opptjeningsperiode(storedInntektMedMetadata.beregningsdato)
+
+                                toInntektskomponentRequest(person, opptjeningsperiode)
+                                    .let {
+                                        logger.info { "Henter nye inntekter fra inntektskomponenten" }
+                                        inntektskomponentClient.getInntekt(it, callId = callId)
+                                    }.let {
+                                        logger.info { "Fikk nye inntekter fra inntektskomponenten" }
+                                        val inntektsmottaker =
+                                            Inntektsmottaker(person.fødselsnummer, person.sammensattNavn())
+                                        val organisasjoner =
+                                            hentOrganisasjoner(
+                                                enhetsregisterClient,
+                                                it.arbeidsInntektMaaned
+                                                    ?.flatMap { it.arbeidsInntektInformasjon?.inntektListe.orEmpty() }
+                                                    ?.filter { inntekt ->
+                                                        inntekt.virksomhet?.aktoerType == AktoerType.ORGANISASJON &&
+                                                            (inntekt.opptjeningsland == "NO" || inntekt.opptjeningsland == null)
+                                                    }?.mapNotNull { it.virksomhet?.identifikator }
+                                                    ?.toTypedArray()
+                                                    ?.toList() ?: emptyList(),
+                                            )
+
+                                        it.mapToFrontend(
+                                            person = inntektsmottaker,
+                                            organisasjoner = organisasjoner,
+                                            storedInntektMedMetadata =
+                                                StoredInntektMedMetadata(
+                                                    inntektId = inntektId,
+                                                    fødselsnummer = storedInntektMedMetadata.fødselsnummer,
+                                                    inntekt = it,
+                                                    manueltRedigert = false,
+                                                    timestamp = storedInntektMedMetadata.timestamp,
+                                                    beregningsdato = storedInntektMedMetadata.beregningsdato,
+                                                    storedInntektPeriode = storedInntektMedMetadata.storedInntektPeriode,
+                                                    begrunnelse = "",
+                                                ),
+                                        )
+                                    }.let {
+                                        call.respond(HttpStatusCode.OK, it)
+                                    }.also { inntektOppfriskingCounter.inc() }
+                            } ?: throw InntektNotFoundException("Inntekt with id $inntektId not found.")
                     }
                 }
             }
