@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'dp-inntekt-kontrakter/**'
+  workflow_dispatch:
+
 jobs:
 
   build:
