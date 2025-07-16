@@ -6,33 +6,36 @@ class Inntekt(
     val inntektsId: String,
     val inntektsListe: List<KlassifisertInntektMåned>,
     val manueltRedigert: Boolean? = false,
+    val begrunnelseManueltRedigert: String? = null,
     val sisteAvsluttendeKalenderMåned: YearMonth,
 ) {
-    fun splitIntoInntektsPerioder(): InntektsPerioder {
-        return Triple(
-            (0L..11L).map { i ->
-                inntektsListe.find { it.årMåned == sisteAvsluttendeKalenderMåned.minusMonths(i) }
-                    ?: KlassifisertInntektMåned(
-                        sisteAvsluttendeKalenderMåned.minusMonths(i),
-                        emptyList(),
-                    )
-            }.sortedBy { it.årMåned },
-            (12L..23L).map { i ->
-                inntektsListe.find { it.årMåned == sisteAvsluttendeKalenderMåned.minusMonths(i) }
-                    ?: KlassifisertInntektMåned(
-                        sisteAvsluttendeKalenderMåned.minusMonths(i),
-                        emptyList(),
-                    )
-            }.sortedBy { it.årMåned },
-            (24L..35L).map { i ->
-                inntektsListe.find { it.årMåned == sisteAvsluttendeKalenderMåned.minusMonths(i) }
-                    ?: KlassifisertInntektMåned(
-                        sisteAvsluttendeKalenderMåned.minusMonths(i),
-                        emptyList(),
-                    )
-            }.sortedBy { it.årMåned },
+    fun splitIntoInntektsPerioder(): InntektsPerioder =
+        Triple(
+            (0L..11L)
+                .map { i ->
+                    inntektsListe.find { it.årMåned == sisteAvsluttendeKalenderMåned.minusMonths(i) }
+                        ?: KlassifisertInntektMåned(
+                            sisteAvsluttendeKalenderMåned.minusMonths(i),
+                            emptyList(),
+                        )
+                }.sortedBy { it.årMåned },
+            (12L..23L)
+                .map { i ->
+                    inntektsListe.find { it.årMåned == sisteAvsluttendeKalenderMåned.minusMonths(i) }
+                        ?: KlassifisertInntektMåned(
+                            sisteAvsluttendeKalenderMåned.minusMonths(i),
+                            emptyList(),
+                        )
+                }.sortedBy { it.årMåned },
+            (24L..35L)
+                .map { i ->
+                    inntektsListe.find { it.årMåned == sisteAvsluttendeKalenderMåned.minusMonths(i) }
+                        ?: KlassifisertInntektMåned(
+                            sisteAvsluttendeKalenderMåned.minusMonths(i),
+                            emptyList(),
+                        )
+                }.sortedBy { it.årMåned },
         )
-    }
 
     fun filterPeriod(
         from: YearMonth,

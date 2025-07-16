@@ -21,7 +21,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.v1.Inntekt
-import no.nav.dagpenger.inntekt.v1.KlassifisertInntektMåned
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -57,7 +56,7 @@ fun Route.inntektV3(
 
                 call.respond(
                     HttpStatusCode.OK,
-                    mapToKlassifisertInntektResponseDto(klassifisertInntekt, manueltRedigert),
+                    mapToInntektDTO(klassifisertInntekt, manueltRedigert),
                 )
             }
         }
@@ -99,24 +98,16 @@ data class KlassifisertInntektRequestDto(
     val periodeTilOgMed: YearMonth,
 )
 
-data class KlassifisertInntektResponseDto(
-    val inntektsId: String,
-    val inntektsListe: List<KlassifisertInntektMåned>,
-    val manueltRedigert: Boolean? = false,
-    val begrunnelseManueltRedigert: String? = null,
-    val sisteAvsluttendeKalenderMåned: YearMonth,
-)
-
 data class HarInntektRequestDto(
     val ident: String,
     val måned: YearMonth,
 )
 
-private fun mapToKlassifisertInntektResponseDto(
+private fun mapToInntektDTO(
     inntekt: Inntekt,
     manueltRedigert: ManueltRedigert?,
-): KlassifisertInntektResponseDto =
-    KlassifisertInntektResponseDto(
+): Inntekt =
+    Inntekt(
         inntektsId = inntekt.inntektsId,
         inntektsListe = inntekt.inntektsListe,
         manueltRedigert = inntekt.manueltRedigert,
