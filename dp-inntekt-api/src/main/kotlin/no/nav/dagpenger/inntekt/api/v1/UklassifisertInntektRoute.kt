@@ -29,9 +29,9 @@ import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
+import no.nav.dagpenger.inntekt.db.StoredInntektMedMetadata
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
-import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.mapping.GUIInntekt
 import no.nav.dagpenger.inntekt.mapping.Inntektsmottaker
@@ -322,20 +322,20 @@ fun Route.uklassifisertInntekt(
                                                 ?.toList() ?: emptyList(),
                                         )
 
-                                    val kombinerFraInntektskomponentenOgStoredInntekt =
-                                        kombinerInntektFraInntektskomponentenOgStoredInntekt(
-                                            it,
-                                            storedInntektMedMetadata.inntekt,
-                                        )
-                                    val oppdatertInntekt =
-                                        storedInntektMedMetadata.copy(
-                                            inntekt = kombinerFraInntektskomponentenOgStoredInntekt,
-                                        )
-
-                                    kombinerFraInntektskomponentenOgStoredInntekt.mapToFrontend(
+                                    it.mapToFrontend(
                                         person = inntektsmottaker,
                                         organisasjoner = organisasjoner,
-                                        storedInntektMedMetadata = oppdatertInntekt,
+                                        storedInntektMedMetadata =
+                                            StoredInntektMedMetadata(
+                                                inntektId = inntektId,
+                                                fødselsnummer = storedInntektMedMetadata.fødselsnummer,
+                                                inntekt = it,
+                                                manueltRedigert = false,
+                                                timestamp = storedInntektMedMetadata.timestamp,
+                                                beregningsdato = storedInntektMedMetadata.beregningsdato,
+                                                storedInntektPeriode = storedInntektMedMetadata.storedInntektPeriode,
+                                                begrunnelse = "",
+                                            ),
                                     )
                                 }.let {
                                     call.respond(HttpStatusCode.OK, it)
@@ -350,53 +350,6 @@ fun Route.uklassifisertInntekt(
             call.respond(HttpStatusCode.OK, dataGrunnlagKlassifiseringToVerdikode.values)
         }
     }
-}
-
-fun kombinerInntektFraInntektskomponentenOgStoredInntekt(
-    inntektKomponentFraAInntekt: InntektkomponentResponse,
-    inntektKomponentFraDB: InntektkomponentResponse,
-): InntektkomponentResponse {
-    logger.info { "Kombinerer data fra A-Inntekt og fra databasen" }
-    var inntektMånederFraAInntekt = inntektKomponentFraAInntekt.arbeidsInntektMaaned ?: emptyList()
-
-    logger.info("Antall fra A-Inntekt: ${inntektMånederFraAInntekt.size}")
-    logger.info("Antall fra Db: ${inntektKomponentFraDB.arbeidsInntektMaaned?.size ?: 0}")
-
-    inntektKomponentFraDB.arbeidsInntektMaaned?.map { storedInntektMåned ->
-        val inntektKomponentMåned = inntektMånederFraAInntekt.find { it.aarMaaned == storedInntektMåned.aarMaaned }
-        if (inntektKomponentMåned != null) {
-            inntektKomponentMåned.arbeidsInntektInformasjon?.inntektListe.orEmpty().forEach { inntekt ->
-                val matchIndex =
-                    storedInntektMåned.arbeidsInntektInformasjon
-                        ?.inntektListe
-                        ?.indexOfFirst {
-                            it.virksomhet?.identifikator == inntekt.virksomhet?.identifikator &&
-                                it.utbetaltIMaaned == inntekt.utbetaltIMaaned &&
-                                it.beskrivelse == inntekt.beskrivelse
-                        }
-                if (matchIndex != null && matchIndex >= 0) {
-                    storedInntektMåned.arbeidsInntektInformasjon.inntektListe.let {
-                        it.toMutableList()[matchIndex] = inntekt
-                    }
-                }
-            }
-            inntektMånederFraAInntekt =
-                inntektMånederFraAInntekt.filter { it.aarMaaned != storedInntektMåned.aarMaaned }
-        }
-    }
-
-    inntektKomponentFraDB.copy(
-        arbeidsInntektMaaned =
-            (inntektKomponentFraDB.arbeidsInntektMaaned ?: emptyList()) +
-                inntektMånederFraAInntekt.map {
-                    it.copy(
-                        arbeidsInntektInformasjon = it.arbeidsInntektInformasjon?.copy(inntektListe = emptyList()),
-                    )
-                },
-    )
-    logger.info("Total antall inntektsmåneder etter kombinasjon: ${inntektKomponentFraDB.arbeidsInntektMaaned?.size ?: 0}")
-
-    return inntektKomponentFraDB
 }
 
 private suspend fun hentOrganisasjoner(
