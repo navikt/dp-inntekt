@@ -327,31 +327,16 @@ fun Route.uklassifisertInntekt(
                                             it,
                                             storedInntektMedMetadata.inntekt,
                                         )
-
-                                    logger.info {
-                                        kombinerFraInntektskomponentenOgStoredInntekt.arbeidsInntektMaaned?.joinToString(
-                                            separator = "\n",
-                                            prefix = "Kombinert inntekt before mapping:\n",
-                                        ) { it.toString() } ?: "Ingen inntekter funnet"
-                                    }
-
                                     val oppdatertInntekt =
                                         storedInntektMedMetadata.copy(
                                             inntekt = kombinerFraInntektskomponentenOgStoredInntekt,
                                         )
 
-                                    logger.info("UpdatedStoredInntekt: $oppdatertInntekt")
-
-                                    val mapToFrontend =
-                                        it.mapToFrontend(
-                                            person = inntektsmottaker,
-                                            organisasjoner = organisasjoner,
-                                            storedInntektMedMetadata = oppdatertInntekt,
-                                        )
-
-                                    logger.info { "Kombinert inntekt after mapping: $mapToFrontend" }
-
-                                    mapToFrontend
+                                    kombinerFraInntektskomponentenOgStoredInntekt.mapToFrontend(
+                                        person = inntektsmottaker,
+                                        organisasjoner = organisasjoner,
+                                        storedInntektMedMetadata = oppdatertInntekt,
+                                    )
                                 }.let {
                                     call.respond(HttpStatusCode.OK, it)
                                 }.also { inntektOppfriskingCounter.inc() }
