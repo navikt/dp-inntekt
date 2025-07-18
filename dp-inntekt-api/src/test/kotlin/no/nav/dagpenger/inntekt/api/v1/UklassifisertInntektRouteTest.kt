@@ -37,6 +37,9 @@ import no.nav.dagpenger.inntekt.db.StoredInntektMedMetadata
 import no.nav.dagpenger.inntekt.db.StoredInntektPeriode
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektMaaned
+import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Inntekt
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
@@ -588,4 +591,154 @@ internal class UklassifisertInntektRouteTest {
             storeInntektCommandSlot.captured.manueltRedigert!!.redigertAv shouldBe TEST_OAUTH_USER
             storeInntektCommandSlot.captured.manueltRedigert!!.begrunnelse shouldBe "Dette er en begrunnelse."
         }
+
+    @Test
+    fun `Get request for uncached uklassifisert inntekt skal returnere 200 OK og inntekt`() {
+        val enhetsregisterClientMock = mockk<EnhetsregisterClient>(relaxed = true)
+        val inntektKomponentClientMock = mockk<InntektskomponentClient>(relaxed = true)
+        return withMockAuthServerAndTestApplication(
+            mockInntektApi(
+                inntektskomponentClient = inntektKomponentClientMock,
+                inntektStore = inntektStoreMock,
+                personOppslag = personOppslagMock,
+                enhetsregisterClient = enhetsregisterClientMock,
+            ),
+        ) {
+            val body =
+                UklassifisertInntektRouteTest::class.java
+                    .getResource("/test-data/example-inntekt-med-inntektId-payload.json")
+                    ?.readText()
+            every {
+                inntektStoreMock.getStoredInntektMedMetadata(inntektId)
+            } returns
+                StoredInntektMedMetadata(
+                    inntektId,
+                    inntekt = jacksonObjectMapper.readValue(body!!),
+                    manueltRedigert = false,
+                    timestamp = LocalDateTime.now(),
+                    fødselsnummer = fødselsnummer,
+                    beregningsdato = now(),
+                    storedInntektPeriode =
+                        StoredInntektPeriode(
+                            fraOgMed = YearMonth.of(2023, 1),
+                            tilOgMed = YearMonth.of(2025, 5),
+                        ),
+                )
+
+            val inntektKomponentResponseFraAInntekt =
+                InntektkomponentResponse(
+                    arbeidsInntektMaaned =
+                        listOf(
+                            ArbeidsInntektMaaned(
+                                aarMaaned = YearMonth.parse("2019-01"),
+                                avvikListe = null,
+                                arbeidsInntektInformasjon =
+                                    ArbeidsInntektInformasjon(
+                                        inntektListe =
+                                            listOf(
+                                                Inntekt(
+                                                    inntektType = InntektType.NAERINGSINNTEKT,
+                                                    beloep = BigDecimal(250000),
+                                                    fordel = "kontantytelse",
+                                                    inntektskilde = "A-ordningen",
+                                                    inntektsperiodetype = "Maaned",
+                                                    inntektsstatus = "LoependeInnrapportert",
+                                                    leveringstidspunkt = YearMonth.parse("2019-02"),
+                                                    utbetaltIMaaned = YearMonth.parse("2018-03"),
+                                                    opplysningspliktig =
+                                                        Aktoer(
+                                                            aktoerType = AktoerType.ORGANISASJON,
+                                                            identifikator = "1111111",
+                                                        ),
+                                                    virksomhet =
+                                                        Aktoer(
+                                                            aktoerType = AktoerType.ORGANISASJON,
+                                                            identifikator = "1111111",
+                                                        ),
+                                                    inntektsmottaker =
+                                                        Aktoer(
+                                                            aktoerType = AktoerType.NATURLIG_IDENT,
+                                                            identifikator = "99999999999",
+                                                        ),
+                                                    inngaarIGrunnlagForTrekk = true,
+                                                    utloeserArbeidsgiveravgift = true,
+                                                    informasjonsstatus = "InngaarAlltid",
+                                                    beskrivelse = InntektBeskrivelse.LOTT_KUN_TRYGDEAVGIFT,
+                                                ),
+                                            ),
+                                    ),
+                            ),
+                            ArbeidsInntektMaaned(
+                                aarMaaned = YearMonth.parse("2018-03"),
+                                avvikListe = null,
+                                arbeidsInntektInformasjon =
+                                    ArbeidsInntektInformasjon(
+                                        inntektListe =
+                                            listOf(
+                                                Inntekt(
+                                                    inntektType = InntektType.NAERINGSINNTEKT,
+                                                    beloep = BigDecimal(250000),
+                                                    fordel = "kontantytelse",
+                                                    inntektskilde = "A-ordningen",
+                                                    inntektsperiodetype = "Maaned",
+                                                    inntektsstatus = "LoependeInnrapportert",
+                                                    leveringstidspunkt = YearMonth.parse("2019-02"),
+                                                    utbetaltIMaaned = YearMonth.parse("2018-03"),
+                                                    opplysningspliktig =
+                                                        Aktoer(
+                                                            aktoerType = AktoerType.ORGANISASJON,
+                                                            identifikator = "1111111",
+                                                        ),
+                                                    virksomhet =
+                                                        Aktoer(
+                                                            aktoerType = AktoerType.ORGANISASJON,
+                                                            identifikator = "1111111",
+                                                        ),
+                                                    inntektsmottaker =
+                                                        Aktoer(
+                                                            aktoerType = AktoerType.NATURLIG_IDENT,
+                                                            identifikator = "99999999999",
+                                                        ),
+                                                    inngaarIGrunnlagForTrekk = true,
+                                                    utloeserArbeidsgiveravgift = true,
+                                                    informasjonsstatus = "InngaarAlltid",
+                                                    beskrivelse = InntektBeskrivelse.LOTT_KUN_TRYGDEAVGIFT,
+                                                ),
+                                            ),
+                                    ),
+                            ),
+                        ),
+                    ident =
+                        Aktoer(
+                            aktoerType = AktoerType.NATURLIG_IDENT,
+                            identifikator = "-1",
+                        ),
+                )
+            coEvery {
+                inntektKomponentClientMock.getInntekt(
+                    request = any(),
+                    callId = any(),
+                )
+            } returns inntektKomponentResponseFraAInntekt
+
+            val bodyFraEr =
+                FullVirksomhetsInformasjon::class.java
+                    .getResource("/test-data/example-virksomhet-info.json")!!
+                    .readText()
+            coEvery { enhetsregisterClientMock.hentEnhet("1111111") } returns bodyFraEr
+
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Get,
+                    endepunkt = "$uklassifisertInntekt/uncached/${inntektId.id}",
+                )
+
+            assertEquals(OK, response.status)
+
+            val storedInntekt =
+                jacksonObjectMapper.readValue<InntekterDto>(response.bodyAsText())
+            storedInntekt.virksomheter shouldHaveSize 1
+            storedInntekt.virksomheter[0].inntekter?.shouldHaveSize((2))
+        }
+    }
 }
