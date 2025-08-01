@@ -336,6 +336,7 @@ fun Route.uklassifisertInntekt(
                                                 storedInntektPeriode = storedInntektMedMetadata.storedInntektPeriode,
                                                 begrunnelse = "",
                                             ),
+                                        oppdaterTimestamp = true,
                                     )
                                 }.let {
                                     call.respond(HttpStatusCode.OK, it)
