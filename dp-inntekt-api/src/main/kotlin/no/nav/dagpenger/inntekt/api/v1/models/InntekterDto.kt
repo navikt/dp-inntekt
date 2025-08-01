@@ -12,6 +12,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.mapping.Inntektsmottaker
 import no.nav.dagpenger.inntekt.mapping.Virksomhet
 import no.nav.dagpenger.inntekt.mapping.utledInntektType
+import java.time.LocalDateTime
 import java.time.LocalDateTime.now
 import java.time.YearMonth
 
@@ -20,6 +21,7 @@ data class InntekterDto(
     val mottaker: Inntektsmottaker,
     val periode: PeriodeDto,
     val begrunnelse: String? = null,
+    val timestamp: LocalDateTime? = null,
 )
 
 data class PeriodeDto(

@@ -12,12 +12,14 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Periode
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.time.YearMonth
 
 fun InntektkomponentResponse.mapToFrontend(
     person: Inntektsmottaker,
     organisasjoner: List<Organisasjon>,
     storedInntektMedMetadata: StoredInntektMedMetadata,
+    oppdaterTimestamp: Boolean = false,
 ): InntekterDto {
     val inntekt = arbeidsInntektMaaned
     val virksomheter: MutableList<Virksomhet> = mutableListOf()
@@ -103,8 +105,19 @@ fun InntektkomponentResponse.mapToFrontend(
         mottaker = person,
         periode = getPeriode(storedInntektMedMetadata),
         begrunnelse = storedInntektMedMetadata.begrunnelse,
+        timestamp = hentTid(oppdaterTimestamp, storedInntektMedMetadata),
     )
 }
+
+private fun hentTid(
+    oppdaterTimestamp: Boolean,
+    storedInntektMedMetadata: StoredInntektMedMetadata,
+): LocalDateTime? =
+    if (oppdaterTimestamp) {
+        LocalDateTime.now()
+    } else {
+        storedInntektMedMetadata.timestamp
+    }
 
 private fun getPeriode(storedInntektMedMetadata: StoredInntektMedMetadata): PeriodeDto {
     val opptjeningsperiode = Opptjeningsperiode(beregningsdato = storedInntektMedMetadata.beregningsdato)
