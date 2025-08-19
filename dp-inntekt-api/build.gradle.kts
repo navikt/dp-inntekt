@@ -37,7 +37,7 @@ dependencies {
     implementation(libs.ktor.server.auth.jwt)
     implementation(libs.ktor.server.metrics.micrometer)
 
-    implementation("io.micrometer:micrometer-registry-prometheus:1.15.2")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.15.3")
 
     implementation("io.prometheus:client_java:1.4.1")
     implementation("io.prometheus:prometheus-metrics-core:1.4.1")
