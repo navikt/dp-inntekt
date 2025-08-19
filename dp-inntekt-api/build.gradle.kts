@@ -39,9 +39,9 @@ dependencies {
 
     implementation("io.micrometer:micrometer-registry-prometheus:1.15.2")
 
-    implementation("io.prometheus:client_java:1.3.10")
-    implementation("io.prometheus:prometheus-metrics-core:1.3.10")
-    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.3.10")
+    implementation("io.prometheus:client_java:1.4.1")
+    implementation("io.prometheus:prometheus-metrics-core:1.4.1")
+    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.4.1")
 
     implementation("com.expediagroup:graphql-kotlin-client:$expediaGraphqlVersion")
     implementation("com.expediagroup:graphql-kotlin-ktor-client:$expediaGraphqlVersion")
