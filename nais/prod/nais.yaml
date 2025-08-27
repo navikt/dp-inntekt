@@ -55,6 +55,7 @@ spec:
         - application: dp-arena-sink
         - application: dp-inntekt-klassifiserer
         - application: dagpenger-regel-ui
+        - application: dp-inntekt-frontend
   kafka:
     pool: nav-prod
   ingresses:
