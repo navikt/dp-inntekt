@@ -1,5 +1,5 @@
 # Ignore everything
 **
 
-# Except shadow jar
-!dp-inntekt-api/build/libs/dp-inntekt-api-all.jar
+# Except distribution
+!dp-inntekt-api/build/install/**

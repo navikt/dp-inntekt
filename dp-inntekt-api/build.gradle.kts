@@ -1,11 +1,6 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
-
-
 plugins {
     id("common")
     application
-    alias(libs.plugins.shadow.jar)
     id("com.expediagroup.graphql") version "8.8.1"
     id("de.undercouch.download") version "5.6.0"
 }
@@ -89,10 +84,6 @@ dependencies {
     testImplementation("org.skyscreamer:jsonassert:1.5.3")
 }
 
-tasks.named("shadowJar") {
-    dependsOn("test")
-}
-
 tasks.named("compileKotlin") {
     dependsOn("graphqlGenerateClient")
 }
@@ -144,9 +135,4 @@ java {
     val mainJavaSourceSet: SourceDirectorySet = sourceSets.getByName("main").java
     val graphqlDir = "$buildDir_/generated/source/graphql/main"
     mainJavaSourceSet.srcDirs(graphqlDir)
-}
-
-tasks.withType<ShadowJar> {
-    transform(Log4j2PluginsCacheFileTransformer::class.java)
-    mergeServiceFiles()
 }

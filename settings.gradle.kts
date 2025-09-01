@@ -11,7 +11,7 @@ plugins {
  */
 
 rootProject.name = "dp-inntekt"
-include("dp-inntekt-api", "dp-inntekt-kontrakter", "openapi")
+include("dp-inntekt-api", "dp-inntekt-kontrakter")
 
 dependencyResolutionManagement {
     repositories {
