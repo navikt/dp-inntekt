@@ -4,7 +4,7 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.booleanType
 import com.natpryce.konfig.stringType
 import com.zaxxer.hikari.HikariDataSource
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.dagpenger.inntekt.Config
 import no.nav.dagpenger.inntekt.Config.config
 import org.flywaydb.core.Flyway
@@ -40,7 +40,8 @@ internal object PostgresDataSourceBuilder {
     }
 
     private val flyWayBuilder: FluentConfiguration =
-        Flyway.configure()
+        Flyway
+            .configure()
             .connectRetries(10)
             .validateMigrationNaming(true)
             .failOnMissingLocations(true)

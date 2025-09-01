@@ -1,9 +1,9 @@
 package no.nav.dagpenger.inntekt
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.Config.inntektApiConfig
 import no.nav.dagpenger.inntekt.db.PostgresDataSourceBuilder
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore

@@ -1,11 +1,11 @@
 package no.nav.dagpenger.inntekt.subsumsjonbrukt
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.Config
 import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.HealthStatus
@@ -29,7 +29,8 @@ internal class KafkaSubsumsjonBruktDataConsumer(
     private val config: InntektApiConfig,
     private val inntektStore: InntektStore,
     private val graceDuration: Duration = Duration.ofHours(3),
-) : CoroutineScope, HealthCheck {
+) : CoroutineScope,
+    HealthCheck {
     private val logger = KotlinLogging.logger { }
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
@@ -62,7 +63,8 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                     while (job.isActive) {
                         val records = consumer.poll(Duration.ofMillis(100))
                         val ids =
-                            records.asSequence()
+                            records
+                                .asSequence()
                                 .map { record -> record.value() }
                                 .map { jacksonObjectMapper.readTree(it) }
                                 .filter { packet ->
@@ -71,8 +73,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                                         packet.has("inntektsId") &&
                                         packet.has("kontekst") &&
                                         packet.get("@event_name").asText() == "brukt_inntekt"
-                                }
-                                .map { packet -> InntektId(packet.get("inntektsId").asText()) }
+                                }.map { packet -> InntektId(packet.get("inntektsId").asText()) }
                                 .toList()
 
                         try {
@@ -138,8 +139,8 @@ internal class KafkaSubsumsjonBruktDataConsumer(
         internal fun commonConfig(
             bootstrapServers: String,
             credential: Config.KafkaAivenCredentials? = null,
-        ): Properties {
-            return Properties().apply {
+        ): Properties =
+            Properties().apply {
                 put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers)
                 credential?.let { creds ->
                     putAll(
@@ -159,7 +160,6 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                     )
                 }
             }
-        }
     }
 
     private fun consumerConfig(
@@ -167,11 +167,10 @@ internal class KafkaSubsumsjonBruktDataConsumer(
         bootstrapServerUrl: String,
         credential: Config.KafkaAivenCredentials? = null,
         properties: Properties = defaultConsumerConfig,
-    ): Properties {
-        return Properties().apply {
+    ): Properties =
+        Properties().apply {
             putAll(properties)
             putAll(commonConfig(bootstrapServerUrl, credential))
             put(ConsumerConfig.GROUP_ID_CONFIG, groupId)
         }
-    }
 }

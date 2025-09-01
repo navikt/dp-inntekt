@@ -1,5 +1,7 @@
 package no.nav.dagpenger.inntekt.api.v3
 
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.oshai.kotlinlogging.withLoggingContext
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.plugins.callid.callId
 import io.ktor.server.request.receive
@@ -9,8 +11,6 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
-import mu.KotlinLogging
-import mu.withLoggingContext
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore

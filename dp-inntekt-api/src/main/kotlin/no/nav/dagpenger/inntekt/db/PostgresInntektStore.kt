@@ -2,11 +2,11 @@ package no.nav.dagpenger.inntekt.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.huxhorn.sulky.ulid.ULID
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.prometheus.metrics.core.metrics.Summary
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
-import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse

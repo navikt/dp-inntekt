@@ -1,12 +1,12 @@
 package no.nav.dagpenger.inntekt.subsumsjonbrukt
 
 import de.huxhorn.sulky.ulid.ULID
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.Config
 import no.nav.dagpenger.inntekt.Config.inntektApiConfig
 import no.nav.dagpenger.inntekt.HealthStatus
@@ -18,7 +18,6 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
-import org.apache.logging.log4j.CloseableThreadContext.putAll
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
 import org.testcontainers.kafka.ConfluentKafkaContainer
@@ -66,14 +65,15 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
         )
     private val producer by lazy {
         KafkaProducer<String, String>(
-            Properties().apply {
-                putAll(commonConfig(Kafka.instance.bootstrapServers, null))
-                put(ProducerConfig.CLIENT_ID_CONFIG, "test")
-            }.also {
-                it[ProducerConfig.ACKS_CONFIG] = "all"
-                it[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
-                it[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
-            },
+            Properties()
+                .apply {
+                    putAll(commonConfig(Kafka.instance.bootstrapServers, null))
+                    put(ProducerConfig.CLIENT_ID_CONFIG, "test")
+                }.also {
+                    it[ProducerConfig.ACKS_CONFIG] = "all"
+                    it[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
+                    it[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
+                },
         )
     }
 
@@ -91,10 +91,10 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     listen()
                 }
             val metaData =
-                producer.send(
-                    ProducerRecord(config.inntektBruktDataTopic, "test", jacksonObjectMapper.writeValueAsString(bruktInntektMelding)),
-                )
-                    .get(5, TimeUnit.SECONDS)
+                producer
+                    .send(
+                        ProducerRecord(config.inntektBruktDataTopic, "test", jacksonObjectMapper.writeValueAsString(bruktInntektMelding)),
+                    ).get(5, TimeUnit.SECONDS)
             LOGGER.info("Producer produced $bruktInntektMelding with meta $metaData")
 
             TimeUnit.MILLISECONDS.sleep(800)
@@ -121,14 +121,14 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                 }
             val bruktSubsumsjonData = mapOf("faktum" to mapOf("manueltGrunnlag" to "122212"))
             val metaData =
-                producer.send(
-                    ProducerRecord(
-                        config.inntektBruktDataTopic,
-                        "test",
-                        jacksonObjectMapper.writeValueAsString(bruktInntektMeldingManueltGrunnlag),
-                    ),
-                )
-                    .get(5, TimeUnit.SECONDS)
+                producer
+                    .send(
+                        ProducerRecord(
+                            config.inntektBruktDataTopic,
+                            "test",
+                            jacksonObjectMapper.writeValueAsString(bruktInntektMeldingManueltGrunnlag),
+                        ),
+                    ).get(5, TimeUnit.SECONDS)
             LOGGER.info("Producer produced $bruktSubsumsjonData with meta $metaData")
 
             TimeUnit.MILLISECONDS.sleep(500)
@@ -161,10 +161,10 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     listen()
                 }
             val metaData =
-                producer.send(
-                    ProducerRecord(config.inntektBruktDataTopic, "test", jacksonObjectMapper.writeValueAsString(bruktInntektMelding)),
-                )
-                    .get(5, TimeUnit.SECONDS)
+                producer
+                    .send(
+                        ProducerRecord(config.inntektBruktDataTopic, "test", jacksonObjectMapper.writeValueAsString(bruktInntektMelding)),
+                    ).get(5, TimeUnit.SECONDS)
             LOGGER.info("Producer produced $bruktInntektMelding with meta $metaData + should fail")
 
             TimeUnit.MILLISECONDS.sleep(1500)

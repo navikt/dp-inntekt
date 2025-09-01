@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.natpryce.konfig.Configuration
 import de.huxhorn.sulky.ulid.ULID
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -31,7 +32,6 @@ import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
-import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.api.v1.enhetsregisteret
 import no.nav.dagpenger.inntekt.api.v1.inntekt
 import no.nav.dagpenger.inntekt.api.v1.opptjeningsperiodeApi

@@ -5,10 +5,10 @@ import com.auth0.jwk.JwkProviderBuilder
 import com.natpryce.konfig.Configuration
 import com.natpryce.konfig.Key
 import com.natpryce.konfig.stringType
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.auth.jwt.JWTAuthenticationProvider
 import io.ktor.server.auth.jwt.JWTCredential
 import io.ktor.server.auth.jwt.JWTPrincipal
-import mu.KotlinLogging
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
@@ -37,8 +37,8 @@ internal fun JWTAuthenticationProvider.Config.azureAdJWT(config: Configuration) 
     }
 }
 
-private fun jwkProvider(url: String): JwkProvider {
-    return JwkProviderBuilder(URL(url))
+private fun jwkProvider(url: String): JwkProvider =
+    JwkProviderBuilder(URL(url))
         .cached(10, 24, TimeUnit.HOURS) // cache up to 10 JWKs for 24 hours
         .rateLimited(
             10,
@@ -46,4 +46,3 @@ private fun jwkProvider(url: String): JwkProvider {
             TimeUnit.MINUTES,
         ) // if not cached, only allow max 10 different keys per minute to be fetched from external provider
         .build()
-}

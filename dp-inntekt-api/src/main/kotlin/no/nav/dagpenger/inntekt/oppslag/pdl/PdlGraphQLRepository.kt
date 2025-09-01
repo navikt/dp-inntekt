@@ -3,6 +3,7 @@ package no.nav.dagpenger.inntekt.oppslag.pdl
 import com.expediagroup.graphql.client.jackson.GraphQLClientJacksonSerializer
 import com.expediagroup.graphql.client.ktor.GraphQLKtorClient
 import com.expediagroup.graphql.client.types.GraphQLClientResponse
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.defaultRequest
@@ -11,7 +12,6 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
-import mu.KotlinLogging
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonNotFoundException
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
@@ -44,8 +44,17 @@ class PdlGraphQLRepository(
     private fun GraphQLClientResponse<HentPerson.Result>.toPerson(): Person? {
         val navn: Navn? = data?.hentPerson?.navn?.firstOrNull()
         val fødselsnummer =
-            data?.hentIdenter?.identer?.firstOrNull { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }?.ident
-        val aktørId = data?.hentIdenter?.identer?.firstOrNull { it.gruppe == IdentGruppe.AKTORID }?.ident
+            data
+                ?.hentIdenter
+                ?.identer
+                ?.firstOrNull { it.gruppe == IdentGruppe.FOLKEREGISTERIDENT }
+                ?.ident
+        val aktørId =
+            data
+                ?.hentIdenter
+                ?.identer
+                ?.firstOrNull { it.gruppe == IdentGruppe.AKTORID }
+                ?.ident
         return fødselsnummer?.let {
             navn?.let {
                 aktørId?.let {

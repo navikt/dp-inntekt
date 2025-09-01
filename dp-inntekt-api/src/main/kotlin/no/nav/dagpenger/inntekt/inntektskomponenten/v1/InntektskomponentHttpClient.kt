@@ -1,6 +1,8 @@
 package no.nav.dagpenger.inntekt.inntektskomponenten.v1
 
 import de.huxhorn.sulky.ulid.ULID
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.oshai.kotlinlogging.withLoggingContext
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
@@ -21,8 +23,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.jackson.JacksonConverter
 import io.prometheus.metrics.core.metrics.Counter
 import io.prometheus.metrics.core.metrics.Summary
-import mu.KotlinLogging
-import mu.withLoggingContext
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import kotlin.time.Duration.Companion.seconds
 
@@ -31,7 +31,8 @@ private val sikkerLogg = KotlinLogging.logger("tjenestekall")
 private val ulid = ULID()
 const val INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME = "inntektskomponent_client_seconds"
 private val clientLatencyStats: Summary =
-    Summary.builder()
+    Summary
+        .builder()
         .name(INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME)
         .quantile(0.5, 0.05) // Add 50th percentile (= median) with 5% tolerated error
         .quantile(0.9, 0.01) // Add 90th percentile with 1% tolerated error
@@ -40,13 +41,15 @@ private val clientLatencyStats: Summary =
         .register()
 const val INNTEKTSKOMPONENT_FETCH_ERROR = "inntektskomponent_fetch_error"
 private val clientFetchErrors =
-    Counter.builder()
+    Counter
+        .builder()
         .name(INNTEKTSKOMPONENT_FETCH_ERROR)
         .help("Number of times fetching form inntektskomponenten has failed")
         .register()
 const val INNTEKTSKOMPONENT_STATUS_CODES = "inntektskomponent_status_codes"
 private val inntektskomponentStatusCodesCounter =
-    Counter.builder()
+    Counter
+        .builder()
         .name(INNTEKTSKOMPONENT_STATUS_CODES)
         .help("Number of times inntektskomponenten has returned a specific status code")
         .labelNames("status_code")
@@ -102,10 +105,10 @@ internal class InntektkomponentKtorClient(
                     inntektskomponentStatusCodesCounter.labelValues(statusKode.toString()).inc()
                     clientFetchErrors.inc()
                     val feilmelding =
-                        kotlin.runCatching {
-                            jacksonObjectMapper.readTree(error.response.bodyAsText()).get("message").asText()
-                        }
-                            .getOrElse { error.message }
+                        kotlin
+                            .runCatching {
+                                jacksonObjectMapper.readTree(error.response.bodyAsText()).get("message").asText()
+                            }.getOrElse { error.message }
                     throw InntektskomponentenHttpClientException(
                         statusKode,
                         "Failed to fetch inntekt. Problem message: $feilmelding",
