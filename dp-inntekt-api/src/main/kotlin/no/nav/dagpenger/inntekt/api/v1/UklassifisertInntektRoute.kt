@@ -2,6 +2,8 @@ package no.nav.dagpenger.inntekt.api.v1
 
 import com.auth0.jwt.exceptions.JWTDecodeException
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.oshai.kotlinlogging.withLoggingContext
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.authenticate
@@ -17,8 +19,6 @@ import io.ktor.server.routing.route
 import io.prometheus.metrics.core.metrics.Counter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import mu.KotlinLogging
-import mu.withLoggingContext
 import no.nav.dagpenger.inntekt.api.v1.models.FullVirksomhetsInformasjon
 import no.nav.dagpenger.inntekt.api.v1.models.InntekterDto
 import no.nav.dagpenger.inntekt.api.v1.models.mapToStoredInntekt

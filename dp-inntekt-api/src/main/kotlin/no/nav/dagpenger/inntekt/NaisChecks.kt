@@ -1,12 +1,12 @@
 package no.nav.dagpenger.inntekt
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import mu.KotlinLogging
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -29,7 +29,10 @@ fun Routing.naischecks(
         call.respondText("READY", ContentType.Text.Plain)
     }
     get("/metrics") {
-        val names = call.request.queryParameters.getAll("name[]")?.toSet() ?: setOf()
+        val names =
+            call.request.queryParameters
+                .getAll("name[]")
+                ?.toSet() ?: setOf()
         call.respondText(meterRegistry.scrape(), ContentType.parse("text/plain; version=0.0.4; charset=utf-8"))
     }
 }
