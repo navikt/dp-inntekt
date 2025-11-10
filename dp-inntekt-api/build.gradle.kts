@@ -32,11 +32,11 @@ dependencies {
     implementation(libs.ktor.server.auth.jwt)
     implementation(libs.ktor.server.metrics.micrometer)
 
-    implementation("io.micrometer:micrometer-registry-prometheus:1.15.5")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.16.0")
 
-    implementation("io.prometheus:client_java:1.4.2")
-    implementation("io.prometheus:prometheus-metrics-core:1.4.2")
-    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.4.2")
+    implementation("io.prometheus:client_java:1.4.3")
+    implementation("io.prometheus:prometheus-metrics-core:1.4.3")
+    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.4.3")
 
     implementation("com.expediagroup:graphql-kotlin-client:$expediaGraphqlVersion")
     implementation("com.expediagroup:graphql-kotlin-ktor-client:$expediaGraphqlVersion")
