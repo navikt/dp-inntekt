@@ -32,11 +32,11 @@ dependencies {
     implementation(libs.ktor.server.auth.jwt)
     implementation(libs.ktor.server.metrics.micrometer)
 
-    implementation("io.micrometer:micrometer-registry-prometheus:1.15.5")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.16.0")
 
-    implementation("io.prometheus:client_java:1.4.2")
-    implementation("io.prometheus:prometheus-metrics-core:1.4.2")
-    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.4.2")
+    implementation("io.prometheus:client_java:1.4.3")
+    implementation("io.prometheus:prometheus-metrics-core:1.4.3")
+    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.4.3")
 
     implementation("com.expediagroup:graphql-kotlin-client:$expediaGraphqlVersion")
     implementation("com.expediagroup:graphql-kotlin-ktor-client:$expediaGraphqlVersion")
@@ -71,7 +71,7 @@ dependencies {
     testImplementation("no.nav.security:mock-oauth2-server:3.0.1")
     testImplementation("io.ktor:ktor-client-mock:${libs.versions.ktor.get()}")
 
-    testImplementation("org.wiremock:wiremock-standalone:3.13.1")
+    testImplementation("org.wiremock:wiremock-standalone:3.13.2")
 
     testImplementation(libs.bundles.kotest.assertions)
     testImplementation("io.kotest:kotest-property:${libs.versions.kotest.get()}")
