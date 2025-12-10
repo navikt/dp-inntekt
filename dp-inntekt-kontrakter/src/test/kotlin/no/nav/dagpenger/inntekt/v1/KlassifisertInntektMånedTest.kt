@@ -3,6 +3,7 @@ package no.nav.dagpenger.inntekt.v1
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.time.YearMonth
 
 class KlassifisertInntektMånedTest {
@@ -25,7 +26,7 @@ class KlassifisertInntektMånedTest {
             )
         }
 
-    val testInntekt = Inntekt("id", testInntektsListe, sisteAvsluttendeKalenderMåned = senesteMåned)
+    val testInntekt = Inntekt("id", testInntektsListe, sisteAvsluttendeKalenderMåned = senesteMåned, hentetTidspunkt = LocalDateTime.now())
 
     @Test
     fun `sum with empty list of inntektsklasserToSum returns 0`() {

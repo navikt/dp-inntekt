@@ -40,6 +40,7 @@ import no.nav.dagpenger.inntekt.v1.KlassifisertInntekt
 import no.nav.dagpenger.inntekt.v1.KlassifisertInntektMåned
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Date
@@ -145,6 +146,7 @@ internal class InntektRouteSpec {
                             ),
                     ),
                 ),
+            hentetTidspunkt = LocalDateTime.now(),
         )
 
     private val behandlingsInntektsGetterMock: BehandlingsInntektsGetter =

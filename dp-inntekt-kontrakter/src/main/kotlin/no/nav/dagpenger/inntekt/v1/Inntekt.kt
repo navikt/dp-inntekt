@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt.v1
 
+import java.time.LocalDateTime
 import java.time.YearMonth
 
 class Inntekt(
@@ -8,6 +9,7 @@ class Inntekt(
     val manueltRedigert: Boolean? = false,
     val begrunnelseManueltRedigert: String? = null,
     val sisteAvsluttendeKalenderMåned: YearMonth,
+    val hentetTidspunkt: LocalDateTime,
 ) {
     fun splitIntoInntektsPerioder(): InntektsPerioder =
         Triple(
@@ -46,6 +48,7 @@ class Inntekt(
             inntektsId,
             inntektsListe.filter { it.årMåned !in from..to },
             sisteAvsluttendeKalenderMåned = sisteAvsluttendeKalenderMåned,
+            hentetTidspunkt = this.hentetTidspunkt,
         )
     }
 }

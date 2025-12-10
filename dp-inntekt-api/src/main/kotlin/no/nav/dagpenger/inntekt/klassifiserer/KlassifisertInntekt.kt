@@ -20,6 +20,7 @@ fun klassifiserOgMapInntekt(spesifisertInntekt: SpesifisertInntekt): Inntekt {
         inntektsListe = klassifisertInntektMåneder,
         manueltRedigert = spesifisertInntekt.manueltRedigert,
         sisteAvsluttendeKalenderMåned = spesifisertInntekt.sisteAvsluttendeKalenderMåned,
+        hentetTidspunkt = spesifisertInntekt.timestamp,
     )
 }
 

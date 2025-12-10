@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.time.YearMonth
 
 class InntektTest {
@@ -27,7 +28,13 @@ class InntektTest {
             )
         }
 
-    val testInntekt = Inntekt("id", testInntektsListe, sisteAvsluttendeKalenderMåned = sisteAvsluttendeKalenderMåned)
+    val testInntekt =
+        Inntekt(
+            "id",
+            testInntektsListe,
+            sisteAvsluttendeKalenderMåned = sisteAvsluttendeKalenderMåned,
+            hentetTidspunkt = java.time.LocalDateTime.now(),
+        )
 
     @Test
     fun `filtering period of last three months affects sum of inntekt`() {
@@ -91,6 +98,7 @@ class InntektTest {
                         )
                     },
                 sisteAvsluttendeKalenderMåned = sisteAvsluttendeKalenderMåned,
+                hentetTidspunkt = LocalDateTime.now(),
             )
 
         val (first, second, third) = inntekt.splitIntoInntektsPerioder()
@@ -126,6 +134,7 @@ class InntektTest {
                         )
                     },
                 sisteAvsluttendeKalenderMåned = senesteMåned,
+                hentetTidspunkt = LocalDateTime.now(),
             )
         val (first, second, third) = onlyInntektLastYear.splitIntoInntektsPerioder()
 
@@ -164,6 +173,7 @@ class InntektTest {
                         )
                     },
                 sisteAvsluttendeKalenderMåned = senesteMåned,
+                hentetTidspunkt = LocalDateTime.now(),
             )
 
         val (first, second, third) = noInntektThirdPeriod.splitIntoInntektsPerioder()
@@ -202,6 +212,7 @@ class InntektTest {
                         )
                     },
                 sisteAvsluttendeKalenderMåned = sisteAvsluttendeKalenderMåned,
+                hentetTidspunkt = LocalDateTime.now(),
             )
 
         val (first, second, third) = nonContinous.splitIntoInntektsPerioder()

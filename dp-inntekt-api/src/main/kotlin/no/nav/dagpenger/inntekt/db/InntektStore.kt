@@ -41,7 +41,7 @@ data class Inntektparametre(
 ) {
     val opptjeningsperiode: Opptjeningsperiode = Opptjeningsperiode(beregningsdato)
 
-    fun toDebugString(): String = "Inntektparametre(aktørId='$aktørId', beregningsdato=$beregningsdato, regelkontekst=$regelkontekst)"
+    fun toDebugString(): String = "Inntektparametre(beregningsdato=$beregningsdato, regelkontekst=$regelkontekst)"
 }
 
 data class RegelKontekst(

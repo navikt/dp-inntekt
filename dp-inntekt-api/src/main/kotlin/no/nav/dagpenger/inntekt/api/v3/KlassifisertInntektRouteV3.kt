@@ -113,4 +113,5 @@ private fun mapToInntektDTO(
         manueltRedigert = inntekt.manueltRedigert,
         begrunnelseManueltRedigert = manueltRedigert?.begrunnelse,
         sisteAvsluttendeKalenderMåned = inntekt.sisteAvsluttendeKalenderMåned,
+        hentetTidspunkt = inntekt.hentetTidspunkt,
     )

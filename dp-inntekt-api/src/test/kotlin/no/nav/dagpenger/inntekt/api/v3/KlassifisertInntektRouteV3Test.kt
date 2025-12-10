@@ -29,6 +29,7 @@ import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import no.nav.dagpenger.inntekt.v1.Inntekt
 import no.nav.dagpenger.inntekt.v1.KlassifisertInntektMåned
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.YearMonth
 import kotlin.test.Test
 
@@ -233,5 +234,6 @@ class KlassifisertInntektRouteV3Test {
             manueltRedigert,
             null,
             YearMonth.now(),
+            LocalDateTime.now(),
         )
 }
