@@ -9,7 +9,7 @@ class Inntekt(
     val manueltRedigert: Boolean? = false,
     val begrunnelseManueltRedigert: String? = null,
     val sisteAvsluttendeKalenderMåned: YearMonth,
-    val hentetTidspunkt: LocalDateTime?,
+    val hentetTidspunkt: LocalDateTime? = null,
 ) {
     fun splitIntoInntektsPerioder(): InntektsPerioder =
         Triple(
