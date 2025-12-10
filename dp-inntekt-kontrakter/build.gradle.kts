@@ -37,7 +37,7 @@ publishing {
             pom {
                 name.set("dp-inntekt-kontrakter")
                 description.set(
-                    "Holder definisjonen av dagpenger inntekt",
+                    "Holder definisjonen av dagpenger inntekt og hjelpemetoder for splitte inntekter",
                 )
                 url.set("https://github.com/navikt/dp-inntekt")
                 withXml {
