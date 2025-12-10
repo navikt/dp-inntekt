@@ -21,16 +21,16 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - uses: gradle/wrapper-validation-action@v3.5.0
-      - uses: gradle/gradle-build-action@v3.5.0
+      - uses: gradle/actions/wrapper-validation@v5
+      - uses: gradle/actions/setup-gradle@v5
         env:
           # Eksluder test dependencies
           DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: compileClasspath|runtimeClasspath
         with:
           gradle-version: wrapper
           dependency-graph: generate-and-submit
-          arguments: --configuration-cache :dp-inntekt-kontrakter:test
-
+      - name: Test dp-inntekt-kontrakter
+        run: ./gradlew clean --configuration-cache :dp-inntekt-kontrakter:test
 
   release:
     name: Create Release
