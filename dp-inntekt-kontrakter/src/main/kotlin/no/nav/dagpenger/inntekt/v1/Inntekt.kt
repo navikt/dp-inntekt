@@ -11,20 +11,33 @@ class Inntekt(
     val sisteAvsluttendeKalenderMåned: YearMonth,
     val hentetTidspunkt: LocalDateTime? = null,
 ) {
-    fun splitIntoInntektsPerioder(): InntektsPerioder {
-        val inntektMap = inntektsListe.associateBy { it.årMåned }
-
-        fun getOrCreateInntektMåned(antallMånederTilbake: Long): KlassifisertInntektMåned {
-            val måned = sisteAvsluttendeKalenderMåned.minusMonths(antallMånederTilbake)
-            return inntektMap[måned] ?: KlassifisertInntektMåned(måned, emptyList())
-        }
-
-        return Triple(
-            (0L..11L).map { getOrCreateInntektMåned(it) }.sortedBy { it.årMåned },
-            (12L..23L).map { getOrCreateInntektMåned(it) }.sortedBy { it.årMåned },
-            (24L..35L).map { getOrCreateInntektMåned(it) }.sortedBy { it.årMåned },
+    fun splitIntoInntektsPerioder(): InntektsPerioder =
+        Triple(
+            (0L..11L)
+                .map { i ->
+                    inntektsListe.find { it.årMåned == sisteAvsluttendeKalenderMåned.minusMonths(i) }
+                        ?: KlassifisertInntektMåned(
+                            sisteAvsluttendeKalenderMåned.minusMonths(i),
+                            emptyList(),
+                        )
+                }.sortedBy { it.årMåned },
+            (12L..23L)
+                .map { i ->
+                    inntektsListe.find { it.årMåned == sisteAvsluttendeKalenderMåned.minusMonths(i) }
+                        ?: KlassifisertInntektMåned(
+                            sisteAvsluttendeKalenderMåned.minusMonths(i),
+                            emptyList(),
+                        )
+                }.sortedBy { it.årMåned },
+            (24L..35L)
+                .map { i ->
+                    inntektsListe.find { it.årMåned == sisteAvsluttendeKalenderMåned.minusMonths(i) }
+                        ?: KlassifisertInntektMåned(
+                            sisteAvsluttendeKalenderMåned.minusMonths(i),
+                            emptyList(),
+                        )
+                }.sortedBy { it.årMåned },
         )
-    }
 
     fun filterPeriod(
         from: YearMonth,
