@@ -9,6 +9,9 @@ jobs:
   test:
     name: test
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-java@v5
@@ -19,3 +22,8 @@ jobs:
       - uses: gradle/actions/wrapper-validation@v5
       - uses: gradle/actions/setup-gradle@v5
       - run: ./gradlew --configuration-cache test
+      - name: Publish results (unit test)
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: (!cancelled())
+        with:
+          files: "**/build/test-results/test/TEST-*.xml"
