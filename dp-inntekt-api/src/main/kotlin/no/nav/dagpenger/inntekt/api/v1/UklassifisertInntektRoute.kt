@@ -30,6 +30,7 @@ import no.nav.dagpenger.inntekt.db.ManueltRedigert
 import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.db.StoredInntektMedMetadata
+import no.nav.dagpenger.inntekt.dpbehandling.DpBehandlingKlient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
@@ -47,6 +48,7 @@ import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import java.time.LocalDate
+import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
 private val logger = KotlinLogging.logger {}
@@ -77,6 +79,7 @@ fun Route.uklassifisertInntekt(
     inntektStore: InntektStore,
     personOppslag: PersonOppslag,
     enhetsregisterClient: EnhetsregisterClient,
+    dpBehandlingKlient: DpBehandlingKlient,
     coroutineContext: CoroutineContext = Dispatchers.IO,
 ) {
     authenticate("azure") {
@@ -180,38 +183,59 @@ fun Route.uklassifisertInntekt(
             post {
                 withContext(coroutineContext) {
                     val inntektId = call.parameters["inntektId"]!!
+                    val behandlingId = call.parameters["behandlingId"]
+                    val opplysningId = call.parameters["opplysningId"]
                     val inntekterDto = call.receive<InntekterDto>()
                     inntekterDto
                         .mapToStoredInntekt(
                             inntektId = inntektId,
                         ).let {
                             val inntektPersonMapping = inntektStore.getInntektPersonMapping(inntektId)
-                            inntektStore.storeInntekt(
-                                StoreInntektCommand(
-                                    inntektparametre =
-                                        Inntektparametre(
-                                            aktørId = inntektPersonMapping.aktørId,
-                                            fødselsnummer = it.inntekt.ident.identifikator,
-                                            regelkontekst =
-                                                RegelKontekst(
-                                                    inntektPersonMapping.kontekstId,
-                                                    inntektPersonMapping.kontekstType,
-                                                ),
-                                            beregningsdato = inntektPersonMapping.beregningsdato,
-                                        ).apply {
-                                            this.opptjeningsperiode.førsteMåned = inntekterDto.periode.fraOgMed
-                                            this.opptjeningsperiode.sisteAvsluttendeKalenderMåned =
-                                                inntekterDto.periode.tilOgMed
-                                        },
-                                    inntekt = it.inntekt,
-                                    manueltRedigert =
-                                        ManueltRedigert.from(
-                                            bool = true,
-                                            redigertAv = call.getSubject(),
-                                            begrunnelse = inntekterDto.begrunnelse,
-                                        ),
-                                ),
-                            )
+                            val storedInntekt =
+                                inntektStore.storeInntekt(
+                                    StoreInntektCommand(
+                                        inntektparametre =
+                                            Inntektparametre(
+                                                aktørId = inntektPersonMapping.aktørId,
+                                                fødselsnummer = it.inntekt.ident.identifikator,
+                                                regelkontekst =
+                                                    RegelKontekst(
+                                                        inntektPersonMapping.kontekstId,
+                                                        inntektPersonMapping.kontekstType,
+                                                    ),
+                                                beregningsdato = inntektPersonMapping.beregningsdato,
+                                            ).apply {
+                                                this.opptjeningsperiode.førsteMåned = inntekterDto.periode.fraOgMed
+                                                this.opptjeningsperiode.sisteAvsluttendeKalenderMåned =
+                                                    inntekterDto.periode.tilOgMed
+                                            },
+                                        inntekt = it.inntekt,
+                                        manueltRedigert =
+                                            ManueltRedigert.from(
+                                                bool = true,
+                                                redigertAv = call.getSubject(),
+                                                begrunnelse = inntekterDto.begrunnelse,
+                                            ),
+                                    ),
+                                )
+
+                            // TODO: Fjern if når dette er ferdig implementert i frontend
+                            if (behandlingId != null && opplysningId != null) {
+                                val token =
+                                    call.request.headers["Authorization"]?.removePrefix("Bearer ")
+                                        ?: throw IllegalArgumentException("Fant ikke token i request header")
+
+                                dpBehandlingKlient.rekjørBehandling(
+                                    behandlingId = UUID.fromString(behandlingId),
+                                    opplysningId = UUID.fromString(opplysningId),
+                                    ident =
+                                        inntektPersonMapping.fnr
+                                            ?: personOppslag.hentPerson(inntektPersonMapping.aktørId).fødselsnummer,
+                                    token = token,
+                                )
+                            }
+
+                            storedInntekt
                         }.let {
                             call.respond(HttpStatusCode.OK, it.inntektId.id)
                         }.also {
