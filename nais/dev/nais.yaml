@@ -48,6 +48,8 @@ spec:
       enabled: true
   accessPolicy:
     outbound:
+      rules:
+        - application: dp-behandling
       external:
         - host: "pdl-api.dev-fss-pub.nais.io"
         - host: "ikomp-q1.dev-fss-pub.nais.io"

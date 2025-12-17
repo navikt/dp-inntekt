@@ -27,6 +27,8 @@ object Config {
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://dev-fss.pdl.pdl-api/.default",
                 "pdl.url" to "https://pdl-api.dev-fss-pub.nais.io/graphql",
+                "dpBehandling.api.scope" to "api://dev-fss.teamdagpenger.dp-behandling/.default",
+                "dpBehandling.url" to "http://dp-behandling",
             ),
         )
     private val devProperties =
@@ -42,6 +44,8 @@ object Config {
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://dev-fss.pdl.pdl-api-q1/.default",
                 "pdl.url" to "https://pdl-api-q1.dev-fss-pub.nais.io/graphql",
+                "dpBehandling.api.scope" to "api://dev-gcp.teamdagpenger.dp-behandling/.default",
+                "dpBehandling.url" to "http://dp-behandling",
             ),
         )
     private val prodProperties =
@@ -57,12 +61,20 @@ object Config {
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://prod-fss.pdl.pdl-api/.default",
                 "pdl.url" to "https://pdl-api.prod-fss-pub.nais.io/graphql",
+                "dpBehandling.api.scope" to "api://prod-gcp.teamdagpenger.dp-behandling/.default",
+                "dpBehandling.url" to "http://dp-behandling",
             ),
         )
     val config by lazy {
         when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
-            "dev-gcp" -> ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding devProperties
-            "prod-gcp" -> ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding prodProperties
+            "dev-gcp" -> {
+                ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding devProperties
+            }
+
+            "prod-gcp" -> {
+                ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding prodProperties
+            }
+
             else -> {
                 ConfigurationProperties.systemProperties() overriding EnvironmentVariables overriding localProperties
             }
@@ -77,6 +89,11 @@ object Config {
         get() =
             InntektApiConfig.Enhetsregister(
                 url = this[Key("enhetsregisteret.url", stringType)],
+            )
+    private val Configuration.dpBehandling
+        get() =
+            InntektApiConfig.DpBehandling(
+                url = this[Key("dpBehandling.url", stringType)],
             )
     private val Configuration.profile get() = this[Key("application.profile", stringType)].let { Profile.valueOf(it) }
     private val Configuration.application
@@ -98,6 +115,7 @@ object Config {
                 pdl = this.pdl,
                 enhetsregisteretUrl = this.enhetsregister,
                 inntektBruktDataTopic = this[Key("kafka.inntekt.brukt.topic", stringType)],
+                dpBehandling = this.dpBehandling,
             )
 
     val pdlTokenProvider by lazy {
@@ -119,6 +137,12 @@ object Config {
         azureAdTokenSupplier(config[Key("inntektskomponenten.api.scope", stringType)])
     }
 
+    val dpBehandlingTokenProvider by lazy {
+        azureAdOBOTokenSupplier(
+            config[Key("dpbehandling.api.scope", stringType)],
+        )
+    }
+
     private val azureAdClient: CachedOauth2Client by lazy {
         val azureAdConfig = OAuth2Config.AzureAd(config)
         CachedOauth2Client(
@@ -133,6 +157,13 @@ object Config {
                 azureAdClient.clientCredentials(scope).access_token ?: throw RuntimeException("Failed to get token")
             }
         }
+
+    private fun azureAdOBOTokenSupplier(scope: String): (token: String) -> String =
+        { token ->
+            runBlocking {
+                azureAdClient.onBehalfOf(token, scope).access_token ?: throw RuntimeException("Failed to get token")
+            }
+        }
 }
 
 data class InntektApiConfig(
@@ -140,6 +171,7 @@ data class InntektApiConfig(
     val pdl: Pdl,
     val enhetsregisteretUrl: Enhetsregister,
     val inntektBruktDataTopic: String,
+    val dpBehandling: DpBehandling,
 ) {
     data class Application(
         val id: String,
@@ -157,6 +189,10 @@ data class InntektApiConfig(
     )
 
     data class Enhetsregister(
+        val url: String,
+    )
+
+    data class DpBehandling(
         val url: String,
     )
 }

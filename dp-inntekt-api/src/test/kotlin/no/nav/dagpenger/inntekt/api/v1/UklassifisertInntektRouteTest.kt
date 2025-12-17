@@ -13,6 +13,7 @@ import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
@@ -35,6 +36,7 @@ import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.db.StoredInntektMedMetadata
 import no.nav.dagpenger.inntekt.db.StoredInntektPeriode
+import no.nav.dagpenger.inntekt.dpbehandling.DpBehandlingKlient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
@@ -60,6 +62,7 @@ import java.time.LocalDate
 import java.time.LocalDate.now
 import java.time.LocalDateTime
 import java.time.YearMonth
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -71,6 +74,7 @@ internal class UklassifisertInntektRouteTest {
     private val inntektStoreMock: InntektStore = mockk()
     private val inntektId = InntektId(ULID().nextULID())
     private val token = TestApplication.testOAuthToken
+    private val dpBehandlingKlient: DpBehandlingKlient = mockk(relaxed = true)
     private val notFoundQuery =
         Inntektparametre(
             aktørId = aktørId,
@@ -541,12 +545,13 @@ internal class UklassifisertInntektRouteTest {
     }
 
     @Test
-    fun `Post request for uklassifisert inntekt med inntektId lagrer og returnerer ny ID`() =
+    fun `Post request for uklassifisert inntekt med inntektId lagrer og returnerer ny ID, uten behandlingId og opplysningId`() =
         withMockAuthServerAndTestApplication(
             moduleFunction =
                 mockInntektApi(
                     inntektskomponentClient = inntektskomponentClientMock,
                     inntektStore = inntektStoreMock,
+                    dpBehandlingKlient = dpBehandlingKlient,
                 ),
         ) {
             val body =
@@ -590,6 +595,65 @@ internal class UklassifisertInntektRouteTest {
             storeInntektCommandSlot.captured.manueltRedigert.shouldNotBeNull()
             storeInntektCommandSlot.captured.manueltRedigert!!.redigertAv shouldBe TEST_OAUTH_USER
             storeInntektCommandSlot.captured.manueltRedigert!!.begrunnelse shouldBe "Dette er en begrunnelse."
+            verify(exactly = 0) { dpBehandlingKlient.rekjørBehandling(any(), any(), any(), any()) }
+        }
+
+    @Test
+    fun `Post request for uklassifisert inntekt med inntektId lagrer og returnerer ny ID, med behandlingId og opplysningId`() =
+        withMockAuthServerAndTestApplication(
+            moduleFunction =
+                mockInntektApi(
+                    inntektskomponentClient = inntektskomponentClientMock,
+                    inntektStore = inntektStoreMock,
+                    dpBehandlingKlient = dpBehandlingKlient,
+                ),
+        ) {
+            val body =
+                UklassifisertInntektRouteTest::class.java
+                    .getResource("/test-data/expected-uklassifisert-post-body.json")
+                    ?.readText()
+            val inntekterDto = jacksonObjectMapper.readValue<InntekterDto>(body!!)
+
+            val behandlingId = UUID.randomUUID()
+            val opplysningId = UUID.randomUUID()
+            justRun { dpBehandlingKlient.rekjørBehandling(any(), any(), any(), any()) }
+
+            val inntektPersonMapping =
+                InntektPersonMapping(
+                    inntektId = inntektId,
+                    aktørId = "123456789",
+                    fnr = fødselsnummer,
+                    kontekstId = "kontekstId",
+                    beregningsdato = now(),
+                    timestamp = LocalDateTime.now(),
+                    kontekstType = "kontekstType",
+                )
+            every { inntektStoreMock.getInntektPersonMapping(any()) } returns inntektPersonMapping
+
+            val storeInntektCommandSlot = slot<StoreInntektCommand>()
+            every { inntektStoreMock.storeInntekt(capture(storeInntektCommandSlot), any()) } returns storedInntekt
+
+            val response =
+                autentisert(
+                    httpMethod = HttpMethod.Post,
+                    endepunkt = "$uklassifisertInntekt/${inntektId.id}?behandlingId=$behandlingId&opplysningId=$opplysningId",
+                    body = body,
+                )
+
+            response.bodyAsText() shouldBe storedInntekt.inntektId.id
+            verify(exactly = 1) { inntektStoreMock.storeInntekt(any(), any()) }
+            storeInntektCommandSlot.captured.inntektparametre.aktørId shouldBe inntektPersonMapping.aktørId
+            storeInntektCommandSlot.captured.inntektparametre.fødselsnummer shouldBe inntekterDto.mottaker.pnr
+            storeInntektCommandSlot.captured.inntektparametre.regelkontekst.id shouldBe inntektPersonMapping.kontekstId
+            storeInntektCommandSlot.captured.inntektparametre.regelkontekst.type shouldBe inntektPersonMapping.kontekstType
+            storeInntektCommandSlot.captured.inntektparametre.beregningsdato shouldBe inntektPersonMapping.beregningsdato
+            storeInntektCommandSlot.captured.inntektparametre.opptjeningsperiode.førsteMåned shouldBe YearMonth.of(2000, 12)
+            storeInntektCommandSlot.captured.inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned shouldBe
+                YearMonth.of(2025, 4)
+            storeInntektCommandSlot.captured.manueltRedigert.shouldNotBeNull()
+            storeInntektCommandSlot.captured.manueltRedigert!!.redigertAv shouldBe TEST_OAUTH_USER
+            storeInntektCommandSlot.captured.manueltRedigert!!.begrunnelse shouldBe "Dette er en begrunnelse."
+            verify(exactly = 1) { dpBehandlingKlient.rekjørBehandling(fødselsnummer, behandlingId, opplysningId, token) }
         }
 
     @Test

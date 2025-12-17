@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.Config.inntektApiConfig
 import no.nav.dagpenger.inntekt.db.PostgresDataSourceBuilder
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
+import no.nav.dagpenger.inntekt.dpbehandling.DpBehandlingKlient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentKtorClient
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.httpClient
@@ -44,6 +45,12 @@ fun main() {
                 config.application.hentinntektListeUrl,
                 Config.inntektsKomponentTokenProvider,
             )
+        val dpBehandlingKlient =
+            DpBehandlingKlient(
+                hentOboTokenForDpBehandling = Config.dpBehandlingTokenProvider,
+                dpBehandlingBaseUrl = config.dpBehandling.url,
+                httpKlient = httpClient(),
+            )
         val cachedInntektsGetter = BehandlingsInntektsGetter(inntektskomponentHttpClient, postgresInntektStore)
         // Marks inntekt as used
         val subsumsjonBruktDataConsumer =
@@ -67,6 +74,7 @@ fun main() {
                 cachedInntektsGetter,
                 pdlPersonOppslag,
                 enhetsregisterClient,
+                dpBehandlingKlient,
                 listOf(
                     postgresInntektStore as HealthCheck,
                     subsumsjonBruktDataConsumer as HealthCheck,
