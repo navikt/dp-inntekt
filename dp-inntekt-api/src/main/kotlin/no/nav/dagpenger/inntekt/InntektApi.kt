@@ -40,6 +40,7 @@ import no.nav.dagpenger.inntekt.api.v3.inntektV3
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.InntektStore
+import no.nav.dagpenger.inntekt.dpbehandling.DpBehandlingKlient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
 import no.nav.dagpenger.inntekt.oppslag.PersonNotFoundException
@@ -59,6 +60,7 @@ internal fun Application.inntektApi(
     behandlingsInntektsGetter: BehandlingsInntektsGetter,
     personOppslag: PersonOppslag,
     enhetsregisterClient: EnhetsregisterClient,
+    dpBehandlingKlient: DpBehandlingKlient,
     healthChecks: List<HealthCheck>,
     collectorRegistry: PrometheusRegistry = PrometheusRegistry.defaultRegistry,
     meterRegistry: PrometheusMeterRegistry =
@@ -226,7 +228,13 @@ internal fun Application.inntektApi(
     routing {
         route("/v1") {
             route("/inntekt") {
-                uklassifisertInntekt(inntektskomponentHttpClient, inntektStore, personOppslag, enhetsregisterClient)
+                uklassifisertInntekt(
+                    inntektskomponentHttpClient,
+                    inntektStore,
+                    personOppslag,
+                    enhetsregisterClient,
+                    dpBehandlingKlient,
+                )
             }
             opptjeningsperiodeApi(inntektStore)
             enhetsregisteret(enhetsregisterClient)
