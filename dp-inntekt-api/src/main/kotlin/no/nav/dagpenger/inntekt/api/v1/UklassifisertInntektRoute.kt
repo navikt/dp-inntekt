@@ -185,6 +185,7 @@ fun Route.uklassifisertInntekt(
                     val inntektId = call.parameters["inntektId"]!!
                     val behandlingId = call.parameters["behandlingId"]
                     val opplysningId = call.parameters["opplysningId"]
+                    val erArena = call.parameters["erArena"]?.toBoolean() ?: false // TODO: Ta i bruk denne
                     val inntekterDto = call.receive<InntekterDto>()
                     inntekterDto
                         .mapToStoredInntekt(
