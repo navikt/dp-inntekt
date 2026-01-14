@@ -95,7 +95,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     .send(
                         ProducerRecord(config.inntektBruktDataTopic, "test", jacksonObjectMapper.writeValueAsString(bruktInntektMelding)),
                     ).get(5, TimeUnit.SECONDS)
-            LOGGER.info("Producer produced $bruktInntektMelding with meta $metaData")
+            LOGGER.info { "Producer produced $bruktInntektMelding with meta $metaData" }
 
             TimeUnit.MILLISECONDS.sleep(800)
 
@@ -129,7 +129,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                             jacksonObjectMapper.writeValueAsString(bruktInntektMeldingManueltGrunnlag),
                         ),
                     ).get(5, TimeUnit.SECONDS)
-            LOGGER.info("Producer produced $bruktSubsumsjonData with meta $metaData")
+            LOGGER.info { "Producer produced $bruktSubsumsjonData with meta $metaData" }
 
             TimeUnit.MILLISECONDS.sleep(500)
 
@@ -165,7 +165,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     .send(
                         ProducerRecord(config.inntektBruktDataTopic, "test", jacksonObjectMapper.writeValueAsString(bruktInntektMelding)),
                     ).get(5, TimeUnit.SECONDS)
-            LOGGER.info("Producer produced $bruktInntektMelding with meta $metaData + should fail")
+            LOGGER.info { "Producer produced $bruktInntektMelding with meta $metaData + should fail" }
 
             TimeUnit.MILLISECONDS.sleep(1500)
 

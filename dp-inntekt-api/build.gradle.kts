@@ -18,7 +18,6 @@ application {
 
 val expediaGraphqlVersion = "8.8.1"
 val moshiVersion = "1.14.0"
-val log4j2Version = "2.25.3"
 
 dependencies {
 
@@ -49,10 +48,8 @@ dependencies {
 
     implementation(libs.kotlin.logging)
 
-    implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
-    implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
-    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4j2Version")
-    implementation("org.apache.logging.log4j:log4j-layout-template-json:$log4j2Version")
+    implementation("ch.qos.logback:logback-classic:1.5.24")
+    implementation("net.logstash.logback:logstash-logback-encoder:8.1")
 
     implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.3.0")
 

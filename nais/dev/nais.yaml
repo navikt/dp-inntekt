@@ -73,8 +73,6 @@ spec:
       value: -XX:+UseParallelGC -XX:ActiveProcessorCount=4
   kafka:
     pool: nav-dev
-  secureLogs:
-    enabled: true
   gcp:
     sqlInstances:
       - collation: nb_NO.UTF8
