@@ -27,8 +27,8 @@ object Config {
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://dev-fss.pdl.pdl-api/.default",
                 "pdl.url" to "https://pdl-api.dev-fss-pub.nais.io/graphql",
-                "dpBehandling.api.scope" to "api://dev-fss.teamdagpenger.dp-behandling/.default",
-                "dpBehandling.url" to "http://dp-behandling",
+                "dp-behandling.api.scope" to "api://dev-fss.teamdagpenger.dp-behandling/.default",
+                "dp-behandling.url" to "http://dp-behandling",
             ),
         )
     private val devProperties =
@@ -44,8 +44,8 @@ object Config {
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://dev-fss.pdl.pdl-api-q1/.default",
                 "pdl.url" to "https://pdl-api-q1.dev-fss-pub.nais.io/graphql",
-                "dpBehandling.api.scope" to "api://dev-gcp.teamdagpenger.dp-behandling/.default",
-                "dpBehandling.url" to "http://dp-behandling",
+                "dp-behandling.api.scope" to "api://dev-gcp.teamdagpenger.dp-behandling/.default",
+                "dp-behandling.url" to "http://dp-behandling",
             ),
         )
     private val prodProperties =
@@ -61,8 +61,8 @@ object Config {
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://prod-fss.pdl.pdl-api/.default",
                 "pdl.url" to "https://pdl-api.prod-fss-pub.nais.io/graphql",
-                "dpBehandling.api.scope" to "api://prod-gcp.teamdagpenger.dp-behandling/.default",
-                "dpBehandling.url" to "http://dp-behandling",
+                "dp-behandling.api.scope" to "api://prod-gcp.teamdagpenger.dp-behandling/.default",
+                "dp-behandling.url" to "http://dp-behandling",
             ),
         )
     val config by lazy {
@@ -93,7 +93,7 @@ object Config {
     private val Configuration.dpBehandling
         get() =
             InntektApiConfig.DpBehandling(
-                url = this[Key("dpBehandling.url", stringType)],
+                url = this[Key("dp-behandling.url", stringType)],
             )
     private val Configuration.profile get() = this[Key("application.profile", stringType)].let { Profile.valueOf(it) }
     private val Configuration.application
@@ -139,7 +139,7 @@ object Config {
 
     val dpBehandlingTokenProvider by lazy {
         azureAdOBOTokenSupplier(
-            config[Key("dpbehandling.api.scope", stringType)],
+            config[Key("dp-behandling.api.scope", stringType)],
         )
     }
 
