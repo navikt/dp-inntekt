@@ -6,19 +6,22 @@ import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
+import io.ktor.serialization.jackson.jackson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import no.nav.dagpenger.inntekt.serder.configure
 import java.time.Duration
 
 class EnhetsregisterClient(
     private val baseUrl: String,
     private val httpClient: HttpClient,
 ) {
-    suspend fun hentEnhet(orgnummer: String): String {
-        return withContext(Dispatchers.IO) {
+    suspend fun hentEnhet(orgnummer: String): String =
+        withContext(Dispatchers.IO) {
             try {
                 httpClient.get("$baseUrl/api/enheter/$orgnummer").body()
             } catch (e: ClientRequestException) {
@@ -28,11 +31,10 @@ class EnhetsregisterClient(
                 }
             }
         }
-    }
 }
 
-internal fun httpClient(engine: HttpClientEngine = CIO.create { }): HttpClient {
-    return HttpClient(engine) {
+internal fun httpClient(engine: HttpClientEngine = CIO.create { }): HttpClient =
+    HttpClient(engine) {
         expectSuccess = true
         install(HttpTimeout) {
             connectTimeoutMillis = Duration.ofSeconds(5).toMillis()
@@ -40,8 +42,11 @@ internal fun httpClient(engine: HttpClientEngine = CIO.create { }): HttpClient {
             socketTimeoutMillis = Duration.ofSeconds(15).toMillis()
         }
 
+        install(ContentNegotiation) {
+            jackson { configure() }
+        }
+
         install(Logging) {
             level = LogLevel.INFO
         }
     }
-}
