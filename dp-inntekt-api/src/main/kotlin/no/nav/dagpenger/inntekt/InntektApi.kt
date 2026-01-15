@@ -83,8 +83,7 @@ internal fun Application.inntektApi(
 
     install(StatusPages) {
         exception<Throwable> { call, cause ->
-            LOGGER.error("Request failed!", cause)
-            LOGGER.error("Request failed! Cause: ${cause.message}")
+            LOGGER.error(cause) { "Request failed!" }
             val error =
                 Problem(
                     type = URI("urn:dp:error:inntekt"),
@@ -93,7 +92,7 @@ internal fun Application.inntektApi(
             call.respond(HttpStatusCode.InternalServerError, error)
         }
         exception<InntektNotFoundException> { call, cause ->
-            LOGGER.warn("Request failed!", cause)
+            LOGGER.warn(cause) { "Request failed!" }
             val problem =
                 Problem(
                     type = URI("urn:dp:error:inntekt"),
@@ -104,7 +103,7 @@ internal fun Application.inntektApi(
             call.respond(HttpStatusCode.NotFound, problem)
         }
         exception<IllegalInntektIdException> { call, cause ->
-            LOGGER.warn("Request failed!", cause)
+            LOGGER.warn(cause) { "Request failed!" }
             val problem =
                 Problem(
                     type = URI("urn:dp:error:inntekt"),
@@ -127,7 +126,7 @@ internal fun Application.inntektApi(
                     )
                 }
             sikkerLogg.error(cause) { "Request failed against inntektskomponenten" }
-            LOGGER.error("Request failed against inntektskomponenten")
+            LOGGER.error { "Request failed against inntektskomponenten" }
             val error =
                 Problem(
                     type = URI("urn:dp:error:inntektskomponenten"),
@@ -138,7 +137,7 @@ internal fun Application.inntektApi(
             call.respond(statusCode, error)
         }
         exception<JsonParseException> { call, cause ->
-            LOGGER.warn("Request was malformed", cause)
+            LOGGER.warn(cause) { "Request was malformed" }
             val error =
                 Problem(
                     type = URI("urn:dp:error:inntekt:parameter"),
@@ -148,7 +147,7 @@ internal fun Application.inntektApi(
             call.respond(HttpStatusCode.BadRequest, error)
         }
         exception<MismatchedInputException> { call, cause ->
-            LOGGER.warn("Request does not match expected json", cause)
+            LOGGER.warn(cause) { "Request does not match expected json" }
             val error =
                 Problem(
                     type = URI("urn:dp:error:inntekt:parameter"),
@@ -158,7 +157,7 @@ internal fun Application.inntektApi(
             call.respond(HttpStatusCode.BadRequest, error)
         }
         exception<BadRequestException> { call, cause ->
-            LOGGER.warn("Request does not match expected json", cause)
+            LOGGER.warn(cause) { "Request does not match expected json" }
             val error =
                 Problem(
                     type = URI("urn:dp:error:inntekt:parameter"),
@@ -168,7 +167,7 @@ internal fun Application.inntektApi(
             call.respond(HttpStatusCode.BadRequest, error)
         }
         exception<IllegalArgumentException> { call, cause ->
-            LOGGER.warn("Request does not match expected json", cause)
+            LOGGER.warn(cause) { "Request does not match expected json" }
             val error =
                 Problem(
                     type = URI("urn:dp:error:inntekt:parameter"),
@@ -179,8 +178,8 @@ internal fun Application.inntektApi(
         }
 
         exception<PersonNotFoundException> { call, cause ->
-            LOGGER.error("Could not find person", cause)
-            sikkerLogg.error("Could not find person ${cause.ident}", cause)
+            LOGGER.error(cause) { "Could not find person" }
+            sikkerLogg.error(cause) { "Could not find person ${cause.ident}" }
             val error =
                 Problem(
                     type = URI("urn:dp:error:inntekt:person"),
@@ -190,7 +189,7 @@ internal fun Application.inntektApi(
             call.respond(HttpStatusCode.BadRequest, error)
         }
         exception<CookieNotSetException> { call, cause ->
-            LOGGER.warn("Unauthorized call", cause)
+            LOGGER.warn(cause) { "Unauthorized call" }
             val statusCode = HttpStatusCode.Unauthorized
             val error =
                 Problem(

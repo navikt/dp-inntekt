@@ -50,6 +50,8 @@ spec:
     outbound:
       rules:
         - application: dp-behandling
+        - application: logging
+          namespace: nais-system
       external:
         - host: "pdl-api.dev-fss-pub.nais.io"
         - host: "ikomp-q1.dev-fss-pub.nais.io"
@@ -73,8 +75,6 @@ spec:
       value: -XX:+UseParallelGC -XX:ActiveProcessorCount=4
   kafka:
     pool: nav-dev
-  secureLogs:
-    enabled: true
   gcp:
     sqlInstances:
       - collation: nb_NO.UTF8

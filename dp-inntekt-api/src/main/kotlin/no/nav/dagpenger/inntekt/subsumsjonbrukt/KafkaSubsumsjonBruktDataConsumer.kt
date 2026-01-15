@@ -79,24 +79,25 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                         try {
                             ids.forEach { id ->
                                 if (inntektStore.markerInntektBrukt(id) == 1) {
-                                    logger.info("Marked inntekt with id $id as used")
+                                    logger.info { "Marked inntekt with id $id as used" }
                                 }
                             }
                             if (ids.isNotEmpty()) {
                                 consumer.commitSync()
                             }
                         } catch (e: CommitFailedException) {
-                            logger.warn("Kafka threw a commit fail exception, looping back", e)
+                            logger.warn(e) { "${"Kafka threw a commit fail exception, looping back"}" }
                         }
                     }
                 } catch (e: Exception) {
                     logger.error(
-                        """
-                        "Unexpected exception while consuming messages. 
-                         Stopping consumer, grace period ${grace.duration.seconds / 60} minutes"
-                        """.trimIndent(),
                         e,
-                    )
+                    ) {
+                        """
+                        Unexpected exception while consuming messages. 
+                        Stopping consumer, grace period ${grace.duration.seconds / 60} minutes"
+                        """.trimIndent()
+                    }
                     stop()
                 }
             }

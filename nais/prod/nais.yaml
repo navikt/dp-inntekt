@@ -37,8 +37,6 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
-  secureLogs:
-    enabled: true
   azure:
     application:
       allowAllUsers: true # Dette var default før NAIS endret default til false
@@ -47,6 +45,8 @@ spec:
     outbound:
       rules:
         - application: dp-behandling
+        - application: logging
+          namespace: nais-system
       external:
         - host: "pdl-api.prod-fss-pub.nais.io"
         - host: "ikomp.prod-fss-pub.nais.io"
