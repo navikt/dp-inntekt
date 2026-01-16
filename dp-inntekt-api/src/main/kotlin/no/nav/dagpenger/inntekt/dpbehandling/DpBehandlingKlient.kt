@@ -4,7 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.request.accept
 import io.ktor.client.request.header
-import io.ktor.client.request.put
+import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
@@ -40,14 +40,14 @@ class DpBehandlingKlient(
 
         runBlocking {
             val response: HttpResponse =
-                httpKlient.put("$dpBehandlingBaseUrl/behandling/$behandlingId/rekjor") {
+                httpKlient.post("$dpBehandlingBaseUrl/behandling/$behandlingId/rekjor") {
                     accept(ContentType.Application.Json)
                     header("Authorization", "Bearer $oboToken")
                     contentType(ContentType.Application.Json)
                     setBody(requestBody)
                 }
 
-            check(response.status == HttpStatusCode.OK) {
+            check(response.status == HttpStatusCode.OK || response.status == HttpStatusCode.Created) {
                 "Feil ved rekjøring av behandling i DP behandling. " +
                     "Statuskode: ${response.status} " +
                     "BehandlingId: $behandlingId " +
