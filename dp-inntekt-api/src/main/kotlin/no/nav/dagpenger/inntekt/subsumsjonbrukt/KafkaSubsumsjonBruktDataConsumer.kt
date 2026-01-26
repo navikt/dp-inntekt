@@ -35,8 +35,13 @@ internal class KafkaSubsumsjonBruktDataConsumer(
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
 
-    private val grace by lazy {
-        Grace(duration = graceDuration)
+    private var grace: Grace? = null
+
+    private fun startGracePeriod() {
+        if (grace == null) {
+            grace = Grace(duration = graceDuration)
+            logger.warn { "Grace period started, expires in ${graceDuration.seconds / 60} minutes" }
+        }
     }
 
     private val job: Job by lazy {
@@ -44,7 +49,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(
     }
 
     fun listen() {
-        launch(coroutineContext) {
+        launch {
             logger.info { "Starting ${config.application.id}" }
 
             KafkaConsumer<String, String>(
@@ -86,7 +91,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                                 consumer.commitSync()
                             }
                         } catch (e: CommitFailedException) {
-                            logger.warn(e) { "${"Kafka threw a commit fail exception, looping back"}" }
+                            logger.warn(e) { "Kafka threw a commit fail exception, looping back" }
                         }
                     }
                 } catch (e: Exception) {
@@ -95,10 +100,15 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                     ) {
                         """
                         Unexpected exception while consuming messages. 
-                        Stopping consumer, grace period ${grace.duration.seconds / 60} minutes"
+                        Stopping consumer, grace period ${graceDuration.seconds / 60} minutes"
                         """.trimIndent()
                     }
+                    startGracePeriod()
                     stop()
+                } finally {
+                    if (!job.isActive) {
+                        logger.warn { "Kafka consumer job is no longer active, consumer has stopped" }
+                    }
                 }
             }
         }
@@ -108,7 +118,8 @@ internal class KafkaSubsumsjonBruktDataConsumer(
         return if (job.isActive) {
             HealthStatus.UP
         } else {
-            return if (grace.expired()) {
+            val currentGrace = grace
+            if (currentGrace == null || currentGrace.expired()) {
                 HealthStatus.DOWN
             } else {
                 HealthStatus.UP
