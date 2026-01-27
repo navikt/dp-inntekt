@@ -48,7 +48,7 @@ dependencies {
 
     implementation(libs.kotlin.logging)
 
-    implementation("ch.qos.logback:logback-classic:1.5.24")
+    implementation("ch.qos.logback:logback-classic:1.5.25")
     implementation("net.logstash.logback:logstash-logback-encoder:8.1")
 
     implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.3.0")
