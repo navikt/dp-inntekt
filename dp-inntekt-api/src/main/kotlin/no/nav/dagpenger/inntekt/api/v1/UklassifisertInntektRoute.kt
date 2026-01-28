@@ -46,7 +46,7 @@ import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
-import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.coroutines.CoroutineContext
@@ -388,7 +388,7 @@ private suspend fun hentOrganisasjoner(
         }.onFailure {
             logger.error(it) { "Feil ved henting av organisasjonsnavn for $it" }
         }.onSuccess {
-            var organisasjon = jacksonObjectMapper.readValue<FullVirksomhetsInformasjon>(it)
+            var organisasjon = inntektObjectMapper.readValue<FullVirksomhetsInformasjon>(it)
             val organisasjonsNavnOgIdMapping =
                 Organisasjon(
                     organisasjonsnummer = orgNr,

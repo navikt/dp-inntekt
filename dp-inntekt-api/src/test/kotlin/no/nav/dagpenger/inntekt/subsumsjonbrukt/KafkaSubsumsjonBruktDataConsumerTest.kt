@@ -12,7 +12,7 @@ import no.nav.dagpenger.inntekt.Config.inntektApiConfig
 import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
-import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer.Companion.commonConfig
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -93,7 +93,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
             val metaData =
                 producer
                     .send(
-                        ProducerRecord(config.inntektBruktDataTopic, "test", jacksonObjectMapper.writeValueAsString(bruktInntektMelding)),
+                        ProducerRecord(config.inntektBruktDataTopic, "test", inntektObjectMapper.writeValueAsString(bruktInntektMelding)),
                     ).get(5, TimeUnit.SECONDS)
             LOGGER.info { "Producer produced $bruktInntektMelding with meta $metaData" }
 
@@ -126,7 +126,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                         ProducerRecord(
                             config.inntektBruktDataTopic,
                             "test",
-                            jacksonObjectMapper.writeValueAsString(bruktInntektMeldingManueltGrunnlag),
+                            inntektObjectMapper.writeValueAsString(bruktInntektMeldingManueltGrunnlag),
                         ),
                     ).get(5, TimeUnit.SECONDS)
             LOGGER.info { "Producer produced $bruktSubsumsjonData with meta $metaData" }
@@ -163,7 +163,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
             val metaData =
                 producer
                     .send(
-                        ProducerRecord(config.inntektBruktDataTopic, "test", jacksonObjectMapper.writeValueAsString(bruktInntektMelding)),
+                        ProducerRecord(config.inntektBruktDataTopic, "test", inntektObjectMapper.writeValueAsString(bruktInntektMelding)),
                     ).get(5, TimeUnit.SECONDS)
             LOGGER.info { "Producer produced $bruktInntektMelding with meta $metaData + should fail" }
 

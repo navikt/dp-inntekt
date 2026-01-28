@@ -32,5 +32,5 @@ fun ObjectMapper.configure() =
         setSerializationInclusion(JsonInclude.Include.NON_NULL)
     }
 
-internal val jacksonObjectMapper =
+internal val inntektObjectMapper =
     jacksonObjectMapper().configure()

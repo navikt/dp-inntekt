@@ -6,7 +6,6 @@ import io.ktor.http.HttpStatusCode
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.mockInntektApi
-import no.nav.dagpenger.inntekt.api.v1.TestApplication.withMockAuthServerAndTestApplication
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import org.junit.jupiter.api.Test
 
@@ -15,12 +14,10 @@ internal class EnhetsregistrerRouteTest {
     fun `hent organisasjon `() {
         val enhetsregisterClient: EnhetsregisterClient = mockk()
         coEvery { enhetsregisterClient.hentEnhet("123456789") } returns "{}"
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                enhetsregisterClient = enhetsregisterClient,
-            ),
+        mockInntektApi(
+            enhetsregisterClient = enhetsregisterClient,
         ) {
-            val response = client.get("v1/enhetsregisteret/enhet/123456789")
+            val response = it.client.get("v1/enhetsregisteret/enhet/123456789")
             response.status shouldBe HttpStatusCode.OK
             response.headers["Cache-Control"] shouldBe "max-age=86400"
         }
@@ -30,12 +27,10 @@ internal class EnhetsregistrerRouteTest {
     fun `hent organisasjon på feil `() {
         val enhetsregisterClient: EnhetsregisterClient = mockk()
         coEvery { enhetsregisterClient.hentEnhet("123456789") } throws RuntimeException("Feilet")
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                enhetsregisterClient = enhetsregisterClient,
-            ),
+        mockInntektApi(
+            enhetsregisterClient = enhetsregisterClient,
         ) {
-            val response = client.get("v1/enhetsregisteret/enhet/123456789")
+            val response = it.client.get("v1/enhetsregisteret/enhet/123456789")
             response.status shouldBe HttpStatusCode.BadGateway
         }
     }

@@ -16,7 +16,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforho
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
-import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -191,8 +191,8 @@ internal class KategoriseringTest {
             )
         val guiInntekt = mapToGUIInntekt(storedInntekt, Opptjeningsperiode(LocalDate.now()), inntektsmottaker)
 
-        val beforeJson = jacksonObjectMapper.writeValueAsString(rawInntekt)
-        val mappedJson = jacksonObjectMapper.writeValueAsString(guiInntekt.inntekt)
+        val beforeJson = inntektObjectMapper.writeValueAsString(rawInntekt)
+        val mappedJson = inntektObjectMapper.writeValueAsString(guiInntekt.inntekt)
 
         JSONAssert.assertEquals(
             mappedJson,
@@ -284,8 +284,8 @@ internal class KategoriseringTest {
 
         val mappedInntekt = mapToStoredInntekt(guiInntekt)
 
-        val beforeJson = jacksonObjectMapper.writeValueAsString(guiInntekt.inntekt)
-        val mappedJson = jacksonObjectMapper.writeValueAsString(mappedInntekt.inntekt)
+        val beforeJson = inntektObjectMapper.writeValueAsString(guiInntekt.inntekt)
+        val mappedJson = inntektObjectMapper.writeValueAsString(mappedInntekt.inntekt)
 
         JSONAssert.assertEquals(
             beforeJson,

@@ -12,7 +12,7 @@ import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.mapping.mapToSpesifisertInntekt
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
-import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import no.nav.dagpenger.inntekt.v1.SpesifisertInntekt
 import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
@@ -148,7 +148,7 @@ internal class PostgresInntektStore(
                 ).map { row ->
                     StoredInntekt(
                         inntektId = InntektId(row.string("id")),
-                        inntekt = row.binaryStream("inntekt").use { jacksonObjectMapper.readValue<InntektkomponentResponse>(it) },
+                        inntekt = row.binaryStream("inntekt").use { inntektObjectMapper.readValue<InntektkomponentResponse>(it) },
                         manueltRedigert = row.boolean("manuelt_redigert"),
                         timestamp = row.zonedDateTime("timestamp").toLocalDateTime(),
                     )
@@ -177,7 +177,7 @@ internal class PostgresInntektStore(
                     ).map { row ->
                         StoredInntekt(
                             inntektId = InntektId(row.string("id")),
-                            inntekt = row.binaryStream("inntekt").use { jacksonObjectMapper.readValue<InntektkomponentResponse>(it) },
+                            inntekt = row.binaryStream("inntekt").use { inntektObjectMapper.readValue<InntektkomponentResponse>(it) },
                             manueltRedigert = row.boolean("manuelt_redigert"),
                             timestamp = row.zonedDateTime("timestamp").toLocalDateTime(),
                         ) to row.localDate("beregningsdato")
@@ -205,7 +205,7 @@ internal class PostgresInntektStore(
                     .map {
                         StoredInntektMedMetadata(
                             inntektId = InntektId(it.string("id")),
-                            inntekt = it.binaryStream("inntekt").use { jacksonObjectMapper.readValue<InntektkomponentResponse>(it) },
+                            inntekt = it.binaryStream("inntekt").use { inntektObjectMapper.readValue<InntektkomponentResponse>(it) },
                             manueltRedigert = it.boolean("manuelt_redigert"),
                             timestamp = it.zonedDateTime("timestamp").toLocalDateTime(),
                             fødselsnummer = it.string("fnr"),
@@ -239,7 +239,7 @@ internal class PostgresInntektStore(
                                 "data" to
                                     PGobject().apply {
                                         type = "jsonb"
-                                        value = jacksonObjectMapper.writeValueAsString(command.inntekt)
+                                        value = inntektObjectMapper.writeValueAsString(command.inntekt)
                                     },
                                 when (command.manueltRedigert) {
                                     null -> "manuelt" to false

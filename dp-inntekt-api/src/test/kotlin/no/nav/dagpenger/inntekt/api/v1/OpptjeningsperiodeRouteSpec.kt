@@ -8,7 +8,6 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.autentisert
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.mockInntektApi
-import no.nav.dagpenger.inntekt.api.v1.TestApplication.withMockAuthServerAndTestApplication
 import no.nav.dagpenger.inntekt.db.InntektStore
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -25,11 +24,9 @@ class OpptjeningsperiodeRouteSpec {
             }
         } returns LocalDate.of(2019, 2, 27)
 
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(inntektStore = inntektStore),
-        ) {
+        mockInntektApi(inntektStore = inntektStore) {
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
                     endepunkt = "/v1/samme-inntjeningsperiode",
                     body =

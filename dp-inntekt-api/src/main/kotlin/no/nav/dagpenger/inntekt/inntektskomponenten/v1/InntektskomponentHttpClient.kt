@@ -23,7 +23,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.jackson.JacksonConverter
 import io.prometheus.metrics.core.metrics.Counter
 import io.prometheus.metrics.core.metrics.Summary
-import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import kotlin.time.Duration.Companion.seconds
 
 private val logg = KotlinLogging.logger {}
@@ -76,7 +76,7 @@ internal class InntektkomponentKtorClient(
                 socketTimeoutMillis = timeouts.connectionTimeout.toMillis()
             }
             install(ContentNegotiation) {
-                register(ContentType.Application.Json, JacksonConverter(jacksonObjectMapper))
+                register(ContentType.Application.Json, JacksonConverter(inntektObjectMapper))
             }
             defaultRequest {
                 header("Nav-Consumer-Id", "dp-inntekt-api")
@@ -107,7 +107,7 @@ internal class InntektkomponentKtorClient(
                     val feilmelding =
                         kotlin
                             .runCatching {
-                                jacksonObjectMapper.readTree(error.response.bodyAsText()).get("message").asText()
+                                inntektObjectMapper.readTree(error.response.bodyAsText()).get("message").asText()
                             }.getOrElse { error.message }
                     throw InntektskomponentenHttpClientException(
                         statusKode,

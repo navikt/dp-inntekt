@@ -2,7 +2,7 @@ package no.nav.dagpenger.inntekt.klassifiser
 
 import io.kotest.matchers.shouldBe
 import no.nav.dagpenger.inntekt.klassifiserer.klassifiserOgMapInntekt
-import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import no.nav.dagpenger.inntekt.v1.Aktør
 import no.nav.dagpenger.inntekt.v1.AktørType
 import no.nav.dagpenger.inntekt.v1.Avvik
@@ -49,7 +49,7 @@ internal class KlassifiserOgMapInntektTest {
         val testDataJson =
             KlassifiserOgMapInntektTest::class.java
                 .getResource("/test-data/spesifisert-inntekt-mange-posteringer.json").readText()
-        val spesifisertInntekt = jacksonObjectMapper.readValue(testDataJson, SpesifisertInntekt::class.java)
+        val spesifisertInntekt = inntektObjectMapper.readValue(testDataJson, SpesifisertInntekt::class.java)
 
         val sum = spesifisertInntekt.posteringer.fold(BigDecimal.ZERO) { acc, postering -> acc + postering.beløp }
         val spesifiserteMåneder = spesifisertInntekt.posteringer.groupBy { it.posteringsMåned }.keys
@@ -75,7 +75,7 @@ internal class KlassifiserOgMapInntektTest {
         val testDataJson =
             KlassifiserOgMapInntektTest::class.java
                 .getResource("/test-data/spesifisert-inntekt-flere-klasser.json").readText()
-        val spesifisertInntekt = jacksonObjectMapper.readValue(testDataJson, SpesifisertInntekt::class.java)
+        val spesifisertInntekt = inntektObjectMapper.readValue(testDataJson, SpesifisertInntekt::class.java)
 
         val klassifisertInntekt = klassifiserOgMapInntekt(spesifisertInntekt)
 

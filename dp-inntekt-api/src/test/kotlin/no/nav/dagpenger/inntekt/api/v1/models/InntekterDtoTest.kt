@@ -22,7 +22,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Periode
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.SpesielleInntjeningsforhold.LOENN_VED_KONKURS_ELLER_STATSGARANTI_OSV
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
-import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -33,7 +33,7 @@ class InntekterDtoTest {
     fun `mapToStoredInntekt mapper til forventet resultat`() {
         val inntektId = ULID().nextULID()
         val inntekterDto =
-            jacksonObjectMapper.readValue<InntekterDto>(
+            inntektObjectMapper.readValue<InntekterDto>(
                 this::class.java.getResource("/test-data/expected-uklassifisert-post-body.json")?.readText()!!,
             )
 
@@ -134,7 +134,7 @@ class InntekterDtoTest {
     fun `mapToStoredInntekt mapper til forventet resultat når inntektType er null`() {
         val inntektId = ULID().nextULID()
         val inntekterDto =
-            jacksonObjectMapper.readValue<InntekterDto>(
+            inntektObjectMapper.readValue<InntekterDto>(
                 this::class.java
                     .getResource("/test-data/expected-uklassifisert-post-body-inntektType-er-null.json")
                     ?.readText()!!,

@@ -27,6 +27,7 @@ fun Route.inntekt(
             withContext(IO) {
                 val request = call.receive<InntektRequestMedFnr>()
                 val person = personOppslag.hentPerson(request.ident)
+                val callId = call.callId
                 val klassifisertInntekt =
                     behandlingsInntektsGetter.getKlassifisertInntekt(
                         Inntektparametre(
@@ -35,7 +36,7 @@ fun Route.inntekt(
                             beregningsdato = request.beregningsDato,
                             fødselsnummer = person.fødselsnummer,
                         ),
-                        call.callId,
+                        callId,
                     )
                 call.respond(HttpStatusCode.OK, klassifisertInntekt)
             }

@@ -22,14 +22,12 @@ val moshiVersion = "1.14.0"
 dependencies {
 
     implementation(project(":dp-inntekt-kontrakter"))
-    implementation(libs.bundles.ktor.server)
-    implementation("io.ktor:ktor-server-netty:${libs.versions.ktor.get()}")
+
+    // ktor server
+    implementation("com.github.navikt.tbd-libs:naisful-app:2025.11.04-10.54-c831038e")
     implementation("io.ktor:ktor-server-default-headers:${libs.versions.ktor.get()}")
-    implementation("io.ktor:ktor-server-call-logging:${libs.versions.ktor.get()}")
-    implementation(libs.ktor.server.status.pages)
     implementation(libs.ktor.server.auth)
     implementation(libs.ktor.server.auth.jwt)
-    implementation(libs.ktor.server.metrics.micrometer)
 
     implementation("io.micrometer:micrometer-registry-prometheus:1.16.2")
 
@@ -63,7 +61,7 @@ dependencies {
     implementation("no.nav.dagpenger:oauth2-klient:2025.11.27-14.20.4aa9aa3d3d14")
 
     testImplementation(kotlin("test"))
-    testImplementation(libs.ktor.server.test.host)
+    testImplementation("com.github.navikt.tbd-libs:naisful-test-app:2025.11.04-10.54-c831038e")
 
     testImplementation("no.nav.security:mock-oauth2-server:3.0.1")
     testImplementation("io.ktor:ktor-client-mock:${libs.versions.ktor.get()}")

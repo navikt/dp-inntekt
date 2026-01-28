@@ -13,7 +13,6 @@ import io.mockk.mockk
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.autentisert
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.mockInntektApi
-import no.nav.dagpenger.inntekt.api.v1.TestApplication.withMockAuthServerAndTestApplication
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.db.Inntektparametre
 import no.nav.dagpenger.inntekt.db.ManueltRedigert
@@ -25,7 +24,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
-import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import no.nav.dagpenger.inntekt.v1.Inntekt
 import no.nav.dagpenger.inntekt.v1.KlassifisertInntektMåned
 import java.time.LocalDate
@@ -71,19 +70,17 @@ class KlassifisertInntektRouteV3Test {
 
     @Test
     fun `Inntektparametre opprettes med forventede verdier`() {
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                personOppslag = personOppslagMock,
-                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-                inntektStore = inntektStoreMock,
-            ),
+        mockInntektApi(
+            personOppslag = personOppslagMock,
+            behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+            inntektStore = inntektStoreMock,
         ) {
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
                     endepunkt = "/v3/inntekt/klassifisert",
                     body =
-                        jacksonObjectMapper.writeValueAsString(
+                        inntektObjectMapper.writeValueAsString(
                             KlassifisertInntektRequestDto(
                                 fødselsnummer,
                                 regelkontekst,
@@ -113,19 +110,17 @@ class KlassifisertInntektRouteV3Test {
                 "Dette er en begrunnelse.",
             )
 
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                personOppslag = personOppslagMock,
-                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-                inntektStore = inntektStoreMock,
-            ),
+        mockInntektApi(
+            personOppslag = personOppslagMock,
+            behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+            inntektStore = inntektStoreMock,
         ) {
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
                     endepunkt = "/v3/inntekt/klassifisert",
                     body =
-                        jacksonObjectMapper.writeValueAsString(
+                        inntektObjectMapper.writeValueAsString(
                             KlassifisertInntektRequestDto(
                                 fødselsnummer,
                                 regelkontekst,
@@ -138,7 +133,7 @@ class KlassifisertInntektRouteV3Test {
 
             response.status shouldBe OK
             val inntektDTO =
-                jacksonObjectMapper.readValue<Inntekt>(response.bodyAsText())
+                inntektObjectMapper.readValue<Inntekt>(response.bodyAsText())
             inntektDTO.inntektsId shouldBe inntektsId
             inntektDTO.inntektsListe.shouldNotBeEmpty()
             inntektDTO.manueltRedigert shouldBe true
@@ -158,19 +153,17 @@ class KlassifisertInntektRouteV3Test {
             )
         } returns createInntekt(false)
 
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                personOppslag = personOppslagMock,
-                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-                inntektStore = inntektStoreMock,
-            ),
+        mockInntektApi(
+            personOppslag = personOppslagMock,
+            behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+            inntektStore = inntektStoreMock,
         ) {
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
                     endepunkt = "/v3/inntekt/klassifisert",
                     body =
-                        jacksonObjectMapper.writeValueAsString(
+                        inntektObjectMapper.writeValueAsString(
                             KlassifisertInntektRequestDto(
                                 fødselsnummer,
                                 regelkontekst,
@@ -183,7 +176,7 @@ class KlassifisertInntektRouteV3Test {
 
             response.status shouldBe OK
             val klassifisertInntektResponseDto =
-                jacksonObjectMapper.readValue<Inntekt>(response.bodyAsText())
+                inntektObjectMapper.readValue<Inntekt>(response.bodyAsText())
             klassifisertInntektResponseDto.inntektsId shouldBe inntektsId
             klassifisertInntektResponseDto.inntektsListe.shouldNotBeEmpty()
             klassifisertInntektResponseDto.manueltRedigert shouldBe false
@@ -204,24 +197,22 @@ class KlassifisertInntektRouteV3Test {
                 Aktoer(AktoerType.NATURLIG_IDENT, fødselsnummer),
             )
 
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                personOppslag = personOppslagMock,
-                inntektskomponentClient = inntektskomponent,
-            ),
+        mockInntektApi(
+            personOppslag = personOppslagMock,
+            inntektskomponentClient = inntektskomponent,
         ) {
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
                     endepunkt = "/v3/inntekt/harInntekt",
                     body =
-                        jacksonObjectMapper.writeValueAsString(
+                        inntektObjectMapper.writeValueAsString(
                             HarInntektRequestDto(fødselsnummer, sisteAvsluttendeKalenderMåned),
                         ),
                 )
 
             response.status shouldBe OK
-            val inntekt = jacksonObjectMapper.readValue<Boolean>(response.bodyAsText())
+            val inntekt = inntektObjectMapper.readValue<Boolean>(response.bodyAsText())
 
             inntekt shouldBe true
         }

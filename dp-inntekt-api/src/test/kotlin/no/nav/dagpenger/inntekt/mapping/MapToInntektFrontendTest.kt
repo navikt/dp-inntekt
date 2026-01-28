@@ -14,7 +14,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektBeskrivelse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
-import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDate.now
@@ -367,10 +367,10 @@ class MapToInntektFrontendTest {
         assertEquals(2, mapTilFrontendMedNullVirksomhet.virksomheter.filter { it.virksomhetsnummer == "" }.size)
         assertEquals(1, mapTilFrontendMedNullVirksomhet.virksomheter.filter { it.virksomhetsnummer == "896929120" }.size)
 
-        jacksonObjectMapper.writeValueAsString(mapTilFrontendMedNullVirksomhet)
+        inntektObjectMapper.writeValueAsString(mapTilFrontendMedNullVirksomhet)
         println(
             "mapTilFrontendMedNullVirksomhetjson: ${
-                jacksonObjectMapper.writeValueAsString(
+                inntektObjectMapper.writeValueAsString(
                     mapTilFrontendMedNullVirksomhet,
                 )
             }",

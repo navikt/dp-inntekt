@@ -1,8 +1,13 @@
 package no.nav.dagpenger.inntekt
 
+import com.github.navikt.tbd_libs.naisful.naisApp
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
+import io.ktor.server.application.ApplicationStopped
+import io.micrometer.core.instrument.Clock
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import io.prometheus.metrics.model.registry.PrometheusRegistry
+import io.prometheus.metrics.tracer.initializer.SpanContextSupplier
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.Config.inntektApiConfig
 import no.nav.dagpenger.inntekt.db.PostgresDataSourceBuilder
@@ -13,13 +18,23 @@ import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.httpClient
 import no.nav.dagpenger.inntekt.oppslag.pdl.PdlGraphQLRepository
 import no.nav.dagpenger.inntekt.oppslag.pdl.pdlGraphQLClientFactory
+import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.KafkaSubsumsjonBruktDataConsumer
 import no.nav.dagpenger.inntekt.subsumsjonbrukt.Vaktmester
+import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.fixedRateTimer
 
 private val LOGGER = KotlinLogging.logger {}
 private val configuration = Config.config
+
+private val meterRegistry =
+    PrometheusMeterRegistry(
+        PrometheusConfig.DEFAULT,
+        PrometheusRegistry.defaultRegistry,
+        Clock.SYSTEM,
+        SpanContextSupplier.getSpanContext(),
+    )
 
 fun main() {
     runBlocking {
@@ -57,36 +72,41 @@ fun main() {
             KafkaSubsumsjonBruktDataConsumer(config, postgresInntektStore)
                 .apply {
                     listen()
-                }.also {
-                    Runtime.getRuntime().addShutdownHook(
-                        Thread {
-                            it.stop()
-                        },
-                    )
                 }
 
-        // Provides a HTTP API for getting inntekt
-        embeddedServer(Netty, port = config.application.httpPort) {
-            inntektApi(
-                configuration,
-                inntektskomponentHttpClient,
+        val helsesjekker =
+            listOf(
                 postgresInntektStore,
-                cachedInntektsGetter,
-                pdlPersonOppslag,
-                enhetsregisterClient,
-                dpBehandlingKlient,
-                listOf(
-                    postgresInntektStore as HealthCheck,
-                    subsumsjonBruktDataConsumer as HealthCheck,
-                ),
+                subsumsjonBruktDataConsumer,
             )
-        }.start().also {
-            Runtime.getRuntime().addShutdownHook(
-                Thread {
-                    it.stop(5, 60, TimeUnit.SECONDS)
-                },
+
+        naisApp(
+            port = config.application.httpPort,
+            meterRegistry = meterRegistry,
+            objectMapper = inntektObjectMapper,
+            applicationLogger = LoggerFactory.getLogger("ApplicationLogger"),
+            callLogger = LoggerFactory.getLogger("CallLogger"),
+            aliveCheck = aliveCeck(helsesjekker),
+            readyCheck = readyCheck(postgresInntektStore),
+            statusPagesConfig = { statusPagesConfig() },
+        ) {
+            monitor.subscribe(ApplicationStopped) {
+                LOGGER.info { "Forsøker å lukke datasource og jobber..." }
+                subsumsjonBruktDataConsumer.stop()
+                dataSource.close()
+                LOGGER.info { "Lukket datasource" }
+            }
+            inntektApi(
+                config = configuration,
+                inntektskomponentHttpClient = inntektskomponentHttpClient,
+                inntektStore = postgresInntektStore,
+                behandlingsInntektsGetter = cachedInntektsGetter,
+                personOppslag = pdlPersonOppslag,
+                enhetsregisterClient = enhetsregisterClient,
+                dpBehandlingKlient = dpBehandlingKlient,
             )
         }
+
         // Cleans up unused inntekt on a regular interval
         Vaktmester(dataSource).also {
             fixedRateTimer(
@@ -102,3 +122,19 @@ fun main() {
         }
     }
 }
+
+private fun readyCheck(postgresInntektStore: PostgresInntektStore): () -> Boolean = { postgresInntektStore.status() == HealthStatus.UP }
+
+private fun aliveCeck(helsesjekker: List<HealthCheck>): () -> Boolean =
+    {
+        helsesjekker.all { it.status() == HealthStatus.UP }.also { isAlive ->
+            if (!isAlive) {
+                LOGGER.warn {
+                    "En eller flere helsesjekker er nede! Helsejekker status: ${helsesjekker.joinToString {
+                            hc ->
+                        "${hc::class.simpleName}=${hc.status()}"
+                    }}"
+                }
+            }
+        }
+    }

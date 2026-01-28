@@ -3,12 +3,12 @@ package no.nav.dagpenger.inntekt.api.v1
 import de.huxhorn.sulky.ulid.ULID
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
+import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -21,7 +21,6 @@ import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.autentisert
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.mockInntektApi
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.testOAuthToken
-import no.nav.dagpenger.inntekt.api.v1.TestApplication.withMockAuthServerAndTestApplication
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.db.Inntektparametre
@@ -33,7 +32,6 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonNotFoundException
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
-import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
 import no.nav.dagpenger.inntekt.v1.Inntekt
 import no.nav.dagpenger.inntekt.v1.InntektKlasse
 import no.nav.dagpenger.inntekt.v1.KlassifisertInntekt
@@ -60,6 +58,8 @@ internal class InntektRouteSpec {
     private val ulid = ULID().nextULID()
     private val aktørId = "1234"
     private val beregningsdato = LocalDate.of(2019, 1, 8)
+
+    // language=json
     private val validJson =
         """
         {
@@ -196,14 +196,12 @@ internal class InntektRouteSpec {
 
     @Test
     fun `skal ikke autentisere på v2 hvis ikke auth token er med `() =
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-                personOppslag = personOppslagMock,
-            ),
+        mockInntektApi(
+            behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+            personOppslag = personOppslagMock,
         ) {
             val response =
-                client.post(klassifisertInntektPathV2) {
+                it.client.post(klassifisertInntektPathV2) {
                     header(HttpHeaders.ContentType, "application/json")
                     setBody(validJson)
                 }
@@ -213,18 +211,15 @@ internal class InntektRouteSpec {
 
     @Test
     fun `skal autentisere på v2 hvis auth token er med `() =
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-                personOppslag = personOppslagMock,
-            ),
+        mockInntektApi(
+            behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+            personOppslag = personOppslagMock,
         ) {
             val response =
-                autentisert(
-                    klassifisertInntektPathV2,
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
+                    klassifisertInntektPathV2,
                     body = validJson,
-                    callId = callId,
                 )
 
             assertEquals(HttpStatusCode.OK, response.status)
@@ -232,16 +227,15 @@ internal class InntektRouteSpec {
 
     @Test
     fun `Klassifisert inntekt API specification test - Should match json field names and formats`() =
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-                personOppslag = personOppslagMock,
-            ),
+
+        mockInntektApi(
+            behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+            personOppslag = personOppslagMock,
         ) {
             val response =
-                autentisert(
-                    klassifisertInntektPathV2,
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
+                    klassifisertInntektPathV2,
                     body = validJson,
                     callId = callId,
                 )
@@ -253,16 +247,15 @@ internal class InntektRouteSpec {
 
     @Test
     fun `Klassifisert Requests with fødselsnummer works and does store data`() =
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-                personOppslag = personOppslagMock,
-            ),
+
+        mockInntektApi(
+            behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+            personOppslag = personOppslagMock,
         ) {
             val response =
-                autentisert(
-                    klassifisertInntektPathV2,
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
+                    klassifisertInntektPathV2,
                     body = validJsonWithFnr,
                     callId = callId,
                 )
@@ -274,16 +267,15 @@ internal class InntektRouteSpec {
 
     @Test
     fun `Klassifisert Requests with vedtakId as string works and does store data`() =
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-                personOppslag = personOppslagMock,
-            ),
+
+        mockInntektApi(
+            behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+            personOppslag = personOppslagMock,
         ) {
             val response =
-                autentisert(
-                    klassifisertInntektPathV2,
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
+                    endepunkt = klassifisertInntektPathV2,
                     body = validJsonWithVedtakIdAsUlid,
                     callId = callId,
                 )
@@ -311,54 +303,44 @@ internal class InntektRouteSpec {
 
     @Test
     fun `Klassifisert request fails on post request with missing fields`() =
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-                personOppslag = personOppslagMock,
-            ),
+        mockInntektApi(
+            behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+            personOppslag = personOppslagMock,
         ) {
             val response =
-                autentisert(
-                    klassifisertInntektPathV2,
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
+                    endepunkt = klassifisertInntektPathV2,
                     body = jsonMissingFields,
-                    callId = callId,
                 )
             assertEquals(HttpStatusCode.BadRequest, response.status)
         }
 
     @Test
     fun `Klassifisert request fails on post request with unknown person`() =
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                behandlingsInntektsGetter = behandlingsInntektsGetterMock,
-                personOppslag = personOppslagMock,
-            ),
+
+        mockInntektApi(
+            behandlingsInntektsGetter = behandlingsInntektsGetterMock,
+            personOppslag = personOppslagMock,
         ) {
             val response =
-                autentisert(
-                    klassifisertInntektPathV2,
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
+                    endepunkt = klassifisertInntektPathV2,
                     body = jsonUkjentPerson,
-                    callId = callId,
                 )
             assertEquals(HttpStatusCode.BadRequest, response.status)
         }
 
     @Test
     fun `Hente klassifisert inntekt basert på inntekt ID`() =
-        withMockAuthServerAndTestApplication(mockInntektApi(behandlingsInntektsGetter = behandlingsInntektsGetterMock)) {
+        mockInntektApi(behandlingsInntektsGetter = behandlingsInntektsGetterMock) {
             val kjentInntektIdresponse =
-                client.get("/v2/inntekt/klassifisert/$kjentInntektsId") {
+                it.client.get("/v2/inntekt/klassifisert/$kjentInntektsId") {
                     autentisert()
                 }
-            assertEquals(HttpStatusCode.OK, kjentInntektIdresponse.status)
             kjentInntektIdresponse.status shouldBe HttpStatusCode.OK
-            val hentetInntekt =
-                jacksonObjectMapper.readValue(
-                    kjentInntektIdresponse.bodyAsText(),
-                    Inntekt::class.java,
-                )
+            val hentetInntekt = kjentInntektIdresponse.body<Inntekt>()
             assertSoftly {
                 hentetInntekt.inntektsId shouldBe kjentInntekt.inntektsId
                 hentetInntekt.sisteAvsluttendeKalenderMåned shouldBe kjentInntekt.sisteAvsluttendeKalenderMåned
@@ -366,14 +348,14 @@ internal class InntektRouteSpec {
                 hentetInntekt.manueltRedigert shouldBe kjentInntekt.manueltRedigert
             }
             val uKjentInntektIdresponse =
-                client.get("/v2/inntekt/klassifisert/$uKjentInntektsId") {
+                it.client.get("/v2/inntekt/klassifisert/$uKjentInntektsId") {
                     autentisert()
                 }
 
             uKjentInntektIdresponse.status shouldBe HttpStatusCode.NotFound
 
             val ikkeInntektIdResponse =
-                client.get("/v2/inntekt/klassifisert/123") {
+                it.client.get("/v2/inntekt/klassifisert/123") {
                     autentisert()
                 }
 

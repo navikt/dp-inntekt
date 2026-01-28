@@ -12,7 +12,7 @@ import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.InntektApiConfig
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
-import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.CommitFailedException
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -71,7 +71,7 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                             records
                                 .asSequence()
                                 .map { record -> record.value() }
-                                .map { jacksonObjectMapper.readTree(it) }
+                                .map { inntektObjectMapper.readTree(it) }
                                 .filter { packet ->
                                     packet.has("@event_name") &&
                                         packet.has("aktorId") &&

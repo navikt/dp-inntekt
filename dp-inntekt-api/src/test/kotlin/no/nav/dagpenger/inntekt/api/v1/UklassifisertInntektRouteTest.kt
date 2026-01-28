@@ -22,7 +22,6 @@ import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.TEST_OAUTH_USER
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.autentisert
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.mockInntektApi
-import no.nav.dagpenger.inntekt.api.v1.TestApplication.withMockAuthServerAndTestApplication
 import no.nav.dagpenger.inntekt.api.v1.models.FullVirksomhetsInformasjon
 import no.nav.dagpenger.inntekt.api.v1.models.InntekterDto
 import no.nav.dagpenger.inntekt.db.DetachedInntekt
@@ -55,7 +54,7 @@ import no.nav.dagpenger.inntekt.mapping.InntektMedVerdikode
 import no.nav.dagpenger.inntekt.oppslag.Person
 import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
-import no.nav.dagpenger.inntekt.serder.jacksonObjectMapper
+import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -168,22 +167,20 @@ internal class UklassifisertInntektRouteTest {
     @Test
     fun `GET unknown uklassifisert inntekt should return 404 not found`() =
 
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                inntektskomponentClient = inntektskomponentClientMock,
-                inntektStore = inntektStoreMock,
-                personOppslag = personOppslagMock,
-            ),
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
         ) {
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Get,
                     endepunkt = "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}",
                     token = token,
                 )
 
             assertEquals(HttpStatusCode.NotFound, response.status)
-            val problem = jacksonObjectMapper.readValue<Problem>(response.bodyAsText())
+            val problem = inntektObjectMapper.readValue<Problem>(response.bodyAsText())
             assertEquals("Kunne ikke finne inntekt i databasen", problem.title)
             assertEquals("urn:dp:error:inntekt", problem.type.toString())
             assertEquals(404, problem.status)
@@ -195,16 +192,13 @@ internal class UklassifisertInntektRouteTest {
 
     @Test
     fun `GET uklassifisert without auth cookie should return 401 `() =
-
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                inntektskomponentClient = inntektskomponentClientMock,
-                inntektStore = inntektStoreMock,
-                personOppslag = personOppslagMock,
-            ),
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
         ) {
             val response =
-                client.get(
+                it.client.get(
                     "$uklassifisertInntekt/${notFoundQuery.aktørId}/${notFoundQuery.regelkontekst.type}/${notFoundQuery.regelkontekst.id}/${notFoundQuery.beregningsdato}",
                 )
 
@@ -213,15 +207,15 @@ internal class UklassifisertInntektRouteTest {
 
     @Test
     fun `GET uklassifisert inntekt with malformed parameters should return bad request`() =
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                inntektskomponentClient = inntektskomponentClientMock,
-                inntektStore = inntektStoreMock,
-                personOppslag = personOppslagMock,
-            ),
+
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
         ) {
             val response =
-                autentisert(
+                it.autentisert(
+                    httpMethod = HttpMethod.Get,
                     "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/blabla",
                 )
 
@@ -230,53 +224,47 @@ internal class UklassifisertInntektRouteTest {
 
     @Test
     fun `Get request for uklassifisert inntekt should return 200 ok`() =
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                inntektskomponentClient = inntektskomponentClientMock,
-                inntektStore = inntektStoreMock,
-                personOppslag = personOppslagMock,
-            ),
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
         ) {
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Get,
                     endepunkt = "$uklassifisertInntekt/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
                 )
 
             assertEquals(OK, response.status)
             val storedInntekt =
-                jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
+                inntektObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
             assertEquals(storedInntekt.inntektId, inntektId)
         }
 
     @Test
     fun `Get request for uncached uklassifisert inntekt should return 200 ok`() =
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                inntektskomponentClient = inntektskomponentClientMock,
-                inntektStore = inntektStoreMock,
-                personOppslag = personOppslagMock,
-            ),
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
         ) {
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Get,
                     endepunkt = "$uklassifisertInntekt/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
                 )
             assertEquals(OK, response.status)
             val uncachedInntekt =
-                jacksonObjectMapper.readValue<DetachedInntekt>(response.bodyAsText())
+                inntektObjectMapper.readValue<DetachedInntekt>(response.bodyAsText())
             assertEquals(emptyInntekt.ident, uncachedInntekt.inntekt.ident)
         }
 
     @Test
     fun `Post uklassifisert inntekt should return 200 ok`() =
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                inntektskomponentClient = inntektskomponentClientMock,
-                inntektStore = inntektStoreMock,
-                personOppslag = personOppslagMock,
-            ),
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
         ) {
             val guiInntekt =
                 GUIInntekt(
@@ -288,25 +276,23 @@ internal class UklassifisertInntektRouteTest {
                 )
 
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
                     endepunkt = "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-                    body = jacksonObjectMapper.writeValueAsString(guiInntekt),
+                    body = inntektObjectMapper.writeValueAsString(guiInntekt),
                 )
             assertEquals(OK, response.status)
             val uncachedInntekt =
-                jacksonObjectMapper.readValue<DetachedInntekt>(response.bodyAsText())
+                inntektObjectMapper.readValue<DetachedInntekt>(response.bodyAsText())
             assertEquals(emptyInntekt.ident, uncachedInntekt.inntekt.ident)
         }
 
     @Test
     fun `Post uklassifisert inntekt redigert should return 200 ok`() =
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                inntektskomponentClient = inntektskomponentClientMock,
-                inntektStore = inntektStoreMock,
-                personOppslag = personOppslagMock,
-            ),
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
         ) {
             val guiInntekt =
                 GUIInntekt(
@@ -318,26 +304,24 @@ internal class UklassifisertInntektRouteTest {
                 )
 
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
                     endepunkt = "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-                    body = jacksonObjectMapper.writeValueAsString(guiInntekt),
+                    body = inntektObjectMapper.writeValueAsString(guiInntekt),
                 )
             assertEquals(OK, response.status)
             val storedInntekt =
-                jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
+                inntektObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
             assertEquals(storedInntekt.inntektId, inntektId)
         }
 
     @Test
     fun `Post uklassifisert inntekt med feil redigert should return 400 ok`() =
 
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                inntektskomponentClient = inntektskomponentClientMock,
-                inntektStore = inntektStoreMock,
-                personOppslag = personOppslagMock,
-            ),
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
         ) {
             val guiInntekt =
                 GUIInntekt(
@@ -377,9 +361,9 @@ internal class UklassifisertInntektRouteTest {
                     redigertAvSaksbehandler = true,
                 )
 
-            val body = jacksonObjectMapper.writeValueAsString(guiInntekt)
+            val body = inntektObjectMapper.writeValueAsString(guiInntekt)
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
                     endepunkt = "v1/inntekt/uklassifisert/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
                     body = body.replace(oldValue = "123", newValue = ""),
@@ -390,12 +374,10 @@ internal class UklassifisertInntektRouteTest {
 
     @Test
     fun `Post uklassifisert uncached inntekt should return 200 ok`() =
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                inntektskomponentClient = inntektskomponentClientMock,
-                inntektStore = inntektStoreMock,
-                personOppslag = personOppslagMock,
-            ),
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
         ) {
             val guiInntekt =
                 GUIInntekt(
@@ -407,26 +389,24 @@ internal class UklassifisertInntektRouteTest {
                 )
 
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
                     endepunkt = "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-                    body = jacksonObjectMapper.writeValueAsString(guiInntekt),
+                    body = inntektObjectMapper.writeValueAsString(guiInntekt),
                 )
             assertEquals(OK, response.status)
             val storedInntekt =
-                jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
+                inntektObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
             assertEquals(storedInntekt.inntektId, inntektId)
         }
 
     @Test
     fun `Post uklassifisert uncached inntekt redigert should return 200 ok`() =
 
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                inntektskomponentClient = inntektskomponentClientMock,
-                inntektStore = inntektStoreMock,
-                personOppslag = personOppslagMock,
-            ),
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
         ) {
             val guiInntekt =
                 GUIInntekt(
@@ -438,49 +418,45 @@ internal class UklassifisertInntektRouteTest {
                 )
 
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
                     endepunkt = "v1/inntekt/uklassifisert/uncached/${foundQuery.aktørId}/${foundQuery.regelkontekst.type}/${foundQuery.regelkontekst.id}/${foundQuery.beregningsdato}",
-                    body = jacksonObjectMapper.writeValueAsString(guiInntekt),
+                    body = inntektObjectMapper.writeValueAsString(guiInntekt),
                 )
             assertEquals(OK, response.status)
             val storedInntekt =
-                jacksonObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
+                inntektObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
             assertEquals(storedInntekt.inntektId, inntektId)
         }
 
     @Test
     fun `Should get verdikode mapping`() =
 
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                inntektskomponentClient = inntektskomponentClientMock,
-                inntektStore = inntektStoreMock,
-                personOppslag = personOppslagMock,
-            ),
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
         ) {
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Get,
                     endepunkt = "v1/inntekt/verdikoder",
                 )
             assertEquals(OK, response.status)
             assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
-            assertTrue(runCatching { jacksonObjectMapper.readValue<Set<String>>(response.bodyAsText()) }.isSuccess)
+            assertTrue(runCatching { inntektObjectMapper.readValue<Set<String>>(response.bodyAsText()) }.isSuccess)
         }
 
     @Test
     fun `Get request for uklassifisert inntekt med ugyldig inntektID returnerer 400 BAD REQUEST`() =
-        withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                inntektskomponentClient = inntektskomponentClientMock,
-                inntektStore = inntektStoreMock,
-                personOppslag = personOppslagMock,
-                enhetsregisterClient = mockk<EnhetsregisterClient>(),
-            ),
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
+            enhetsregisterClient = mockk<EnhetsregisterClient>(),
         ) {
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Get,
                     endepunkt = "$uklassifisertInntekt/UGYLDIG_ID",
                 )
@@ -491,13 +467,11 @@ internal class UklassifisertInntektRouteTest {
     @Test
     fun `Get request for uklassifisert inntekt med inntektID returnerer 200 ok`() {
         val enhetsregisterClientMock = mockk<EnhetsregisterClient>(relaxed = true)
-        return withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                inntektskomponentClient = inntektskomponentClientMock,
-                inntektStore = inntektStoreMock,
-                personOppslag = personOppslagMock,
-                enhetsregisterClient = enhetsregisterClientMock,
-            ),
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
+            enhetsregisterClient = enhetsregisterClientMock,
         ) {
             val bodyFraEr =
                 FullVirksomhetsInformasjon::class.java
@@ -513,7 +487,7 @@ internal class UklassifisertInntektRouteTest {
             } returns
                 StoredInntektMedMetadata(
                     inntektId,
-                    inntekt = jacksonObjectMapper.readValue(body!!),
+                    inntekt = inntektObjectMapper.readValue(body!!),
                     manueltRedigert = false,
                     timestamp = LocalDateTime.now(),
                     fødselsnummer = fødselsnummer,
@@ -526,13 +500,13 @@ internal class UklassifisertInntektRouteTest {
                 )
 
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Get,
                     endepunkt = "$uklassifisertInntekt/${inntektId.id}",
                 )
 
             response.status shouldBe OK
-            val storedInntekt = jacksonObjectMapper.readValue<InntekterDto>(response.bodyAsText())
+            val storedInntekt = inntektObjectMapper.readValue<InntekterDto>(response.bodyAsText())
             storedInntekt.periode.fraOgMed shouldBe YearMonth.of(2023, 1)
             storedInntekt.periode.tilOgMed shouldBe YearMonth.of(2025, 5)
             storedInntekt.virksomheter shouldHaveSize 2
@@ -546,19 +520,17 @@ internal class UklassifisertInntektRouteTest {
 
     @Test
     fun `Post request for uklassifisert inntekt med inntektId lagrer og returnerer ny ID, uten behandlingId og opplysningId`() =
-        withMockAuthServerAndTestApplication(
-            moduleFunction =
-                mockInntektApi(
-                    inntektskomponentClient = inntektskomponentClientMock,
-                    inntektStore = inntektStoreMock,
-                    dpBehandlingKlient = dpBehandlingKlient,
-                ),
+
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            dpBehandlingKlient = dpBehandlingKlient,
         ) {
             val body =
                 UklassifisertInntektRouteTest::class.java
                     .getResource("/test-data/expected-uklassifisert-post-body.json")
                     ?.readText()
-            val inntekterDto = jacksonObjectMapper.readValue<InntekterDto>(body!!)
+            val inntekterDto = inntektObjectMapper.readValue<InntekterDto>(body!!)
 
             val inntektPersonMapping =
                 InntektPersonMapping(
@@ -576,7 +548,7 @@ internal class UklassifisertInntektRouteTest {
             every { inntektStoreMock.storeInntekt(capture(storeInntektCommandSlot), any()) } returns storedInntekt
 
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
                     endepunkt = "$uklassifisertInntekt/${inntektId.id}",
                     body = body,
@@ -589,7 +561,11 @@ internal class UklassifisertInntektRouteTest {
             storeInntektCommandSlot.captured.inntektparametre.regelkontekst.id shouldBe inntektPersonMapping.kontekstId
             storeInntektCommandSlot.captured.inntektparametre.regelkontekst.type shouldBe inntektPersonMapping.kontekstType
             storeInntektCommandSlot.captured.inntektparametre.beregningsdato shouldBe inntektPersonMapping.beregningsdato
-            storeInntektCommandSlot.captured.inntektparametre.opptjeningsperiode.førsteMåned shouldBe YearMonth.of(2000, 12)
+            storeInntektCommandSlot.captured.inntektparametre.opptjeningsperiode.førsteMåned shouldBe
+                YearMonth.of(
+                    2000,
+                    12,
+                )
             storeInntektCommandSlot.captured.inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned shouldBe
                 YearMonth.of(2025, 4)
             storeInntektCommandSlot.captured.manueltRedigert.shouldNotBeNull()
@@ -600,19 +576,16 @@ internal class UklassifisertInntektRouteTest {
 
     @Test
     fun `Post request for uklassifisert inntekt med inntektId lagrer og returnerer ny ID, med behandlingId og opplysningId`() =
-        withMockAuthServerAndTestApplication(
-            moduleFunction =
-                mockInntektApi(
-                    inntektskomponentClient = inntektskomponentClientMock,
-                    inntektStore = inntektStoreMock,
-                    dpBehandlingKlient = dpBehandlingKlient,
-                ),
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            dpBehandlingKlient = dpBehandlingKlient,
         ) {
             val body =
                 UklassifisertInntektRouteTest::class.java
                     .getResource("/test-data/expected-uklassifisert-post-body.json")
                     ?.readText()
-            val inntekterDto = jacksonObjectMapper.readValue<InntekterDto>(body!!)
+            val inntekterDto = inntektObjectMapper.readValue<InntekterDto>(body!!)
 
             val behandlingId = UUID.randomUUID()
             val opplysningId = UUID.randomUUID()
@@ -634,7 +607,7 @@ internal class UklassifisertInntektRouteTest {
             every { inntektStoreMock.storeInntekt(capture(storeInntektCommandSlot), any()) } returns storedInntekt
 
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Post,
                     endepunkt = "$uklassifisertInntekt/${inntektId.id}?behandlingId=$behandlingId&opplysningId=$opplysningId",
                     body = body,
@@ -647,26 +620,36 @@ internal class UklassifisertInntektRouteTest {
             storeInntektCommandSlot.captured.inntektparametre.regelkontekst.id shouldBe inntektPersonMapping.kontekstId
             storeInntektCommandSlot.captured.inntektparametre.regelkontekst.type shouldBe inntektPersonMapping.kontekstType
             storeInntektCommandSlot.captured.inntektparametre.beregningsdato shouldBe inntektPersonMapping.beregningsdato
-            storeInntektCommandSlot.captured.inntektparametre.opptjeningsperiode.førsteMåned shouldBe YearMonth.of(2000, 12)
+            storeInntektCommandSlot.captured.inntektparametre.opptjeningsperiode.førsteMåned shouldBe
+                YearMonth.of(
+                    2000,
+                    12,
+                )
             storeInntektCommandSlot.captured.inntektparametre.opptjeningsperiode.sisteAvsluttendeKalenderMåned shouldBe
                 YearMonth.of(2025, 4)
             storeInntektCommandSlot.captured.manueltRedigert.shouldNotBeNull()
             storeInntektCommandSlot.captured.manueltRedigert!!.redigertAv shouldBe TEST_OAUTH_USER
             storeInntektCommandSlot.captured.manueltRedigert!!.begrunnelse shouldBe "Dette er en begrunnelse."
-            verify(exactly = 1) { dpBehandlingKlient.rekjørBehandling(fødselsnummer, behandlingId, opplysningId, token) }
+            verify(exactly = 1) {
+                dpBehandlingKlient.rekjørBehandling(
+                    fødselsnummer,
+                    behandlingId,
+                    opplysningId,
+                    token,
+                )
+            }
         }
 
     @Test
     fun `Get request for uncached uklassifisert inntekt skal returnere 200 OK og inntekt`() {
         val enhetsregisterClientMock = mockk<EnhetsregisterClient>(relaxed = true)
         val inntektKomponentClientMock = mockk<InntektskomponentClient>(relaxed = true)
-        return withMockAuthServerAndTestApplication(
-            mockInntektApi(
-                inntektskomponentClient = inntektKomponentClientMock,
-                inntektStore = inntektStoreMock,
-                personOppslag = personOppslagMock,
-                enhetsregisterClient = enhetsregisterClientMock,
-            ),
+
+        mockInntektApi(
+            inntektskomponentClient = inntektKomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
+            enhetsregisterClient = enhetsregisterClientMock,
         ) {
             val body =
                 UklassifisertInntektRouteTest::class.java
@@ -677,7 +660,7 @@ internal class UklassifisertInntektRouteTest {
             } returns
                 StoredInntektMedMetadata(
                     inntektId,
-                    inntekt = jacksonObjectMapper.readValue(body!!),
+                    inntekt = inntektObjectMapper.readValue(body!!),
                     manueltRedigert = false,
                     timestamp = LocalDateTime.now(),
                     fødselsnummer = fødselsnummer,
@@ -792,7 +775,7 @@ internal class UklassifisertInntektRouteTest {
             coEvery { enhetsregisterClientMock.hentEnhet("1111111") } returns bodyFraEr
 
             val response =
-                autentisert(
+                it.autentisert(
                     httpMethod = HttpMethod.Get,
                     endepunkt = "$uklassifisertInntekt/uncached/${inntektId.id}",
                 )
@@ -800,7 +783,7 @@ internal class UklassifisertInntektRouteTest {
             assertEquals(OK, response.status)
 
             val storedInntekt =
-                jacksonObjectMapper.readValue<InntekterDto>(response.bodyAsText())
+                inntektObjectMapper.readValue<InntekterDto>(response.bodyAsText())
             storedInntekt.virksomheter shouldHaveSize 1
             storedInntekt.virksomheter[0].inntekter?.shouldHaveSize((2))
         }
