@@ -101,9 +101,10 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
 
             val context = newSingleThreadContext("test-1")
             try {
-                launch(context) {
-                    consumer.listen()
-                }
+                val job =
+                    launch(context) {
+                        consumer.listen()
+                    }
 
                 val metaData =
                     producer
@@ -120,8 +121,10 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                 verify(exactly = 1) {
                     storeMock.markerInntektBrukt(inntektId)
                 }
-            } finally {
+
                 consumer.stop()
+                job.join()
+            } finally {
                 context.close()
             }
         }
@@ -141,9 +144,10 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
 
             val context = newSingleThreadContext("test-2")
             try {
-                launch(context) {
-                    consumer.listen()
-                }
+                val job =
+                    launch(context) {
+                        consumer.listen()
+                    }
 
                 val bruktSubsumsjonData = mapOf("faktum" to mapOf("manueltGrunnlag" to "122212"))
                 val metaData =
@@ -164,8 +168,10 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                 }
 
                 consumer.status() shouldBe HealthStatus.UP
-            } finally {
+
                 consumer.stop()
+                job.join()
+            } finally {
                 context.close()
             }
         }
@@ -187,9 +193,10 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
 
             val context = newSingleThreadContext("test-3")
             try {
-                launch(context) {
-                    consumer.listen()
-                }
+                val job =
+                    launch(context) {
+                        consumer.listen()
+                    }
 
                 val metaData =
                     producer
@@ -205,8 +212,10 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                 TimeUnit.MILLISECONDS.sleep(1500)
 
                 consumer.status() shouldBe HealthStatus.DOWN
-            } finally {
+
                 consumer.stop()
+                job.join()
+            } finally {
                 context.close()
             }
         }
