@@ -99,29 +99,31 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     storeMock,
                 )
 
-            newSingleThreadContext("test-1").use {
-                launch(it) {
-                    consumer.listen()
+            try {
+                newSingleThreadContext("test-1").use {
+                    launch(it) {
+                        consumer.listen()
+                    }
                 }
+
+                val metaData =
+                    producer
+                        .send(
+                            ProducerRecord(
+                                topic,
+                                "test",
+                                inntektObjectMapper.writeValueAsString(bruktInntektMelding),
+                            ),
+                        ).get(5, TimeUnit.SECONDS)
+                LOGGER.info { "Producer produced $bruktInntektMelding with meta $metaData" }
+
+                delay(500)
+                verify(exactly = 1) {
+                    storeMock.markerInntektBrukt(inntektId)
+                }
+            } finally {
+                consumer.stop()
             }
-
-            val metaData =
-                producer
-                    .send(
-                        ProducerRecord(
-                            topic,
-                            "test",
-                            inntektObjectMapper.writeValueAsString(bruktInntektMelding),
-                        ),
-                    ).get(5, TimeUnit.SECONDS)
-            LOGGER.info { "Producer produced $bruktInntektMelding with meta $metaData" }
-
-            delay(500)
-            verify(exactly = 1) {
-                storeMock.markerInntektBrukt(inntektId)
-            }
-
-            consumer.stop()
         }
 
     @Test
@@ -137,32 +139,35 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     storeMock,
                 )
 
-            newSingleThreadContext("test-2").use {
-                launch(it) {
-                    consumer.listen()
+            try {
+                newSingleThreadContext("test-2").use {
+                    launch(it) {
+                        consumer.listen()
+                    }
                 }
+
+                val bruktSubsumsjonData = mapOf("faktum" to mapOf("manueltGrunnlag" to "122212"))
+                val metaData =
+                    producer
+                        .send(
+                            ProducerRecord(
+                                topic,
+                                "test",
+                                inntektObjectMapper.writeValueAsString(bruktInntektMeldingManueltGrunnlag),
+                            ),
+                        ).get(5, TimeUnit.SECONDS)
+                LOGGER.info { "Producer produced $bruktSubsumsjonData with meta $metaData" }
+
+                delay(500)
+
+                verify(exactly = 0) {
+                    storeMock.markerInntektBrukt(any())
+                }
+
+                consumer.status() shouldBe HealthStatus.UP
+            } finally {
+                consumer.stop()
             }
-
-            val bruktSubsumsjonData = mapOf("faktum" to mapOf("manueltGrunnlag" to "122212"))
-            val metaData =
-                producer
-                    .send(
-                        ProducerRecord(
-                            topic,
-                            "test",
-                            inntektObjectMapper.writeValueAsString(bruktInntektMeldingManueltGrunnlag),
-                        ),
-                    ).get(5, TimeUnit.SECONDS)
-            LOGGER.info { "Producer produced $bruktSubsumsjonData with meta $metaData" }
-
-            delay(500)
-
-            verify(exactly = 0) {
-                storeMock.markerInntektBrukt(any())
-            }
-
-            consumer.status() shouldBe HealthStatus.UP
-            consumer.stop()
         }
 
     @Test
