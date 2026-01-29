@@ -82,7 +82,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
         consumerProducerFactory.createProducer()
     }
 
-    private val consumer by lazy {
+    private val kafkaConsumer by lazy {
         consumerProducerFactory.createConsumer("test-group")
     }
 
@@ -94,7 +94,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
             val topic = Config.config.inntektApiConfig.inntektBruktDataTopic
             val consumer =
                 KafkaSubsumsjonBruktDataConsumer(
-                    consumer,
+                    kafkaConsumer,
                     topic,
                     storeMock,
                 )
@@ -132,7 +132,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
             val topic = Config.config.inntektApiConfig.inntektBruktDataTopic
             val consumer =
                 KafkaSubsumsjonBruktDataConsumer(
-                    consumer,
+                    kafkaConsumer,
                     topic,
                     storeMock,
                 )
@@ -174,7 +174,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
             val topic = Config.config.inntektApiConfig.inntektBruktDataTopic
             val consumer =
                 KafkaSubsumsjonBruktDataConsumer(
-                    consumer,
+                    kafkaConsumer,
                     topic,
                     storeMock,
                     graceDuration = 1.milliseconds.toJavaDuration(),
