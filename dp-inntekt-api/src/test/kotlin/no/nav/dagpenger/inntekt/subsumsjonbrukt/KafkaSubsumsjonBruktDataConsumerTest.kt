@@ -180,26 +180,30 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     graceDuration = 1.milliseconds.toJavaDuration(),
                 )
 
-            newSingleThreadContext("test-3").use {
-                launch(it) {
-                    consumer.listen()
+            try {
+                newSingleThreadContext("test-3").use {
+                    launch(it) {
+                        consumer.listen()
+                    }
                 }
+
+                val metaData =
+                    producer
+                        .send(
+                            ProducerRecord(
+                                topic,
+                                "test",
+                                inntektObjectMapper.writeValueAsString(bruktInntektMelding),
+                            ),
+                        ).get(5, TimeUnit.SECONDS)
+                LOGGER.info { "Producer produced $bruktInntektMelding with meta $metaData + should fail" }
+
+                TimeUnit.MILLISECONDS.sleep(1500)
+
+                consumer.status() shouldBe HealthStatus.DOWN
+            } finally {
+                consumer.stop()
             }
-
-            val metaData =
-                producer
-                    .send(
-                        ProducerRecord(
-                            topic,
-                            "test",
-                            inntektObjectMapper.writeValueAsString(bruktInntektMelding),
-                        ),
-                    ).get(5, TimeUnit.SECONDS)
-            LOGGER.info { "Producer produced $bruktInntektMelding with meta $metaData + should fail" }
-
-            TimeUnit.MILLISECONDS.sleep(1500)
-
-            consumer.status() shouldBe HealthStatus.DOWN
         }
 
     @Test
