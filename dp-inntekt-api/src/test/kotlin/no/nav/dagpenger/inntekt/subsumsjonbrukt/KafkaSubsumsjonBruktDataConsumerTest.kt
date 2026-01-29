@@ -7,11 +7,9 @@ import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.verify
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.Config
 import no.nav.dagpenger.inntekt.Config.inntektApiConfig
@@ -37,7 +35,6 @@ import kotlin.time.toJavaDuration
 
 private val LOGGER = KotlinLogging.logger { }
 
-@OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
 internal class KafkaSubsumsjonBruktDataConsumerTest {
     private object Kafka {
         val instance by lazy {
@@ -99,10 +96,8 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     storeMock,
                 )
 
-            newSingleThreadContext("test-1").use {
-                launch(it) {
-                    consumer.listen()
-                }
+            launch(Dispatchers.Default) {
+                consumer.listen()
             }
 
             val metaData =
@@ -137,10 +132,8 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     storeMock,
                 )
 
-            newSingleThreadContext("test-2").use {
-                launch(it) {
-                    consumer.listen()
-                }
+            launch(Dispatchers.Default) {
+                consumer.listen()
             }
 
             val bruktSubsumsjonData = mapOf("faktum" to mapOf("manueltGrunnlag" to "122212"))
@@ -180,10 +173,8 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     graceDuration = 1.milliseconds.toJavaDuration(),
                 )
 
-            newSingleThreadContext("test-3").use {
-                launch(it) {
-                    consumer.listen()
-                }
+            launch(Dispatchers.Default) {
+                consumer.listen()
             }
 
             val metaData =
