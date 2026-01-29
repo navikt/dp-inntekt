@@ -5,8 +5,8 @@ import de.huxhorn.sulky.ulid.ULID
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -111,7 +111,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     ).get(5, TimeUnit.SECONDS)
             LOGGER.info { "Producer produced $bruktInntektMelding with meta $metaData" }
 
-            verify(timeout = 5000, exactly = 1) {
+            coVerify(timeout = 500, exactly = 1) {
                 storeMock.markerInntektBrukt(inntektId)
             }
 
@@ -147,9 +147,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     ).get(5, TimeUnit.SECONDS)
             LOGGER.info { "Producer produced $bruktSubsumsjonData with meta $metaData" }
 
-            delay(500)
-
-            verify(exactly = 0) {
+            coVerify(timeout = 500, exactly = 0) {
                 storeMock.markerInntektBrukt(any())
             }
 
@@ -187,8 +185,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     ).get(5, TimeUnit.SECONDS)
             LOGGER.info { "Producer produced $bruktInntektMelding with meta $metaData + should fail" }
 
-            TimeUnit.MILLISECONDS.sleep(1500)
-
+            delay(500)
             consumer.status() shouldBe HealthStatus.DOWN
         }
 
@@ -202,8 +199,9 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
         graceperiod2.expired() shouldBe true
     }
 
-    internal class LocalKafkaConfig(private val connectionProperties: Properties) :
-        com.github.navikt.tbd_libs.kafka.Config {
+    internal class LocalKafkaConfig(
+        private val connectionProperties: Properties,
+    ) : com.github.navikt.tbd_libs.kafka.Config {
         override fun producerConfig(properties: Properties) =
             properties.apply {
                 putAll(connectionProperties)
