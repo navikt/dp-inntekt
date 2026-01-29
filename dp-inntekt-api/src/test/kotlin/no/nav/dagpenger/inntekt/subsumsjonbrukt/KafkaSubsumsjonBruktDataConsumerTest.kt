@@ -9,7 +9,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
@@ -116,8 +115,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     ).get(5, TimeUnit.SECONDS)
             LOGGER.info { "Producer produced $bruktInntektMelding with meta $metaData" }
 
-            delay(500)
-            verify(exactly = 1) {
+            verify(timeout = 5000, exactly = 1) {
                 storeMock.markerInntektBrukt(inntektId)
             }
 
@@ -155,9 +153,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     ).get(5, TimeUnit.SECONDS)
             LOGGER.info { "Producer produced $bruktSubsumsjonData with meta $metaData" }
 
-            delay(500)
-
-            verify(exactly = 0) {
+            verify(timeout = 5000, exactly = 0) {
                 storeMock.markerInntektBrukt(any())
             }
 
