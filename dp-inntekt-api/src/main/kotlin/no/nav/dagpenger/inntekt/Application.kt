@@ -105,7 +105,7 @@ fun main() {
                 enhetsregisterClient = enhetsregisterClient,
                 dpBehandlingKlient = dpBehandlingKlient,
             )
-        }
+        }.start(wait = true)
 
         // Cleans up unused inntekt on a regular interval
         Vaktmester(dataSource).also {
