@@ -13,10 +13,10 @@ spec:
   port: 8099
   webproxy: true
   liveness:
-    path: /isAlive
+    path: /isalive
     initialDelay: 60
   readiness:
-    path: /isReady
+    path: /isready
   prometheus:
     enabled: true
     path: /metrics
