@@ -111,8 +111,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     ).get(5, TimeUnit.SECONDS)
             LOGGER.info { "Producer produced $bruktInntektMelding with meta $metaData" }
 
-            delay(500)
-            verify(exactly = 1) {
+            verify(timeout = 5000, exactly = 1) {
                 storeMock.markerInntektBrukt(inntektId)
             }
 
