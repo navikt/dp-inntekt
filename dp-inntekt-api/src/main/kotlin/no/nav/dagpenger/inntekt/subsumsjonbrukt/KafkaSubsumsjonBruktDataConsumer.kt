@@ -1,40 +1,32 @@
 package no.nav.dagpenger.inntekt.subsumsjonbrukt
 
+import com.github.navikt.tbd_libs.kafka.AivenConfig
+import com.github.navikt.tbd_libs.kafka.ConsumerProducerFactory
+import com.github.navikt.tbd_libs.kafka.poll
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import no.nav.dagpenger.inntekt.Config
 import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.HealthStatus
-import no.nav.dagpenger.inntekt.InntektApiConfig
 import no.nav.dagpenger.inntekt.db.InntektId
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
-import org.apache.kafka.clients.CommonClientConfigs
-import org.apache.kafka.clients.consumer.CommitFailedException
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.common.config.SslConfigs
-import org.apache.kafka.common.serialization.StringDeserializer
+import org.apache.kafka.common.errors.WakeupException
 import java.time.Duration
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.Properties
-import kotlin.coroutines.CoroutineContext
+import java.util.concurrent.atomic.AtomicBoolean
 
 internal class KafkaSubsumsjonBruktDataConsumer(
-    private val config: InntektApiConfig,
+    private val kafkaConsumer: KafkaConsumer<String, String>,
+    private val topic: String,
     private val inntektStore: InntektStore,
     private val graceDuration: Duration = Duration.ofHours(3),
-) : CoroutineScope,
-    HealthCheck {
+) : HealthCheck {
     private val logger = KotlinLogging.logger { }
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.IO + job
 
+    private val running = AtomicBoolean(false)
     private var grace: Grace? = null
 
     private fun startGracePeriod() {
@@ -44,78 +36,60 @@ internal class KafkaSubsumsjonBruktDataConsumer(
         }
     }
 
-    private val job: Job by lazy {
-        SupervisorJob()
-    }
-
     fun listen() {
-        launch {
-            logger.info { "Starting ${config.application.id}" }
-
-            KafkaConsumer<String, String>(
-                consumerConfig(
-                    groupId = config.application.id,
-                    bootstrapServerUrl = config.application.brokers,
-                    credential = config.application.credential,
-                ).also {
-                    it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-                    it[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = "false"
-                    it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
-                },
-            ).use { consumer ->
-                try {
-                    consumer.subscribe(listOf(config.inntektBruktDataTopic))
-                    while (job.isActive) {
-                        val records = consumer.poll(Duration.ofMillis(100))
-                        val ids =
-                            records
-                                .asSequence()
-                                .map { record -> record.value() }
-                                .map { inntektObjectMapper.readTree(it) }
-                                .filter { packet ->
-                                    packet.has("@event_name") &&
-                                        packet.has("aktorId") &&
-                                        packet.has("inntektsId") &&
-                                        packet.has("kontekst") &&
-                                        packet.get("@event_name").asText() == "brukt_inntekt"
-                                }.map { packet -> InntektId(packet.get("inntektsId").asText()) }
-                                .toList()
-
-                        try {
-                            ids.forEach { id ->
-                                if (inntektStore.markerInntektBrukt(id) == 1) {
-                                    logger.info { "Marked inntekt with id $id as used" }
-                                }
-                            }
-                            if (ids.isNotEmpty()) {
-                                consumer.commitSync()
-                            }
-                        } catch (e: CommitFailedException) {
-                            logger.warn(e) { "Kafka threw a commit fail exception, looping back" }
+        running.set(true)
+        kafkaConsumer.use { consumer ->
+            consumer.subscribe(listOf(topic))
+            logger.info { "Start consuming $topic with consumer ${kafkaConsumer.groupMetadata().groupId()}" }
+            try {
+                consumer.poll(running::get) { records ->
+                    val ids =
+                        records
+                            .asSequence()
+                            .map { record -> record.value() }
+                            .map { inntektObjectMapper.readTree(it) }
+                            .filter { packet ->
+                                packet.has("@event_name") &&
+                                    packet.has("aktorId") &&
+                                    packet.has("inntektsId") &&
+                                    packet.has("kontekst") &&
+                                    packet.get("@event_name").asText() == "brukt_inntekt"
+                            }.map { packet -> InntektId(packet.get("inntektsId").asText()) }
+                            .toList()
+                    ids.forEach { id ->
+                        if (inntektStore.markerInntektBrukt(id) == 1) {
+                            logger.info { "Marked inntekt with id $id as used" }
                         }
                     }
-                } catch (e: Exception) {
-                    logger.error(
-                        e,
-                    ) {
-                        """
-                        Unexpected exception while consuming messages. 
-                        Stopping consumer, grace period ${graceDuration.seconds / 60} minutes"
-                        """.trimIndent()
+                    if (ids.isNotEmpty()) {
+                        consumer.commitSync()
                     }
-                    startGracePeriod()
-                    stop()
-                } finally {
-                    if (!job.isActive) {
-                        logger.warn { "Kafka consumer job is no longer active, consumer has stopped" }
-                    }
+                }
+            } catch (err: WakeupException) {
+                logger.info(
+                    err,
+                ) { "Exiting consumer after ${if (!running.get()) "receiving shutdown signal" else "being interrupted by someone"}" }
+            } catch (e: Exception) {
+                logger.error(
+                    e,
+                ) {
+                    """
+                    Unexpected exception while consuming messages. 
+                    Stopping consumer, grace period ${graceDuration.seconds / 60} minutes"
+                    """.trimIndent()
+                }
+                startGracePeriod()
+                stop()
+            } finally {
+                if (!running.get()) {
+                    logger.warn { "Kafka consumer job is no longer active, consumer has stopped" }
                 }
             }
         }
     }
 
     override fun status(): HealthStatus {
-        return if (job.isActive) {
+        return if (running.get()) {
             HealthStatus.UP
         } else {
             val currentGrace = grace
@@ -128,8 +102,10 @@ internal class KafkaSubsumsjonBruktDataConsumer(
     }
 
     fun stop() {
-        logger.info { "Stopping ${config.application.id} consumer" }
-        job.cancel()
+        logger.info { "Stopping ${kafkaConsumer.groupMetadata().groupId()} consumer" }
+        if (!running.getAndSet(false)) return logger.info { "Already in process of shutting down" }
+        logger.info { "Received shutdown signal. Waiting ${grace?.duration?.seconds} seconds for app to shutdown gracefully" }
+        kafkaConsumer.wakeup()
     }
 
     data class Grace(
@@ -141,48 +117,18 @@ internal class KafkaSubsumsjonBruktDataConsumer(
         fun expired() = ZonedDateTime.now(ZoneOffset.UTC).isAfter(expires)
     }
 
-    companion object {
-        private val defaultConsumerConfig =
-            Properties().apply {
-                put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java.name)
-                put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java.name)
-            }
-
-        internal fun commonConfig(
-            bootstrapServers: String,
-            credential: Config.KafkaAivenCredentials? = null,
-        ): Properties =
-            Properties().apply {
-                put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers)
-                credential?.let { creds ->
-                    putAll(
-                        Properties().apply {
-                            put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, creds.securityProtocolConfig)
-                            put(
-                                SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG,
-                                creds.sslEndpointIdentificationAlgorithmConfig,
-                            )
-                            put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, creds.sslTruststoreTypeConfig)
-                            put(SslConfigs.SSL_KEYSTORE_TYPE_CONFIG, creds.sslKeystoreTypeConfig)
-                            put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, creds.sslTruststoreLocationConfig)
-                            put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, creds.sslTruststorePasswordConfig)
-                            put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, creds.sslKeystoreLocationConfig)
-                            put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, creds.sslKeystorePasswordConfig)
-                        },
-                    )
+    internal companion object {
+        fun kafkaConsumer(groupId: String): KafkaConsumer<String, String> {
+            val kafkaConfig = AivenConfig.default
+            val factory = ConsumerProducerFactory(kafkaConfig)
+            val defaultConsumerProperties =
+                Properties().apply {
+                    this[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+                    this[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = "false"
+                    this[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 10
                 }
-            }
-    }
 
-    private fun consumerConfig(
-        groupId: String,
-        bootstrapServerUrl: String,
-        credential: Config.KafkaAivenCredentials? = null,
-        properties: Properties = defaultConsumerConfig,
-    ): Properties =
-        Properties().apply {
-            putAll(properties)
-            putAll(commonConfig(bootstrapServerUrl, credential))
-            put(ConsumerConfig.GROUP_ID_CONFIG, groupId)
+            return factory.createConsumer(groupId, defaultConsumerProperties)
         }
+    }
 }

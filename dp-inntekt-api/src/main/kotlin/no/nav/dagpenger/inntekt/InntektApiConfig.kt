@@ -11,7 +11,6 @@ import com.natpryce.konfig.stringType
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.oauth2.CachedOauth2Client
 import no.nav.dagpenger.oauth2.OAuth2Config
-import org.apache.kafka.common.security.auth.SecurityProtocol
 
 object Config {
     private val localProperties =
@@ -100,9 +99,7 @@ object Config {
         get() =
             InntektApiConfig.Application(
                 id = this.getOrElse(Key("application.id", stringType), "dp-inntekt-api-consumer"),
-                brokers = this[Key("KAFKA_BROKERS", stringType)],
                 profile = this.profile,
-                credential = if (this.profile == Profile.LOCAL) null else KafkaAivenCredentials(),
                 httpPort = this[Key("application.httpPort", intType)],
                 hentinntektListeUrl = this[Key("hentinntektliste.url", stringType)],
                 enhetsregisteretUrl = this[Key("enhetsregisteret.url", stringType)],
@@ -121,17 +118,6 @@ object Config {
     val pdlTokenProvider by lazy {
         azureAdTokenSupplier(config[Key("pdl.api.scope", stringType)])
     }
-
-    data class KafkaAivenCredentials(
-        val securityProtocolConfig: String = SecurityProtocol.SSL.name,
-        val sslEndpointIdentificationAlgorithmConfig: String = "",
-        val sslTruststoreTypeConfig: String = "jks",
-        val sslKeystoreTypeConfig: String = "PKCS12",
-        val sslTruststoreLocationConfig: String = "/var/run/secrets/nais.io/kafka/client.truststore.jks",
-        val sslTruststorePasswordConfig: String = config[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
-        val sslKeystoreLocationConfig: String = "/var/run/secrets/nais.io/kafka/client.keystore.p12",
-        val sslKeystorePasswordConfig: String = sslTruststorePasswordConfig,
-    )
 
     val inntektsKomponentTokenProvider by lazy {
         azureAdTokenSupplier(config[Key("inntektskomponenten.api.scope", stringType)])
@@ -175,9 +161,7 @@ data class InntektApiConfig(
 ) {
     data class Application(
         val id: String,
-        val brokers: String,
         val profile: Profile,
-        val credential: Config.KafkaAivenCredentials?,
         val httpPort: Int,
         val hentinntektListeUrl: String,
         val enhetsregisteretUrl: String,

@@ -3,11 +3,17 @@ package no.nav.dagpenger.inntekt
 import com.github.navikt.tbd_libs.naisful.naisApp
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.ApplicationStopped
+import io.ktor.server.application.ServerReady
 import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
 import io.prometheus.metrics.tracer.initializer.SpanContextSupplier
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.inntekt.Config.inntektApiConfig
 import no.nav.dagpenger.inntekt.db.PostgresDataSourceBuilder
@@ -69,11 +75,11 @@ fun main() {
         val cachedInntektsGetter = BehandlingsInntektsGetter(inntektskomponentHttpClient, postgresInntektStore)
         // Marks inntekt as used
         val subsumsjonBruktDataConsumer =
-            KafkaSubsumsjonBruktDataConsumer(config, postgresInntektStore)
-                .apply {
-                    listen()
-                }
-
+            KafkaSubsumsjonBruktDataConsumer(
+                KafkaSubsumsjonBruktDataConsumer.kafkaConsumer(config.application.id),
+                config.inntektBruktDataTopic,
+                postgresInntektStore,
+            )
         val helsesjekker =
             listOf(
                 postgresInntektStore,
@@ -90,11 +96,23 @@ fun main() {
             readyCheck = readyCheck(postgresInntektStore),
             statusPagesConfig = { statusPagesConfig() },
         ) {
-            monitor.subscribe(ApplicationStopped) {
-                LOGGER.info { "Forsøker å lukke datasource og jobber..." }
-                subsumsjonBruktDataConsumer.stop()
-                dataSource.close()
-                LOGGER.info { "Lukket datasource" }
+            monitor.subscribe(ServerReady) {
+                val exceptionHandler =
+                    CoroutineExceptionHandler { _, throwable ->
+                        LOGGER.error(throwable) { "Exception caught" }
+                    }
+                val scope = CoroutineScope(Dispatchers.Default + exceptionHandler + SupervisorJob())
+                val job =
+                    scope.launch {
+                        subsumsjonBruktDataConsumer.listen()
+                    }
+                monitor.subscribe(ApplicationStopped) {
+                    LOGGER.info { "Forsøker å lukke datasource og jobber..." }
+                    job.cancel()
+                    subsumsjonBruktDataConsumer.stop()
+                    dataSource.close()
+                    LOGGER.info { "Lukket datasource" }
+                }
             }
             inntektApi(
                 config = configuration,
@@ -130,10 +148,11 @@ private fun aliveCeck(helsesjekker: List<HealthCheck>): () -> Boolean =
         helsesjekker.all { it.status() == HealthStatus.UP }.also { isAlive ->
             if (!isAlive) {
                 LOGGER.warn {
-                    "En eller flere helsesjekker er nede! Helsejekker status: ${helsesjekker.joinToString {
-                            hc ->
-                        "${hc::class.simpleName}=${hc.status()}"
-                    }}"
+                    "En eller flere helsesjekker er nede! Helsejekker status: ${
+                        helsesjekker.joinToString { hc ->
+                            "${hc::class.simpleName}=${hc.status()}"
+                        }
+                    }"
                 }
             }
         }

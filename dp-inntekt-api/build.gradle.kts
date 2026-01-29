@@ -42,7 +42,11 @@ dependencies {
     implementation(libs.bundles.ktor.client)
 
     implementation(libs.bundles.jackson)
-    implementation("org.apache.kafka:kafka-clients:7.5.3-ce")
+
+    // kafka
+    implementation("com.github.navikt.tbd-libs:kafka:2025.11.04-10.54-c831038e")
+    // kafka testing
+    testImplementation("com.github.navikt.tbd-libs:kafka-test:2025.11.04-10.54-c831038e")
 
     implementation(libs.kotlin.logging)
 
