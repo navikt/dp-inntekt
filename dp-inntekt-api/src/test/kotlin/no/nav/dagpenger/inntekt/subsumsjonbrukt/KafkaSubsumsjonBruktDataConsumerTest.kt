@@ -99,11 +99,10 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     storeMock,
                 )
 
+            val context = newSingleThreadContext("test-1")
             try {
-                newSingleThreadContext("test-1").use {
-                    launch(it) {
-                        consumer.listen()
-                    }
+                launch(context) {
+                    consumer.listen()
                 }
 
                 val metaData =
@@ -123,6 +122,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                 }
             } finally {
                 consumer.stop()
+                context.close()
             }
         }
 
@@ -139,11 +139,10 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     storeMock,
                 )
 
+            val context = newSingleThreadContext("test-2")
             try {
-                newSingleThreadContext("test-2").use {
-                    launch(it) {
-                        consumer.listen()
-                    }
+                launch(context) {
+                    consumer.listen()
                 }
 
                 val bruktSubsumsjonData = mapOf("faktum" to mapOf("manueltGrunnlag" to "122212"))
@@ -167,6 +166,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                 consumer.status() shouldBe HealthStatus.UP
             } finally {
                 consumer.stop()
+                context.close()
             }
         }
 
@@ -185,11 +185,10 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                     graceDuration = 1.milliseconds.toJavaDuration(),
                 )
 
+            val context = newSingleThreadContext("test-3")
             try {
-                newSingleThreadContext("test-3").use {
-                    launch(it) {
-                        consumer.listen()
-                    }
+                launch(context) {
+                    consumer.listen()
                 }
 
                 val metaData =
@@ -208,6 +207,7 @@ internal class KafkaSubsumsjonBruktDataConsumerTest {
                 consumer.status() shouldBe HealthStatus.DOWN
             } finally {
                 consumer.stop()
+                context.close()
             }
         }
 
