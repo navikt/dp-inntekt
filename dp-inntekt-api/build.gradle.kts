@@ -50,7 +50,7 @@ dependencies {
 
     implementation(libs.kotlin.logging)
 
-    implementation("ch.qos.logback:logback-classic:1.5.26")
+    implementation("ch.qos.logback:logback-classic:1.5.29")
     implementation("net.logstash.logback:logstash-logback-encoder:9.0")
 
     implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.3.0")
