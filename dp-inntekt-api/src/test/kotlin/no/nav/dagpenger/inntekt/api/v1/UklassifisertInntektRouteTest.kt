@@ -519,7 +519,7 @@ internal class UklassifisertInntektRouteTest {
     }
 
     @Test
-    fun `Post request for uklassifisert inntekt med inntektId lagrer og returnerer ny ID, uten behandlingId og opplysningId`() =
+    fun `Post request for uklassifisert inntekt med inntektId lagrer og returnerer ny ID, uten å rekjøre i dp-behandling, når erArena er true`() =
 
         mockInntektApi(
             inntektskomponentClient = inntektskomponentClientMock,
@@ -550,7 +550,7 @@ internal class UklassifisertInntektRouteTest {
             val response =
                 it.autentisert(
                     httpMethod = HttpMethod.Post,
-                    endepunkt = "$uklassifisertInntekt/${inntektId.id}",
+                    endepunkt = "$uklassifisertInntekt/${inntektId.id}?erArena=true",
                     body = body,
                 )
 
@@ -572,6 +572,28 @@ internal class UklassifisertInntektRouteTest {
             storeInntektCommandSlot.captured.manueltRedigert!!.redigertAv shouldBe TEST_OAUTH_USER
             storeInntektCommandSlot.captured.manueltRedigert!!.begrunnelse shouldBe "Dette er en begrunnelse."
             verify(exactly = 0) { dpBehandlingKlient.rekjørBehandling(any(), any(), any(), any()) }
+        }
+
+    @Test
+    fun `Post request for uklassifisrt inntekt med inntektId gir 400 Bad Request uten behandlingId og opplysningId når erArena er false`() =
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            dpBehandlingKlient = dpBehandlingKlient,
+        ) {
+            val body =
+                UklassifisertInntektRouteTest::class.java
+                    .getResource("/test-data/expected-uklassifisert-post-body.json")
+                    ?.readText()
+
+            val response =
+                it.autentisert(
+                    httpMethod = HttpMethod.Post,
+                    endepunkt = "$uklassifisertInntekt/${inntektId.id}?erArena=false",
+                    body = body!!,
+                )
+
+            response.status shouldBe BadRequest
         }
 
     @Test

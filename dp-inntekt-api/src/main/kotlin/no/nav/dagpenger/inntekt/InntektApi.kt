@@ -13,6 +13,7 @@ import no.nav.dagpenger.inntekt.api.v1.enhetsregisteret
 import no.nav.dagpenger.inntekt.api.v1.inntekt
 import no.nav.dagpenger.inntekt.api.v1.opptjeningsperiodeApi
 import no.nav.dagpenger.inntekt.api.v1.uklassifisertInntekt
+import no.nav.dagpenger.inntekt.api.v3.inntektId
 import no.nav.dagpenger.inntekt.api.v3.inntektV3
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.dpbehandling.DpBehandlingKlient
@@ -60,6 +61,10 @@ internal fun Application.inntektApi(
         authenticate("azure") {
             route("/v3/inntekt") {
                 inntektV3(behandlingsInntektsGetter, personOppslag, inntektStore, inntektskomponentHttpClient)
+                inntektId(
+                    inntektStore = inntektStore,
+                    personOppslag = personOppslag,
+                )
             }
         }
     }

@@ -185,11 +185,22 @@ fun Route.uklassifisertInntekt(
                     val inntektId = call.parameters["inntektId"]!!
                     val behandlingId = call.parameters["behandlingId"]
                     val opplysningId = call.parameters["opplysningId"]
+                    val erArena = call.parameters["erArena"]?.toBoolean() ?: false
                     val inntekterDto = call.receive<InntekterDto>()
+                    val brukerKommerFraDpSak = !erArena
+
+                    if (brukerKommerFraDpSak) {
+                        require(
+                            behandlingId != null && opplysningId != null,
+                        ) { "behandlingId og opplysningId må være satt når erArena er false" }
+                    }
+
                     inntekterDto
                         .mapToStoredInntekt(
                             inntektId = inntektId,
                         ).let {
+                            logger.info { "Lagrer endret inntekt for $inntektId, erArena=$erArena" }
+
                             val inntektPersonMapping = inntektStore.getInntektPersonMapping(inntektId)
                             val storedInntekt =
                                 inntektStore.storeInntekt(
@@ -219,8 +230,7 @@ fun Route.uklassifisertInntekt(
                                     ),
                                 )
 
-                            // TODO: Fjern if når dette er ferdig implementert i frontend
-                            if (behandlingId != null && opplysningId != null) {
+                            if (brukerKommerFraDpSak) {
                                 val token =
                                     call.request.headers["Authorization"]?.removePrefix("Bearer ")
                                         ?: throw IllegalArgumentException("Fant ikke token i request header")
