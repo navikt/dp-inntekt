@@ -3,7 +3,6 @@ package no.nav.dagpenger.inntekt.subsumsjonbrukt
 import io.prometheus.metrics.core.metrics.Counter
 import kotliquery.queryOf
 import kotliquery.sessionOf
-import kotliquery.using
 import javax.sql.DataSource
 
 const val INNTEKT_SLETTET = "inntekt_slettet"
@@ -16,7 +15,7 @@ private val deleteCounter =
 class Vaktmester(private val dataSource: DataSource, private val lifeSpanInDays: Int = 180) {
     fun rydd() {
         val rowCount =
-            using(sessionOf(dataSource)) { session ->
+            sessionOf(dataSource).use { session ->
                 session.transaction { transaction ->
                     transaction.run(
                         queryOf(
