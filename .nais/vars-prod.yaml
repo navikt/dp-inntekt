@@ -1,0 +1,20 @@
+ingress: https://dp-inntekt-api.intern.nav.no
+kafka_pool: nav-prod
+
+replicas_max: 6
+resources_cpu_limit: false
+resources_cpu_request: 30m
+resources_memory_limit: 768Mi
+
+external_hosts:
+  - pdl-api.prod-fss-pub.nais.io
+  - ikomp.prod-fss-pub.nais.io
+  - data.brreg.no
+
+dev_access: false
+
+sql_high_availability: true
+sql_point_in_time_recovery: true
+sql_tier: db-custom-4-15360
+sql_auto_backup_hour: 1
+sql_disk_size: 100

@@ -1,17 +1,17 @@
-# Example https://github.com/nais/naiserator/blob/master/examples/nais-max.yaml
 apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
-  name: "{{app}}"
-  namespace: "{{namespace}}"
+  name: dp-inntekt-api
+  namespace: teamdagpenger
   labels:
-    team: "{{team}}"
+    team: teamdagpenger
   annotations:
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "120"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
     nginx.ingress.kubernetes.io/proxy-body-size: "8m"
     nginx.ingress.kubernetes.io/proxy-buffer-size: "800k"
+    config.linkerd.io/proxy-outbound-connect-timeout: 3000ms
 spec:
   image: "{{image}}"
   port: 8099
@@ -26,13 +26,15 @@ spec:
     path: /metrics
   replicas:
     min: 2
-    max: 4
+    max: {{replicas_max}}
   resources:
     limits:
-      cpu: 1000m
-      memory: 512Mi
+      {{#if resources_cpu_limit}}
+      cpu: {{resources_cpu_limit}}
+      {{/if}}
+      memory: {{resources_memory_limit}}
     requests:
-      cpu: 100m
+      cpu: {{resources_cpu_request}}
       memory: 512Mi
   observability:
     logging:
@@ -53,28 +55,31 @@ spec:
         - application: logging
           namespace: nais-system
       external:
-        - host: "pdl-api.dev-fss-pub.nais.io"
-        - host: "ikomp-q1.dev-fss-pub.nais.io"
-        - host: "ikomp-q2.dev-fss-pub.nais.io"
-        - host: "data.brreg.no"
+        {{#each external_hosts as |host|}}
+        - host: "{{host}}"
+        {{/each}}
     inbound:
       rules:
+        {{#if dev_access}}
         - application: azure-token-generator
           namespace: nais
+        {{/if}}
         - application: dp-oppslag-inntekt
         - application: dp-arena-sink
         - application: dp-inntekt-klassifiserer
         - application: dp-inntekt-frontend
         - application: dagpenger-regel-ui
+        {{#if dev_access}}
           namespace: teamdagpenger
           cluster: dev-gcp
+        {{/if}}
   ingresses:
-    - https://dp-inntekt-api.intern.dev.nav.no
+    - {{ingress}}
   env:
     - name: JDK_JAVA_OPTIONS
       value: -XX:+UseParallelGC -XX:ActiveProcessorCount=4
   kafka:
-    pool: nav-dev
+    pool: {{kafka_pool}}
   gcp:
     sqlInstances:
       - collation: nb_NO.UTF8
@@ -83,7 +88,7 @@ spec:
             name: inntekt
         diskAutoresize: true
         diskType: SSD
-        highAvailability: false
+        highAvailability: {{sql_high_availability}}
         insights:
           enabled: true
           queryStringLength: 4500
@@ -92,9 +97,13 @@ spec:
         maintenance:
           day: 1
           hour: 4
-        pointInTimeRecovery: false
-        tier: db-custom-1-3840
+        pointInTimeRecovery: {{sql_point_in_time_recovery}}
+        tier: {{sql_tier}}
         type: POSTGRES_15
+        {{#if sql_auto_backup_hour}}
+        autoBackupHour: {{sql_auto_backup_hour}}
+        diskSize: {{sql_disk_size}}
+        {{/if}}
         flags:
           - name: "cloudsql.enable_pgaudit"
             value: "on"
