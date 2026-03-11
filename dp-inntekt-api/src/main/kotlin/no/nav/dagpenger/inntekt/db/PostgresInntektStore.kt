@@ -6,7 +6,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.prometheus.metrics.core.metrics.Summary
 import kotliquery.queryOf
 import kotliquery.sessionOf
-import kotliquery.using
 import no.nav.dagpenger.inntekt.HealthCheck
 import no.nav.dagpenger.inntekt.HealthStatus
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentResponse
@@ -47,7 +46,7 @@ internal class PostgresInntektStore(
             WHERE inntekt_id = ?
             """.trimMargin()
         try {
-            return using(sessionOf(dataSource)) { session ->
+            return sessionOf(dataSource).use { session ->
                 session.run(
                     queryOf(statement, inntektId.id)
                         .map { row ->
@@ -75,7 +74,7 @@ internal class PostgresInntektStore(
                 ORDER BY timestamp DESC LIMIT 1
                 """.trimMargin()
 
-            return using(sessionOf(dataSource)) { session ->
+            return sessionOf(dataSource).use { session ->
                 session.run(
                     queryOf(
                         statement,
@@ -98,7 +97,7 @@ internal class PostgresInntektStore(
         @Language("sql")
         val statement = "SELECT * FROM inntekt_V1_person_mapping WHERE inntektId = :inntektId".trimMargin()
 
-        return using(sessionOf(dataSource)) { session ->
+        return sessionOf(dataSource).use { session ->
             session.run(
                 queryOf(
                     statement,
@@ -127,7 +126,7 @@ internal class PostgresInntektStore(
            ) as beregningsdato
             """.trimMargin()
 
-        return using(sessionOf(dataSource)) { session ->
+        return sessionOf(dataSource).use { session ->
             session.run(
                 queryOf(
                     statement,
@@ -140,7 +139,7 @@ internal class PostgresInntektStore(
     }
 
     override fun getInntekt(inntektId: InntektId): StoredInntekt =
-        using(sessionOf(dataSource)) { session ->
+        sessionOf(dataSource).use { session ->
             session.run(
                 queryOf(
                     """ SELECT id, inntekt, manuelt_redigert, timestamp from inntekt_V1 where id = ?""",
@@ -169,7 +168,7 @@ internal class PostgresInntektStore(
             """.trimIndent()
 
         val stored =
-            using(sessionOf(dataSource)) { session ->
+            sessionOf(dataSource).use { session ->
                 session.run(
                     queryOf(
                         statement,
@@ -199,7 +198,7 @@ internal class PostgresInntektStore(
             WHERE inntekt.id = ?
             """.trimIndent()
 
-        return using(sessionOf(dataSource)) { session ->
+        return sessionOf(dataSource).use { session ->
             session.run(
                 queryOf(statement, inntektId.id)
                     .map {
@@ -228,7 +227,7 @@ internal class PostgresInntektStore(
     ): StoredInntekt {
         try {
             val inntektId = InntektId(ulidGenerator.nextULID())
-            using(sessionOf(dataSource)) { session ->
+            sessionOf(dataSource).use { session ->
                 session.transaction { tx ->
                     tx.run(
                         queryOf(
@@ -300,7 +299,7 @@ internal class PostgresInntektStore(
     override fun markerInntektBrukt(inntektId: InntektId): Int {
         val timer = markerInntektTimer.startTimer()
         try {
-            return using(sessionOf(dataSource)) { session ->
+            return sessionOf(dataSource).use { session ->
                 session.transaction { tx ->
                     tx.run(
                         queryOf(
@@ -321,7 +320,7 @@ internal class PostgresInntektStore(
 
     override fun status(): HealthStatus {
         return try {
-            using(sessionOf(dataSource)) { session -> session.run(queryOf(""" SELECT 1""").asExecute) }.let { HealthStatus.UP }
+            sessionOf(dataSource).use { session -> session.run(queryOf(""" SELECT 1""").asExecute) }.let { HealthStatus.UP }
         } catch (p: PSQLException) {
             LOGGER.error("Failed health check", p)
             return HealthStatus.DOWN
