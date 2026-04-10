@@ -1,41 +1,64 @@
 package no.nav.dagpenger.inntekt.db
 
+import ch.qos.logback.core.util.OptionHelper.getEnv
+import ch.qos.logback.core.util.OptionHelper.getSystemProperty
 import com.natpryce.konfig.Key
 import com.natpryce.konfig.booleanType
-import com.natpryce.konfig.stringType
+import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micrometer.core.instrument.Clock
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.dagpenger.inntekt.Config
-import no.nav.dagpenger.inntekt.Config.config
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.configuration.FluentConfiguration
 import org.flywaydb.core.api.output.CleanResult
 import org.flywaydb.core.internal.configuration.ConfigUtils
-
-private val logger = KotlinLogging.logger {}
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 // Understands how to create a data source from environment variables
 internal object PostgresDataSourceBuilder {
     const val DB_USERNAME_KEY = "DB_USERNAME"
     const val DB_PASSWORD_KEY = "DB_PASSWORD"
-    const val DB_DATABASE_KEY = "DB_DATABASE"
-    const val DB_HOST_KEY = "DB_HOST"
-    const val DB_PORT_KEY = "DB_PORT"
+    const val DB_URL_KEY = "DB_URL"
+    const val DB_JDBC_URL_KEY = "DB_JDBC_URL"
 
-    val dataSource by lazy {
-        HikariDataSource().apply {
-            dataSourceClassName = "org.postgresql.ds.PGSimpleDataSource"
-            addDataSourceProperty("serverName", config[Key(DB_HOST_KEY, stringType)])
-            addDataSourceProperty("portNumber", config[Key(DB_PORT_KEY, stringType)])
-            addDataSourceProperty("databaseName", config[Key(DB_DATABASE_KEY, stringType)])
-            addDataSourceProperty("user", config[Key(DB_USERNAME_KEY, stringType)])
-            addDataSourceProperty("password", config[Key(DB_PASSWORD_KEY, stringType)])
+    val dataSource by lazy { HikariDataSource(hikariConfig) }
+
+    private fun getOrThrow(key: String): String = getEnv(key) ?: getSystemProperty(key)
+
+    private fun getOrElse(
+        key: String,
+        secondKey: String,
+    ): String = runCatching { getOrThrow(key) }.getOrElse { getOrThrow(secondKey) }
+
+    private val hikariConfig by lazy {
+        HikariConfig().apply {
+            // Støtter både DB_URL og DB_JDBC_URL for å være kompatibel med både databaser laget der JDBC URL er inkludert og der det ikke er det. DB_JDBC_URL har prioritet over DB_URL
+            jdbcUrl =
+                getOrElse(DB_JDBC_URL_KEY, DB_URL_KEY).ensurePrefix("jdbc:postgresql://").stripCredentials()
+            username = getOrThrow(DB_USERNAME_KEY)
+            password = getOrThrow(DB_PASSWORD_KEY)
+            // Default 10
             maximumPoolSize = 10
-            minimumIdle = 1
-            idleTimeout = 10001
-            connectionTimeout = 1000
-            initializationFailTimeout = 5000
-            maxLifetime = 30001
+            // Default 30 sekund
+            connectionTimeout = 10.seconds.inWholeMilliseconds
+            // Default 10 minutter
+            idleTimeout = 10.minutes.inWholeMilliseconds
+            // Default 2 minutter
+            keepaliveTime = 2.minutes.inWholeMilliseconds
+            // Default 30 minutter
+            maxLifetime = 30.minutes.inWholeMilliseconds
+            leakDetectionThreshold = 10.seconds.inWholeMilliseconds
+            metricRegistry =
+                PrometheusMeterRegistry(
+                    PrometheusConfig.DEFAULT,
+                    PrometheusRegistry.defaultRegistry,
+                    Clock.SYSTEM,
+                )
         }
     }
 
@@ -73,4 +96,13 @@ internal object PostgresDataSourceBuilder {
             .migrate()
             .migrations
             .size
+
+    private fun String.stripCredentials() = this.replace(Regex("://.*:.*@"), "://")
+
+    private fun String.ensurePrefix(prefix: String) =
+        if (this.startsWith(prefix)) {
+            this
+        } else {
+            prefix + this.substringAfter("//")
+        }
 }
