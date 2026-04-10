@@ -6,7 +6,6 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.booleanType
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
