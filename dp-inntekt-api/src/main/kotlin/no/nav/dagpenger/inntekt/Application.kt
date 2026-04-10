@@ -76,7 +76,7 @@ fun main() {
         // Marks inntekt as used
         val subsumsjonBruktDataConsumer =
             KafkaSubsumsjonBruktDataConsumer(
-                KafkaSubsumsjonBruktDataConsumer.kafkaConsumer(config.application.consumerGroup),
+                KafkaSubsumsjonBruktDataConsumer.kafkaConsumer(config.application.id),
                 config.inntektBruktDataTopic,
                 postgresInntektStore,
             )

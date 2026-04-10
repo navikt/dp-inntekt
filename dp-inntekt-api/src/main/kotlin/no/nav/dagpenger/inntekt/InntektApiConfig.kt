@@ -18,35 +18,50 @@ object Config {
             mapOf(
                 "KAFKA_BROKERS" to "localhost:9092",
                 "application.httpPort" to "8099",
-                "enhetsregisteret.api.url" to "https://data.brreg.no/enhetsregisteret",
+                "application.profile" to "LOCAL",
+                "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret",
                 "flyway.locations" to "db/migration,db/testdata",
-                "inntektskomponenten.api.url" to "https://inntektskomponenten-ws/rs/api/v1/hentinntektliste",
+                "hentinntektliste.url" to "https://inntektskomponenten-ws/rs/api/v1/hentinntektliste",
                 "inntektskomponenten.api.scope" to "api://dev-fss.team-inntekt.ikomp-q2/.default",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
                 "pdl.api.scope" to "api://dev-fss.pdl.pdl-api/.default",
-                "pdl.api.url" to "https://pdl-api.dev-fss-pub.nais.io/graphql",
-                "dp-behandling.api.scope" to "api://dev-gcp.teamdagpenger.dp-behandling/.default",
-                "dp-behandling.api.url" to "http://dp-behandling",
+                "pdl.url" to "https://pdl-api.dev-fss-pub.nais.io/graphql",
+                "dp-behandling.api.scope" to "api://dev-fss.teamdagpenger.dp-behandling/.default",
+                "dp-behandling.url" to "http://dp-behandling",
             ),
         )
     private val devProperties =
         ConfigurationMap(
             mapOf(
                 "application.httpPort" to "8099",
-                "enhetsregisteret.api.url" to "https://data.brreg.no/enhetsregisteret",
+                "application.profile" to "DEV",
+                "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret",
+                @Suppress("ktlint:standard:max-line-length")
+                "hentinntektliste.url"
+                    to "https://ikomp-q2.dev-fss-pub.nais.io/rs/api/v1/hentinntektliste",
+                "inntektskomponenten.api.scope" to "api://dev-fss.team-inntekt.ikomp-q2/.default",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
+                "pdl.api.scope" to "api://dev-fss.pdl.pdl-api/.default",
+                "pdl.url" to "https://pdl-api.dev-fss-pub.nais.io/graphql",
                 "dp-behandling.api.scope" to "api://dev-gcp.teamdagpenger.dp-behandling/.default",
-                "dp-behandling.api.url" to "http://dp-behandling",
+                "dp-behandling.url" to "http://dp-behandling",
             ),
         )
     private val prodProperties =
         ConfigurationMap(
             mapOf(
                 "application.httpPort" to "8099",
-                "enhetsregisteret.api.url" to "https://data.brreg.no/enhetsregisteret",
+                "application.profile" to "PROD",
+                "enhetsregisteret.url" to "https://data.brreg.no/enhetsregisteret",
+                @Suppress("ktlint:standard:max-line-length")
+                "hentinntektliste.url"
+                    to "https://ikomp.prod-fss-pub.nais.io/rs/api/v1/hentinntektliste",
+                "inntektskomponenten.api.scope" to "api://prod-fss.team-inntekt.ikomp/.default",
                 "kafka.inntekt.brukt.topic" to "teamdagpenger.inntektbrukt.v1",
+                "pdl.api.scope" to "api://prod-fss.pdl.pdl-api/.default",
+                "pdl.url" to "https://pdl-api.prod-fss-pub.nais.io/graphql",
                 "dp-behandling.api.scope" to "api://prod-gcp.teamdagpenger.dp-behandling/.default",
-                "dp-behandling.api.url" to "http://dp-behandling",
+                "dp-behandling.url" to "http://dp-behandling",
             ),
         )
     val config by lazy {
@@ -67,26 +82,27 @@ object Config {
     private val Configuration.pdl
         get() =
             InntektApiConfig.Pdl(
-                url = this[Key("pdl.api.url", stringType)],
+                url = this[Key("pdl.url", stringType)],
             )
     private val Configuration.enhetsregister
         get() =
             InntektApiConfig.Enhetsregister(
-                url = this[Key("enhetsregisteret.api.url", stringType)],
+                url = this[Key("enhetsregisteret.url", stringType)],
             )
     private val Configuration.dpBehandling
         get() =
             InntektApiConfig.DpBehandling(
-                url = this[Key("dp-behandling.api.url", stringType)],
+                url = this[Key("dp-behandling.url", stringType)],
             )
-
+    private val Configuration.profile get() = this[Key("application.profile", stringType)].let { Profile.valueOf(it) }
     private val Configuration.application
         get() =
             InntektApiConfig.Application(
-                consumerGroup = this.getOrElse(Key("CONSUMER_GROUP", stringType), "dp-inntekt-api-consumer"),
+                id = this.getOrElse(Key("application.id", stringType), "dp-inntekt-api-consumer"),
+                profile = this.profile,
                 httpPort = this[Key("application.httpPort", intType)],
-                hentinntektListeUrl = this[Key("inntektskomponenten.api.url", stringType)],
-                enhetsregisteretUrl = this[Key("enhetsregisteret.api.url", stringType)],
+                hentinntektListeUrl = this[Key("hentinntektliste.url", stringType)],
+                enhetsregisteretUrl = this[Key("enhetsregisteret.url", stringType)],
                 name = "dp-inntekt-api",
             )
     val Configuration.inntektApiConfig
@@ -144,7 +160,8 @@ data class InntektApiConfig(
     val dpBehandling: DpBehandling,
 ) {
     data class Application(
-        val consumerGroup: String,
+        val id: String,
+        val profile: Profile,
         val httpPort: Int,
         val hentinntektListeUrl: String,
         val enhetsregisteretUrl: String,
@@ -162,4 +179,10 @@ data class InntektApiConfig(
     data class DpBehandling(
         val url: String,
     )
+}
+
+enum class Profile {
+    LOCAL,
+    DEV,
+    PROD,
 }

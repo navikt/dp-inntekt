@@ -1,7 +1,5 @@
 ingress: https://dp-inntekt-api.intern.dev.nav.no
 kafka_pool: nav-dev
-app: dp-inntekt-api
-consumer_group: dp-inntekt-api-consumer
 
 replicas_max: 4
 resources_cpu_limit: 1000m
@@ -10,6 +8,7 @@ resources_memory_limit: 512Mi
 
 external_hosts:
   - pdl-api.dev-fss-pub.nais.io
+  - ikomp-q1.dev-fss-pub.nais.io
   - ikomp-q2.dev-fss-pub.nais.io
   - data.brreg.no
 
@@ -20,12 +19,3 @@ sql_point_in_time_recovery: false
 sql_tier: db-custom-1-3840
 sql_auto_backup_hour: false
 sql_disk_size: false
-
-
-inntektskomponenten:
-  url: https://ikomp-q2.dev-fss-pub.nais.io/rs/api/v1/hentinntektliste
-  scope: api://dev-fss.team-inntekt.ikomp-q2/.default
-
-pdl:
-  url: https://pdl-api.dev-fss-pub.nais.io/graphql
-  scope: api://dev-fss.pdl.pdl-api/.default
