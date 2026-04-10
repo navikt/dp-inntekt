@@ -1,5 +1,7 @@
 ingress: https://dp-inntekt-api.intern.nav.no
 kafka_pool: nav-prod
+app: dp-inntekt-api
+consumer_group: dp-inntekt-api-consumer
 
 replicas_max: 6
 resources_cpu_limit: false
@@ -18,3 +20,12 @@ sql_point_in_time_recovery: true
 sql_tier: db-custom-4-15360
 sql_auto_backup_hour: 1
 sql_disk_size: 100
+
+
+inntektskomponenten:
+  url: https://ikomp.prod-fss-pub.nais.io/rs/api/v1/hentinntektliste
+  scope: api://prod-fss.team-inntekt.ikomp/.default
+
+pdl:
+  url: https://pdl-api.prod-fss-pub.nais.io/graphql
+  scope: api://prod-gcp.teamdagpenger.dp-behandling/.default
