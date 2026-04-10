@@ -28,4 +28,4 @@ inntektskomponenten:
 
 pdl:
   url: https://pdl-api.prod-fss-pub.nais.io/graphql
-  scope: api://prod-gcp.teamdagpenger.dp-behandling/.default
+  scope: api://prod-fss.pdl.pdl-api/.default
