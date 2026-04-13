@@ -13,6 +13,9 @@ spec:
   ttlSecondsAfterFinished: 3600
   failedJobsHistoryLimit: 1
   successfulJobsHistoryLimit: 1
+  env:
+    - name: CLOUDSDK_CONFIG
+      value: /tmp/gcloud
   command:
     - /bin/bash
     - -c
