@@ -34,11 +34,34 @@ spec:
         --quiet 2>&1 || echo "Database finnes allerede, fortsetter..."
 
       echo "Importerer data..."
-      gcloud sql import sql {{instance}} \
+      OPERATION_ID=$(gcloud sql import sql {{instance}} \
         gs://{{gcs_bucket}}/{{gcs_file}} \
         --database={{target_database}} \
         --project={{project}} \
-        --quiet
+        --async \
+        --quiet \
+        --format='value(name)')
+
+      echo "Import startet, operation: $OPERATION_ID"
+      echo "Venter på at importen fullføres..."
+
+      while true; do
+        STATUS=$(gcloud sql operations describe "$OPERATION_ID" \
+          --project={{project}} \
+          --format='value(status)' 2>/dev/null)
+        echo "$(date '+%H:%M:%S') Status: $STATUS"
+        if [ "$STATUS" = "DONE" ]; then
+          ERROR=$(gcloud sql operations describe "$OPERATION_ID" \
+            --project={{project}} \
+            --format='value(error.errors[0].message)' 2>/dev/null)
+          if [ -n "$ERROR" ] && [ "$ERROR" != "None" ]; then
+            echo "FEIL: $ERROR"
+            exit 1
+          fi
+          break
+        fi
+        sleep 60
+      done
 
       echo "=== Import fullført ==="
       echo ""

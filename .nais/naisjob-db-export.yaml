@@ -27,12 +27,35 @@ spec:
       echo "Prosjekt: {{project}}"
       echo "GCS: gs://{{gcs_bucket}}/{{gcs_file}}"
 
-      gcloud sql export sql {{instance}} \
+      OPERATION_ID=$(gcloud sql export sql {{instance}} \
         gs://{{gcs_bucket}}/{{gcs_file}} \
         --offload \
         --database={{source_database}} \
         --project={{project}} \
-        --quiet
+        --async \
+        --quiet \
+        --format='value(name)')
+
+      echo "Eksport startet, operation: $OPERATION_ID"
+      echo "Venter på at eksporten fullføres..."
+
+      while true; do
+        STATUS=$(gcloud sql operations describe "$OPERATION_ID" \
+          --project={{project}} \
+          --format='value(status)' 2>/dev/null)
+        echo "$(date '+%H:%M:%S') Status: $STATUS"
+        if [ "$STATUS" = "DONE" ]; then
+          ERROR=$(gcloud sql operations describe "$OPERATION_ID" \
+            --project={{project}} \
+            --format='value(error.errors[0].message)' 2>/dev/null)
+          if [ -n "$ERROR" ] && [ "$ERROR" != "None" ]; then
+            echo "FEIL: $ERROR"
+            exit 1
+          fi
+          break
+        fi
+        sleep 60
+      done
 
       echo "=== Eksport fullført ==="
   resources:
