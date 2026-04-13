@@ -1,0 +1,47 @@
+apiVersion: nais.io/v1
+kind: Naisjob
+metadata:
+  name: dp-inntekt-db-export
+  namespace: teamdagpenger
+  labels:
+    team: teamdagpenger
+spec:
+  image: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+  backoffLimit: 0
+  activeDeadlineSeconds: 86400 # 24 timer
+  restartPolicy: Never
+  ttlSecondsAfterFinished: 3600
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 1
+  command:
+    - /bin/bash
+    - -c
+    - |
+      set -eo pipefail
+      echo "=== Starter eksport av prod-database ==="
+      echo "Instans: {{instance}}"
+      echo "Database: {{source_database}}"
+      echo "Prosjekt: {{project}}"
+      echo "GCS: gs://{{gcs_bucket}}/{{gcs_file}}"
+
+      gcloud sql export sql {{instance}} \
+        gs://{{gcs_bucket}}/{{gcs_file}} \
+        --offload \
+        --database={{source_database}} \
+        --project={{project}} \
+        --quiet
+
+      echo "=== Eksport fullført ==="
+  resources:
+    limits:
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  gcp:
+    permissions:
+      - resource:
+          apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+          kind: Project
+          name: {{project}}
+        role: roles/cloudsql.admin

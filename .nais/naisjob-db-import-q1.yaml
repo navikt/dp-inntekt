@@ -1,0 +1,58 @@
+apiVersion: nais.io/v1
+kind: Naisjob
+metadata:
+  name: dp-inntekt-db-import-q1
+  namespace: teamdagpenger
+  labels:
+    team: teamdagpenger
+spec:
+  image: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+  backoffLimit: 0
+  activeDeadlineSeconds: 86400 # 24 timer
+  restartPolicy: Never
+  ttlSecondsAfterFinished: 3600
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 1
+  command:
+    - /bin/bash
+    - -c
+    - |
+      set -eo pipefail
+      echo "=== Starter import til Q1-database ==="
+      echo "Instans: {{instance}}"
+      echo "Måldatabase: {{target_database}}"
+      echo "Prosjekt: {{project}}"
+      echo "GCS: gs://{{gcs_bucket}}/{{gcs_file}}"
+
+      echo "Oppretter database {{target_database}} (ignorerer feil om den finnes)..."
+      gcloud sql databases create {{target_database}} \
+        --instance={{instance}} \
+        --project={{project}} \
+        --quiet 2>&1 || echo "Database finnes allerede, fortsetter..."
+
+      echo "Importerer data..."
+      gcloud sql import sql {{instance}} \
+        gs://{{gcs_bucket}}/{{gcs_file}} \
+        --database={{target_database}} \
+        --project={{project}} \
+        --quiet
+
+      echo "=== Import fullført ==="
+      echo ""
+      echo "Neste steg:"
+      echo "1. Oppdater DB_DATABASE-secret: echo -n {{target_database}} | base64"
+      echo "2. kubectl edit secret google-sql-dp-inntekt-api-q1"
+      echo "3. Verifiser at dp-inntekt-api-q1 kjører OK"
+  resources:
+    limits:
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  gcp:
+    permissions:
+      - resource:
+          apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+          kind: Project
+          name: {{project}}
+        role: roles/cloudsql.admin

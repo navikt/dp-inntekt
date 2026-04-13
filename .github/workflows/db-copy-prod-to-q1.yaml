@@ -1,0 +1,79 @@
+name: "DB: Kopier prod til Q1"
+
+on:
+  workflow_dispatch:
+    inputs:
+      prod_instance:
+        description: "Cloud SQL instansnavn i prod"
+        default: "dp-inntekt-api"
+        required: true
+      dev_instance:
+        description: "Cloud SQL instansnavn i dev (Q1)"
+        default: "dp-inntekt-api-q1"
+        required: true
+      target_database:
+        description: "Måldatabasenavn i Q1"
+        default: "inntekt"
+        required: true
+
+jobs:
+  export-prod-db:
+    name: "Eksporter prod-database til GCS"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
+      id-token: "write"
+    environment: prod-gcp
+    env:
+      GCS_FILE: dp-inntekt-prod-${{ github.run_number }}.sql.gz
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-gcp
+          RESOURCE: .nais/naisjob-db-export.yaml
+          VAR: instance=${{ inputs.prod_instance }},source_database=inntekt,project=teamdagpenger-prod-9042,gcs_bucket=db-migrering,gcs_file=${{ env.GCS_FILE }}
+          PRINT_PAYLOAD: true
+
+      - name: Skriv ut neste steg
+        run: |
+          echo "::notice::Eksport-jobben er deployet. Overvåk fremdriften i GCP Console eller med kubectl."
+          echo "::notice::GCS-fil: gs://db-migrering/${{ env.GCS_FILE }}"
+          echo "::notice::Godkjenn neste steg (import) når eksporten er ferdig."
+    outputs:
+      gcs_file: ${{ env.GCS_FILE }}
+
+  import-q1-db:
+    name: "Importer til Q1-database"
+    needs: export-prod-db
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
+      id-token: "write"
+    environment: q1-db-import # Sett opp med "Required reviewers" i GitHub repo settings
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: dev-gcp
+          RESOURCE: .nais/naisjob-db-import-q1.yaml
+          VAR: instance=${{ inputs.dev_instance }},target_database=${{ inputs.target_database }},project=teamdagpenger-dev-885f,gcs_bucket=db-migrering,gcs_file=${{ needs.export-prod-db.outputs.gcs_file }}
+          PRINT_PAYLOAD: true
+
+      - name: Skriv ut opprydding
+        run: |
+          echo "::notice::Import-jobben er deployet. Overvåk fremdriften i GCP Console eller med kubectl."
+          echo ""
+          echo "Når importen er ferdig:"
+          echo "1. Oppdater DB_DATABASE-secret for dp-inntekt-api-q1:"
+          echo "   echo -n ${{ inputs.target_database }} | base64"
+          echo "   kubectl edit secret google-sql-dp-inntekt-api-q1"
+          echo "2. Verifiser at dp-inntekt-api-q1 kjører OK"
+          echo ""
+          echo "Opprydding etter G-justering:"
+          echo "   gsutil rm gs://db-migrering/${{ needs.export-prod-db.outputs.gcs_file }}"
+          echo "   echo -n inntekt | base64"
+          echo "   kubectl edit secret google-sql-dp-inntekt-api-q1"
+          echo "   kubectl delete sqldatabase ${{ inputs.target_database }}"
