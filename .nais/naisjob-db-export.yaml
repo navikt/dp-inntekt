@@ -6,7 +6,7 @@ metadata:
   labels:
     team: teamdagpenger
 spec:
-  image: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+  image: "{{image}}"
   backoffLimit: 0
   activeDeadlineSeconds: 86400 # 24 timer
   restartPolicy: Never

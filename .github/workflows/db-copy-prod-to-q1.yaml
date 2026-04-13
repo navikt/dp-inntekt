@@ -17,8 +17,31 @@ on:
         required: true
 
 jobs:
+  build-gcloud-image:
+    name: "Bygg gcloud image"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
+      id-token: "write"
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: nais/docker-build-push@v0
+        id: docker-build-push
+        with:
+          team: teamdagpenger
+          tag: gcloud-${{ github.run_number }}
+          push_image: true
+          dockerfile: .docker/Dockerfile.gcloud
+          docker_context: .docker
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+
   export-prod-db:
     name: "Eksporter prod-database til GCS"
+    needs: build-gcloud-image
     runs-on: ubuntu-latest
     permissions:
       contents: "read"
@@ -33,7 +56,7 @@ jobs:
         env:
           CLUSTER: prod-gcp
           RESOURCE: .nais/naisjob-db-export.yaml
-          VAR: instance=${{ inputs.prod_instance }},source_database=inntekt,project=teamdagpenger-prod-9042,gcs_bucket=db-migrering,gcs_file=${{ env.GCS_FILE }}
+          VAR: image=${{ needs.build-gcloud-image.outputs.image }},instance=${{ inputs.prod_instance }},source_database=inntekt,project=teamdagpenger-prod-9042,gcs_bucket=db-migrering,gcs_file=${{ env.GCS_FILE }}
           PRINT_PAYLOAD: true
 
       - name: Skriv ut neste steg
@@ -46,7 +69,7 @@ jobs:
 
   import-q1-db:
     name: "Importer til Q1-database"
-    needs: export-prod-db
+    needs: [build-gcloud-image, export-prod-db]
     runs-on: ubuntu-latest
     permissions:
       contents: "read"
@@ -59,7 +82,7 @@ jobs:
         env:
           CLUSTER: dev-gcp
           RESOURCE: .nais/naisjob-db-import-q1.yaml
-          VAR: instance=${{ inputs.dev_instance }},target_database=${{ inputs.target_database }},project=teamdagpenger-dev-885f,gcs_bucket=db-migrering,gcs_file=${{ needs.export-prod-db.outputs.gcs_file }}
+          VAR: image=${{ needs.build-gcloud-image.outputs.image }},instance=${{ inputs.dev_instance }},target_database=${{ inputs.target_database }},project=teamdagpenger-dev-885f,gcs_bucket=db-migrering,gcs_file=${{ needs.export-prod-db.outputs.gcs_file }}
           PRINT_PAYLOAD: true
 
       - name: Skriv ut opprydding
