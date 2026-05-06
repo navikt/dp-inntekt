@@ -14,19 +14,6 @@ Cache-tjeneste for inntektsopplysninger i dagpenger-domenet. Henter inntektsdata
 
 Docker må kjøre for å kjøre integrasjonstestene.
 
-### Starte applikasjonen lokalt
-
-```bash
-# Start PostgreSQL
-docker-compose -f docker-compose.yml up
-
-# Kjør applikasjonen (main i Application.kt)
-./gradlew :dp-inntekt-api:run
-
-# Stopp PostgreSQL
-docker-compose -f docker-compose.yml down
-```
-
 ### Kjøre tester
 
 ```bash

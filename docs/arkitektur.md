@@ -19,20 +19,20 @@
 flowchart LR
     S[Søknad mottas\ndp-soknad] --> B[Behandling startes\ndp-behandling]
     B -->|POST /v3/inntekt/klassifisert| I[Inntekt hentes og klassifiseres\ndp-inntekt]
-    I --> R[Regler kjøres\ndp-regel-motor / dp-oppslag-inntekt]
-    R --> V[Vedtak fattes\ndp-vedtak]
+    I --> R[Regler kjøres\ndp-regel-api / dp-oppslag-inntekt]
+    R --> V[Vedtak fattes\ndp-behandling/Arena]
     V --> U[Utbetaling\nHelios / OS]
 ```
 
-| Steg i verdikjeden | Ansvarlig system | dp-inntekt sin rolle |
-|--------------------|-----------------|----------------------|
-| Søknad | `dp-soknad` | — |
-| Behandlingsstart | `dp-behandling` | — |
-| **Inntektsoppslag og caching** | **`dp-inntekt`** | **Henter fra a-inntekt ved cache-miss, returnerer `inntektsId`** |
-| **Klassifisering av inntekt** | **`dp-inntekt`** | **Kategoriserer posteringer etter dagpengeregelverket** |
-| Regelkjøring | `dp-oppslag-inntekt` / regelmotor | Konsumerer klassifisert inntekt via `inntektsId` |
-| Manuell redigering | `dp-inntekt-frontend` | Kaller dp-inntekt API for å redigere cachet inntekt |
-| Vedtak og utbetaling | `dp-vedtak`, Helios | — |
+| Steg i verdikjeden | Ansvarlig system                  | dp-inntekt sin rolle                                             |
+|--------------------|-----------------------------------|------------------------------------------------------------------|
+| Søknad | `dp-soknad`                       | —                                                                |
+| Behandlingsstart | `dp-behandling`                   | —                                                                |
+| **Inntektsoppslag og caching** | **`dp-inntekt`**                  | **Henter fra a-inntekt ved cache-miss, returnerer `inntektsId`** |
+| **Klassifisering av inntekt** | **`dp-inntekt`**                  | **Kategoriserer posteringer etter dagpengeregelverket**          |
+| Regelkjøring | `dp-oppslag-inntekt` / regelmotor | Konsumerer klassifisert inntekt via `inntektsId`                 |
+| Manuell redigering | `dp-inntekt-frontend`             | Kaller dp-inntekt API for å redigere cachet inntekt              |
+| Vedtak og utbetaling | `dp-behandling`, Arena            | Markere inntekt som brukt                                        |
 
 > **Merk:** dp-inntekt **prøver ikke vilkår** og fatter ingen vedtak. Vilkårsprøvingen (f.eks. om inntekten oppfyller minstekravet) skjer i regelmotoren.
 
@@ -289,9 +289,9 @@ Alle databaseoperasjoner (SELECT, INSERT, UPDATE, DELETE) logges via **pgaudit**
 
 ```
 1. Søknad mottas
-   └── dp-soknad / dp-behandling starter behandling
+   └── dp-soknad / dp-behandling / Arena (via dp-regel-api) starter behandling
 
-2. Inntektsoppslag (dp-behandling → dp-inntekt)
+2. Inntektsoppslag (dp-behandling/Arena (via dp-regel-api)  → dp-inntekt)
    └── POST /v3/inntekt/klassifisert {personIdentifikator, regelkontekst, beregningsDato}
        ├── PDL-oppslag: personIdentifikator → aktørId + fnr
        ├── Cache-sjekk: finnes inntekt_person_mapping for (aktørId, kontekst, beregningsdato)?
@@ -309,8 +309,8 @@ Alle databaseoperasjoner (SELECT, INSERT, UPDATE, DELETE) logges via **pgaudit**
        ├── INSERT inntekt_v1_manuelt_redigert {redigert_av, begrunnelse}
        └── POST dp-behandling /behandling/{id}/rekjor (OBO-token)
 
-5. Vedtak fattes i dp-vedtak basert på regelkjøring
-6. Utbetaling via Helios / OS
+5. Vedtak fattes i dp-behandling/Arena basert på regelkjøring og saksbehandlers vurdering
+6. Utbetaling via dp-behandling / Arena → OS/UR
 ```
 
 ### Konsistensgarantier
@@ -367,7 +367,7 @@ Tillatte innkommende tjenester (definert i `accessPolicy.inbound`):
 - `dp-arena-sink`
 - `dp-inntekt-klassifiserer`
 - `dp-inntekt-frontend`
-- `dagpenger-regel-ui`
+- `dagpenger-regel-ui` (Gammel regel-UI som fortsatt bruker dp-inntekt for inntektsredigering, erstattes av dp-inntekt-frontend)
 - `azure-token-generator` (kun dev)
 
 ---
@@ -393,12 +393,6 @@ Helse-endepunkter:
 ## Lokalt oppsett
 
 ```bash
-# Start PostgreSQL
-docker-compose up
-
-# Kjør applikasjonen (main i Application.kt)
-./gradlew :dp-inntekt-api:run
-
 # Kjør tester (krever Docker)
 ./gradlew test
 ```
