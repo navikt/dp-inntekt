@@ -1,41 +1,39 @@
-# dagpenger-inntekt-api
-Holder kopi av inntekter fra inntektskomponenten for regelkjøring av dagpenger-behov
+# dp-inntekt
 
-Er API for inntektsredigeringsverkøyet i https://github.com/navikt/dagpenger-regel-ui
+Cache-tjeneste for inntektsopplysninger i dagpenger-domenet. Henter inntektsdata fra Inntektskomponenten (a-inntekt), lagrer dem i PostgreSQL og eksponerer dem til dagpenger-regelmotor og saksbehandlingsverktøy.
 
+- **API for inntektsredigeringsverktøyet:** [dagpenger-regel-ui](https://github.com/navikt/dagpenger-regel-ui)
+- **Team:** teamdagpenger
+- **Plattform:** Nais / GCP
 
-## Utvikling av applikasjonen
+📖 [Arkitektur og integrasjonsdokumentasjon](docs/arkitektur.md)
 
-For å kjøre enkelte av testene kreves det at Docker kjører.
+---
 
-[Docker Desktop](https://www.docker.com/products/docker-desktop)
+## Utvikling
 
+Docker må kjøre for å kjøre integrasjonstestene.
 
 ### Starte applikasjonen lokalt
 
-Applikasjonen har avhengigheter til Postgres som kan kjøres
-opp lokalt vha Docker Compose(som følger med Docker Desktop) 
-
-
-Starte Postgres: 
-```
-
+```bash
+# Start PostgreSQL
 docker-compose -f docker-compose.yml up
 
-```
-Etter at containerene er startet kan man starte applikasjonen ved å kjøre main metoden.
+# Kjør applikasjonen (main i Application.kt)
+./gradlew :dp-inntekt-api:run
 
-
-Stoppe Postgres:
-
-```
-ctrl-c og docker-compose -f docker-compose.yml down 
-
+# Stopp PostgreSQL
+docker-compose -f docker-compose.yml down
 ```
 
-### Personlig tilgang til Postgres databasen
+### Kjøre tester
 
-Se [Personlig tilgang](https://docs.nais.io/how-to-guides/persistence/postgres/#personal-database-access)
+```bash
+./gradlew test
+```
 
+### Personlig tilgang til PostgreSQL i dev/prod
 
+Se [Nais-dokumentasjon: Personlig tilgang](https://docs.nais.io/how-to-guides/persistence/postgres/#personal-database-access)
 
