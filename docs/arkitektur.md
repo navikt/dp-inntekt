@@ -21,7 +21,7 @@ flowchart LR
     B -->|POST /v3/inntekt/klassifisert| I[Inntekt hentes og klassifiseres\ndp-inntekt]
     I --> R[Regler kjøres\ndp-regel-api / dp-oppslag-inntekt]
     R --> V[Vedtak fattes\ndp-behandling/Arena]
-    V --> U[Utbetaling\nHelios / OS]
+    V --> U[Utbetaling\n  OS/UR]
 ```
 
 | Steg i verdikjeden | Ansvarlig system                  | dp-inntekt sin rolle                                             |
