@@ -11,6 +11,33 @@
 
 ---
 
+## Rolle i dagpenge-verdikjeden
+
+`dp-inntekt` er et **bakgrunnsystem uten brukergrensesnitt**. Tjenesten har ingen rolle i saksbehandling eller vedtak direkte, men er en kritisk datakilde for regelkjøring:
+
+```mermaid
+flowchart LR
+    S[Søknad mottas\ndp-soknad] --> B[Behandling startes\ndp-behandling]
+    B -->|POST /v3/inntekt/klassifisert| I[Inntekt hentes og klassifiseres\ndp-inntekt]
+    I --> R[Regler kjøres\ndp-regel-motor / dp-oppslag-inntekt]
+    R --> V[Vedtak fattes\ndp-vedtak]
+    V --> U[Utbetaling\nHelios / OS]
+```
+
+| Steg i verdikjeden | Ansvarlig system | dp-inntekt sin rolle |
+|--------------------|-----------------|----------------------|
+| Søknad | `dp-soknad` | — |
+| Behandlingsstart | `dp-behandling` | — |
+| **Inntektsoppslag og caching** | **`dp-inntekt`** | **Henter fra a-inntekt ved cache-miss, returnerer `inntektsId`** |
+| **Klassifisering av inntekt** | **`dp-inntekt`** | **Kategoriserer posteringer etter dagpengeregelverket** |
+| Regelkjøring | `dp-oppslag-inntekt` / regelmotor | Konsumerer klassifisert inntekt via `inntektsId` |
+| Manuell redigering | `dp-inntekt-frontend` | Kaller dp-inntekt API for å redigere cachet inntekt |
+| Vedtak og utbetaling | `dp-vedtak`, Helios | — |
+
+> **Merk:** dp-inntekt **prøver ikke vilkår** og fatter ingen vedtak. Vilkårsprøvingen (f.eks. om inntekten oppfyller minstekravet) skjer i regelmotoren.
+
+---
+
 ## Systemdiagram
 
 ```mermaid
@@ -141,6 +168,31 @@ Alle endepunkter krever **Azure AD JWT** i `Authorization: Bearer`-header (unnta
 
 ---
 
+## Inntektsklassifisering
+
+Inntekt fra Inntektskomponenten klassifiseres i kategorier (se `InntektKlasse` i `dp-inntekt-kontrakter`) basert på posteringstype fra a-inntekt. Klassifiseringen er implementert i `KlassifisertPostering.kt`.
+
+| `InntektKlasse` | Beskrivelse | Eksempel på posteringstyper |
+|----------------|-------------|----------------------------|
+| `ARBEIDSINNTEKT` | Lønn, bonus, feriepenger og andre lønnsinntekter | `FASTLØNN`, `BONUS`, `FERIEPENGER`, `TIMELØNN`, `OVERTIDSGODTGJØRELSE` |
+| `DAGPENGER` | Dagpengeytelse fra NAV | `Y_DAGPENGER_VED_ARBEIDSLØSHET`, ferietillegg |
+| `DAGPENGER_FANGST_FISKE` | Dagpenger til fisker som bare har hyre | `N_DAGPENGER_TIL_FISKER` |
+| `SYKEPENGER` | Sykepenger fra NAV | `Y_SYKEPENGER`, feriepenger |
+| `SYKEPENGER_FANGST_FISKE` | Sykepenger til fisker | `N_SYKEPENGER_TIL_FISKER` |
+| `FANGST_FISKE` | Næringsinntekt for fiskere | `N_LOTT_KUN_TRYGDEAVGIFT`, `N_VEDERLAG` |
+| `TILTAKSLØNN` | Lønn under arbeidsmarkedstiltak | `L_FASTLØNN_T`, `L_TIMELØNN_T`, `L_FERIEPENGER_T` |
+| `PLEIEPENGER` | Pleiepenger fra NAV | `Y_PLEIEPENGER`, feriepenger |
+| `OMSORGSPENGER` | Omsorgspenger fra NAV | `Y_OMSORGSPENGER`, feriepenger |
+| `OPPLÆRINGSPENGER` | Opplæringspenger fra NAV | `Y_OPPLÆRINGSPENGER`, feriepenger |
+
+> Fullstendig mapping mellom a-inntekt-koder og `InntektKlasse` finnes i `PosteringsTypeMapping.kt` og `KlassifisertPostering.kt`.
+
+### Klassifisering og vilkårsprøving
+
+dp-inntekt **klassifiserer** inntekten, men **prøver ikke vilkår**. Etter klassifisering er det regelmotorens ansvar å avgjøre om inntekten oppfyller minstekravene for dagpenger. `manueltRedigert`-flagget på returnert `KlassifisertInntekt` indikerer om data er endret av saksbehandler.
+
+---
+
 ## Integrasjoner
 
 ### Inntektskomponenten (a-inntekt)
@@ -211,6 +263,86 @@ inntekt_v1_manuelt_redigert
 ```
 
 **Indekser:** `(aktør_id, kontekst_id, kontekst_type, beregningsdato, timestamp DESC)` for rask cache-oppslag.
+
+---
+
+## Kontrollspor og audit trail
+
+dp-inntekt opprettholder et fullstendig kontrollspor for alle operasjoner på inntektsdata.
+
+### Automatisk sporing i database
+
+| Hendelse | Tabell | Sporede felt |
+|----------|--------|--------------|
+| Inntekt hentet fra a-inntekt og cachet | `inntekt_v1` | `id` (ULID), `timestamp` |
+| Person-til-inntekt-kobling | `inntekt_person_mapping` | `aktør_id`, `fnr`, `kontekst_id`, `kontekst_type`, `beregningsdato`, `timestamp` |
+| Saksbehandler redigerer inntekt | `inntekt_v1_manuelt_redigert` | `redigert_av` (NAV-ident), `begrunnelse`, `timestamp` |
+| Inntekt brukt i regelkjøring | `inntekt_v1.brukt = true` | Satt av Kafka-consumer ved `brukt_inntekt`-hendelse |
+
+> `redigert_av` inneholder saksbehandlerens NAV-ident — **ikke** fødselsnummer eller navn. `fnr` i `inntekt_person_mapping` logges aldri.
+
+### pgaudit — databasenivå
+
+Alle databaseoperasjoner (SELECT, INSERT, UPDATE, DELETE) logges via **pgaudit** (aktivert på Cloud SQL-instansen). pgaudit-logger er tilgjengelige i GCP Cloud Logging og inngår i personopplysningsloggen for GDPR-formål.
+
+### Fullstendig kontrollspor: fra søknad til utbetaling
+
+```
+1. Søknad mottas
+   └── dp-soknad / dp-behandling starter behandling
+
+2. Inntektsoppslag (dp-behandling → dp-inntekt)
+   └── POST /v3/inntekt/klassifisert {personIdentifikator, regelkontekst, beregningsDato}
+       ├── PDL-oppslag: personIdentifikator → aktørId + fnr
+       ├── Cache-sjekk: finnes inntekt_person_mapping for (aktørId, kontekst, beregningsdato)?
+       │   ├─ Cache-treff:  returnerer eksisterende inntektsId
+       │   └─ Cache-miss:   henter fra a-inntekt → INSERT inntekt_v1 + inntekt_person_mapping
+       └── Returnerer KlassifisertInntekt {inntektsId, inntektsListe, manueltRedigert}
+
+3. Regelkjøring (regelmotor bruker inntektsId)
+   └── Publiserer Kafka-hendelse: brukt_inntekt {inntektsId}
+       └── dp-inntekt consumer: UPDATE inntekt_v1 SET brukt = true
+
+4. (Valgfritt) Manuell redigering (saksbehandler via dp-inntekt-frontend)
+   └── POST /v1/inntekt/uklassifisert/{aktørId}/...
+       ├── INSERT ny inntekt_v1 (ny ULID)
+       ├── INSERT inntekt_v1_manuelt_redigert {redigert_av, begrunnelse}
+       └── POST dp-behandling /behandling/{id}/rekjor (OBO-token)
+
+5. Vedtak fattes i dp-vedtak basert på regelkjøring
+6. Utbetaling via Helios / OS
+```
+
+### Konsistensgarantier
+
+- Én `inntektsId` (ULID) representerer alltid **samme versjon** av inntektsdata — immutabel cache
+- Manuell redigering oppretter **ny** `inntektsId` — original beholdes for etterprøvbarhet
+- `brukt`-flagget settes idempotent (Kafka-consumer er idempotent på samme `inntektsId`)
+
+---
+
+## Grensesnittavstemming
+
+### Cache vs. kilde (Inntektskomponenten)
+
+dp-inntekt bruker en **cache-first**-strategi. Følgende mekanismer håndterer avvik mellom cachet og kildedata:
+
+| Scenario | Håndtering |
+|----------|------------|
+| a-inntekt har oppdatert inntekt etter caching | Saksbehandler bruker `GET /v1/inntekt/uklassifisert/uncached/...` for direkte oppslag, omgår cache |
+| Saksbehandler mener cachet data er feil | Manuell redigering via `dp-inntekt-frontend` → ny `inntektsId` med referanse i `inntekt_v1_manuelt_redigert` |
+| Inntektskomponenten utilgjengelig ved cache-miss | HTTP 502 + ProblemDetails returneres — konsument må håndtere retry |
+| PDL utilgjengelig | HTTP 502 + ProblemDetails — `aktørId`-oppslag feiler, inntekt kan ikke hentes |
+| Uventet posteringstype fra a-inntekt | `KlassifiseringsException` kastes — logges og returneres som HTTP 500 |
+
+### Grensesnittavstemming ved leveranser mellom systemer
+
+| Grensesnitt | Avsender | Mottaker | Avstemming |
+|-------------|----------|----------|------------|
+| `POST /v3/inntekt/klassifisert` | `dp-behandling` | `dp-inntekt` | Responskode 200 + gyldig `inntektsId` bekrefter vellykket caching |
+| Kafka `brukt_inntekt` | Regelmotor | `dp-inntekt` | `inntekt_v1.brukt = true` etter konsumering — verifiserbart i DB |
+| `POST /behandling/{id}/rekjor` | `dp-inntekt` | `dp-behandling` | Responskode 200 bekrefter at rekjøring er akseptert |
+| GraphQL PDL | `dp-inntekt` | PDL | Metrikk `inntektskomponent_fetch_error` ved feil |
 
 ---
 
