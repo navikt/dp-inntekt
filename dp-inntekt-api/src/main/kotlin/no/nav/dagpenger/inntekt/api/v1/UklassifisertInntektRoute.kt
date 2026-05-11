@@ -392,7 +392,7 @@ private suspend fun hentOrganisasjoner(
     organisasjonsNummerListe: List<String>?,
 ): List<Organisasjon> {
     val organisasjoner = mutableListOf<Organisasjon>()
-    organisasjonsNummerListe?.forEach { orgNr ->
+    organisasjonsNummerListe?.distinct()?.forEach { orgNr ->
         runCatching {
             enhetsregisterClient.hentEnhet(orgNr)
         }.onFailure {
