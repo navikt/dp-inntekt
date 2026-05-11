@@ -387,12 +387,12 @@ fun Route.uklassifisertInntekt(
     }
 }
 
-private suspend fun hentOrganisasjoner(
+internal suspend fun hentOrganisasjoner(
     enhetsregisterClient: EnhetsregisterClient,
     organisasjonsNummerListe: List<String>?,
 ): List<Organisasjon> {
     val organisasjoner = mutableListOf<Organisasjon>()
-    organisasjonsNummerListe?.forEach { orgNr ->
+    organisasjonsNummerListe?.distinct()?.forEach { orgNr ->
         runCatching {
             enhetsregisterClient.hentEnhet(orgNr)
         }.onFailure {
