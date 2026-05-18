@@ -18,6 +18,7 @@ dev_access: true
 sql_high_availability: false
 sql_point_in_time_recovery: false
 sql_tier: db-custom-1-3840
+sql_db: inntekt
 sql_auto_backup_hour: false
 sql_disk_size: false
 

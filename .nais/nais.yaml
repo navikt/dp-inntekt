@@ -95,7 +95,7 @@ spec:
       - collation: nb_NO.UTF8
         databases:
           - envVarPrefix: DB
-            name: inntekt
+            name: {{sql_db}}
         diskAutoresize: true
         diskType: SSD
         highAvailability: {{sql_high_availability}}
