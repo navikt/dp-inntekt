@@ -16,7 +16,7 @@ application {
     mainClass.set("no.nav.dagpenger.inntekt.ApplicationKt")
 }
 
-val expediaGraphqlVersion = "8.8.1"
+val expediaGraphqlVersion = "9.2.0"
 val moshiVersion = "1.14.0"
 
 dependencies {
