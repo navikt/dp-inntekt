@@ -16,11 +16,20 @@ spec:
   image: "{{image}}"
   port: 8099
   webproxy: true
+  startup:
+    path: /isalive
+    initialDelay: 10
+    failureThreshold: 6
+    periodSeconds: 5
+    timeout: 5
   liveness:
     path: /isalive
-    initialDelay: 60
+    failureThreshold: 6
+    periodSeconds: 10
   readiness:
     path: /isready
+    failureThreshold: 3
+    periodSeconds: 10
   prometheus:
     enabled: true
     path: /metrics
