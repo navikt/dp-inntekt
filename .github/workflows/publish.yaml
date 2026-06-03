@@ -15,7 +15,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
       - name: Set up Java and build
         uses: actions/setup-java@v5
         with:
@@ -40,7 +40,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - name: Set release tag
         run: |
           export TAG_NAME="2_$(TZ="Europe/Oslo" date +%Y%m%d%s).$(echo $GITHUB_SHA | cut -c 1-6)"
@@ -57,7 +57,7 @@ jobs:
     permissions:
       packages: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
