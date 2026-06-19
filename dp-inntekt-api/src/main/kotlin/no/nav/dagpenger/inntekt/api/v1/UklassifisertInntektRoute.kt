@@ -185,14 +185,15 @@ fun Route.uklassifisertInntekt(
                 withContext(coroutineContext) {
                     val inntektId = call.parameters["inntektId"]!!
                     val behandlingId = call.parameters["behandlingId"]
-                    val opplysningId = call.parameters["opplysningId"]
+                    // Historisk query-paramnavn fra dp-inntekt-frontend.
+                    val opplysningTypeId = call.parameters["opplysningId"]
                     val erArena = call.parameters["erArena"]?.toBoolean() ?: false
                     val inntekterDto = call.receive<InntekterDto>()
                     val brukerKommerFraDpSak = !erArena
 
                     if (brukerKommerFraDpSak) {
                         require(
-                            brukerKommerFraDpSak && behandlingId != null && opplysningId != null,
+                            brukerKommerFraDpSak && behandlingId != null && opplysningTypeId != null,
                         ) { "behandlingId og opplysningId må være satt når erArena er false" }
                     }
 
@@ -238,7 +239,7 @@ fun Route.uklassifisertInntekt(
 
                                 dpBehandlingKlient.rekjørBehandling(
                                     behandlingId = UUID.fromString(behandlingId!!),
-                                    opplysningId = OpplysningTypeId(opplysningId!!),
+                                    opplysningTypeId = OpplysningTypeId(opplysningTypeId!!),
                                     ident =
                                         inntektPersonMapping.fnr
                                             ?: personOppslag.hentPerson(inntektPersonMapping.aktørId).fødselsnummer,

@@ -611,7 +611,7 @@ internal class UklassifisertInntektRouteTest {
             val inntekterDto = inntektObjectMapper.readValue<InntekterDto>(body!!)
 
             val behandlingId = UUID.randomUUID()
-            val opplysningId = OpplysningTypeId(UUID.randomUUID())
+            val opplysningTypeId = OpplysningTypeId(UUID.randomUUID())
             justRun { dpBehandlingKlient.rekjørBehandling(any(), any(), any(), any()) }
 
             val inntektPersonMapping =
@@ -632,7 +632,7 @@ internal class UklassifisertInntektRouteTest {
             val response =
                 it.autentisert(
                     httpMethod = HttpMethod.Post,
-                    endepunkt = "$uklassifisertInntekt/${inntektId.id}?behandlingId=$behandlingId&opplysningId=$opplysningId",
+                    endepunkt = "$uklassifisertInntekt/${inntektId.id}?behandlingId=$behandlingId&opplysningId=$opplysningTypeId",
                     body = body,
                 )
 
@@ -657,7 +657,7 @@ internal class UklassifisertInntektRouteTest {
                 dpBehandlingKlient.rekjørBehandling(
                     fødselsnummer,
                     behandlingId,
-                    opplysningId,
+                    opplysningTypeId,
                     token,
                 )
             }
