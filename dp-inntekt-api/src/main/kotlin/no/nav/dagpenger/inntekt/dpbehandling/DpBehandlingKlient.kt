@@ -21,7 +21,7 @@ class DpBehandlingKlient(
     fun rekjørBehandling(
         ident: String,
         behandlingId: UUID,
-        opplysningId: UUID,
+        opplysningId: OpplysningTypeId,
         token: String,
     ) {
         sikkerlogg.info {
@@ -35,7 +35,7 @@ class DpBehandlingKlient(
         val requestBody =
             RekjørBehandlingDTO(
                 ident = ident,
-                opplysninger = listOf(opplysningId.toString()),
+                oppfrisk = listOf(opplysningId),
             )
 
         runBlocking {
@@ -61,7 +61,16 @@ class DpBehandlingKlient(
     }
 }
 
-data class RekjørBehandlingDTO(
+@JvmInline
+value class OpplysningTypeId(
+    val id: UUID,
+) {
+    constructor(id: String) : this(UUID.fromString(id))
+
+    override fun toString() = id.toString()
+}
+
+private data class RekjørBehandlingDTO(
     val ident: String,
-    val opplysninger: List<String>,
+    val oppfrisk: List<OpplysningTypeId>,
 )

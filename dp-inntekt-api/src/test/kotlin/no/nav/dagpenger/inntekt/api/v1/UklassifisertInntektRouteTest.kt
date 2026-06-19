@@ -36,6 +36,7 @@ import no.nav.dagpenger.inntekt.db.StoredInntekt
 import no.nav.dagpenger.inntekt.db.StoredInntektMedMetadata
 import no.nav.dagpenger.inntekt.db.StoredInntektPeriode
 import no.nav.dagpenger.inntekt.dpbehandling.DpBehandlingKlient
+import no.nav.dagpenger.inntekt.dpbehandling.OpplysningTypeId
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.Aktoer
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.ArbeidsInntektInformasjon
@@ -610,7 +611,7 @@ internal class UklassifisertInntektRouteTest {
             val inntekterDto = inntektObjectMapper.readValue<InntekterDto>(body!!)
 
             val behandlingId = UUID.randomUUID()
-            val opplysningId = UUID.randomUUID()
+            val opplysningId = OpplysningTypeId(UUID.randomUUID())
             justRun { dpBehandlingKlient.rekjørBehandling(any(), any(), any(), any()) }
 
             val inntektPersonMapping =

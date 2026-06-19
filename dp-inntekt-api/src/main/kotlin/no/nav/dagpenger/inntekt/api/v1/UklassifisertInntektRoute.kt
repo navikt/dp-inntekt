@@ -31,6 +31,7 @@ import no.nav.dagpenger.inntekt.db.RegelKontekst
 import no.nav.dagpenger.inntekt.db.StoreInntektCommand
 import no.nav.dagpenger.inntekt.db.StoredInntektMedMetadata
 import no.nav.dagpenger.inntekt.dpbehandling.DpBehandlingKlient
+import no.nav.dagpenger.inntekt.dpbehandling.OpplysningTypeId
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.AktoerType
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektkomponentRequest
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentClient
@@ -191,7 +192,7 @@ fun Route.uklassifisertInntekt(
 
                     if (brukerKommerFraDpSak) {
                         require(
-                            behandlingId != null && opplysningId != null,
+                            brukerKommerFraDpSak && behandlingId != null && opplysningId != null,
                         ) { "behandlingId og opplysningId må være satt når erArena er false" }
                     }
 
@@ -236,8 +237,8 @@ fun Route.uklassifisertInntekt(
                                         ?: throw IllegalArgumentException("Fant ikke token i request header")
 
                                 dpBehandlingKlient.rekjørBehandling(
-                                    behandlingId = UUID.fromString(behandlingId),
-                                    opplysningId = UUID.fromString(opplysningId),
+                                    behandlingId = UUID.fromString(behandlingId!!),
+                                    opplysningId = OpplysningTypeId(opplysningId!!),
                                     ident =
                                         inntektPersonMapping.fnr
                                             ?: personOppslag.hentPerson(inntektPersonMapping.aktørId).fødselsnummer,
