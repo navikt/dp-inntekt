@@ -72,6 +72,7 @@ spec:
         {{#if dev_access}}
         - application: azure-token-generator
           namespace: nais
+        - application: dp-inntekt-frontend-q1
         {{/if}}
         - application: dp-oppslag-inntekt
         - application: dp-arena-sink
