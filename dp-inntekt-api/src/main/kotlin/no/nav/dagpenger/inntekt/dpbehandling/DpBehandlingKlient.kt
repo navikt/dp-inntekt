@@ -21,13 +21,13 @@ class DpBehandlingKlient(
     fun rekjørBehandling(
         ident: String,
         behandlingId: UUID,
-        opplysningId: OpplysningTypeId,
+        opplysningTypeId: OpplysningTypeId,
         token: String,
     ) {
         sikkerlogg.info {
             "Rekjør behandling i dp-behandling" +
                 "BehandlingId: $behandlingId " +
-                "OpplysningId: $opplysningId "
+                "OpplysningTypeId: $opplysningTypeId "
         }
 
         val oboToken = hentOboTokenForDpBehandling(token)
@@ -35,7 +35,7 @@ class DpBehandlingKlient(
         val requestBody =
             RekjørBehandlingDTO(
                 ident = ident,
-                oppfrisk = listOf(opplysningId),
+                oppfrisk = listOf(opplysningTypeId),
             )
 
         runBlocking {
@@ -51,7 +51,7 @@ class DpBehandlingKlient(
                 "Feil ved rekjøring av behandling i DP behandling. " +
                     "Statuskode: ${response.status} " +
                     "BehandlingId: $behandlingId " +
-                    "OpplysningId: $opplysningId"
+                    "OpplysningTypeId: $opplysningTypeId"
             }
         }
     }
