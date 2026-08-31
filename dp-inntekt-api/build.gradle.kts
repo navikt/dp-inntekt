@@ -59,7 +59,7 @@ dependencies {
     implementation(libs.konfig)
     implementation("org.slf4j:slf4j-api:2.0.17")
 
-    implementation("no.bekk.bekkopen:nocommons:0.16.0")
+    implementation("no.bekk.bekkopen:nocommons:0.17.0")
 
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
     implementation("no.nav.dagpenger:oauth2-klient:2025.11.27-14.20.4aa9aa3d3d14")
