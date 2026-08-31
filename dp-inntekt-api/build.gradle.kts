@@ -31,7 +31,7 @@ dependencies {
 
     implementation("io.micrometer:micrometer-registry-prometheus:1.16.3")
 
-    implementation("io.prometheus:client_java:1.4.3")
+    implementation("io.prometheus:client_java:1.8.0")
     implementation("io.prometheus:prometheus-metrics-core:1.4.3")
     implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.8.0")
 
