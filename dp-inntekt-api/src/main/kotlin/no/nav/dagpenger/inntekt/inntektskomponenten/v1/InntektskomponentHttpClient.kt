@@ -20,7 +20,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
-import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.serialization.jackson3.JacksonConverter
 import io.prometheus.metrics.core.metrics.Counter
 import io.prometheus.metrics.core.metrics.Summary
 import no.nav.dagpenger.inntekt.serder.inntektObjectMapper

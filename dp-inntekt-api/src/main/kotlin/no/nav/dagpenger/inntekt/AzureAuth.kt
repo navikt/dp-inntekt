@@ -31,7 +31,7 @@ internal fun JWTAuthenticationProvider.Config.azureAdJWT(config: Configuration) 
             }
             JWTPrincipal(credentials.payload)
         } catch (e: Throwable) {
-            LOGGER.error("Unauthorized", e)
+            LOGGER.error(e) { "Unauthorized" }
             null
         }
     }

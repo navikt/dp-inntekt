@@ -23,7 +23,7 @@ data class HentInntektListeRequest(
     val maanedTom: YearMonth,
 )
 
-class InntektskomponentenHttpClientException(
+open class InntektskomponentenHttpClientException(
     val status: Int,
     override val message: String,
     val detail: String? = null,

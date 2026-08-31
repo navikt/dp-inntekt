@@ -1,7 +1,6 @@
 package no.nav.dagpenger.inntekt.api.v1
 
 import com.auth0.jwt.exceptions.JWTDecodeException
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.oshai.kotlinlogging.withLoggingContext
 import io.ktor.http.HttpStatusCode
@@ -48,6 +47,7 @@ import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.opptjeningsperiode.Opptjeningsperiode
 import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
+import tools.jackson.module.kotlin.readValue
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.coroutines.CoroutineContext

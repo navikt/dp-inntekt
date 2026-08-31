@@ -12,6 +12,7 @@ import no.nav.dagpenger.inntekt.v1.Postering
 import no.nav.dagpenger.inntekt.v1.PosteringsType
 import no.nav.dagpenger.inntekt.v1.SpesifisertInntekt
 import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.readValue
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.YearMonth
@@ -48,8 +49,9 @@ internal class KlassifiserOgMapInntektTest {
     fun `Ta med alle måneder med inntekter`() {
         val testDataJson =
             KlassifiserOgMapInntektTest::class.java
-                .getResource("/test-data/spesifisert-inntekt-mange-posteringer.json").readText()
-        val spesifisertInntekt = inntektObjectMapper.readValue(testDataJson, SpesifisertInntekt::class.java)
+                .getResource("/test-data/spesifisert-inntekt-mange-posteringer.json")
+                .readText()
+        val spesifisertInntekt = inntektObjectMapper.readValue<SpesifisertInntekt>(testDataJson)
 
         val sum = spesifisertInntekt.posteringer.fold(BigDecimal.ZERO) { acc, postering -> acc + postering.beløp }
         val spesifiserteMåneder = spesifisertInntekt.posteringer.groupBy { it.posteringsMåned }.keys
@@ -74,8 +76,9 @@ internal class KlassifiserOgMapInntektTest {
     fun `Inntekt grupperes riktig i måneder`() {
         val testDataJson =
             KlassifiserOgMapInntektTest::class.java
-                .getResource("/test-data/spesifisert-inntekt-flere-klasser.json").readText()
-        val spesifisertInntekt = inntektObjectMapper.readValue(testDataJson, SpesifisertInntekt::class.java)
+                .getResource("/test-data/spesifisert-inntekt-flere-klasser.json")
+                .readText()
+        val spesifisertInntekt = inntektObjectMapper.readValue<SpesifisertInntekt>(testDataJson)
 
         val klassifisertInntekt = klassifiserOgMapInntekt(spesifisertInntekt)
 

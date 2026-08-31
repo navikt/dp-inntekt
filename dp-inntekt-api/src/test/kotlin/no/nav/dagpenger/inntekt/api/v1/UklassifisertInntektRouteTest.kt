@@ -57,6 +57,7 @@ import no.nav.dagpenger.inntekt.oppslag.PersonOppslag
 import no.nav.dagpenger.inntekt.oppslag.enhetsregister.EnhetsregisterClient
 import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.readValue
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDate.now
@@ -444,7 +445,7 @@ internal class UklassifisertInntektRouteTest {
                     endepunkt = "v1/inntekt/verdikoder",
                 )
             assertEquals(OK, response.status)
-            assertEquals("application/json; charset=UTF-8", response.headers["Content-Type"])
+            assertEquals("application/json", response.headers["Content-Type"])
             assertTrue(runCatching { inntektObjectMapper.readValue<Set<String>>(response.bodyAsText()) }.isSuccess)
         }
 

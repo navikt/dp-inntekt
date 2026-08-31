@@ -24,6 +24,7 @@ import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjon
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.TilleggInformasjonsDetaljer
 import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.readValue
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.YearMonth

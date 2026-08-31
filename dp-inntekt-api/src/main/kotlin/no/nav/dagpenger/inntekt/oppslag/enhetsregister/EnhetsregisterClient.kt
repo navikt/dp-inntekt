@@ -10,10 +10,10 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import no.nav.dagpenger.inntekt.serder.configure
+import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import java.time.Duration
 
 class EnhetsregisterClient(
@@ -43,7 +43,7 @@ internal fun httpClient(engine: HttpClientEngine = CIO.create { }): HttpClient =
         }
 
         install(ContentNegotiation) {
-            jackson { configure() }
+            jackson { inntektObjectMapper }
         }
 
         install(Logging) {
