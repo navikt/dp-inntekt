@@ -24,7 +24,7 @@ dependencies {
     implementation(project(":dp-inntekt-kontrakter"))
 
     // ktor server
-    implementation("com.github.navikt.tbd-libs:naisful-app:2025.11.04-10.54-c831038e")
+    implementation("com.github.navikt.tbd-libs:naisful-app:2026.04.14-17.02-3f7000fd")
     implementation("io.ktor:ktor-server-default-headers:${libs.versions.ktor.get()}")
     implementation(libs.ktor.server.auth)
     implementation(libs.ktor.server.auth.jwt)
