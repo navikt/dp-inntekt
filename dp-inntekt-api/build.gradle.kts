@@ -46,7 +46,7 @@ dependencies {
     // kafka
     implementation("com.github.navikt.tbd-libs:kafka:2025.11.04-10.54-c831038e")
     // kafka testing
-    testImplementation("com.github.navikt.tbd-libs:kafka-test:2025.11.04-10.54-c831038e")
+    testImplementation("com.github.navikt.tbd-libs:kafka-test:2026.04.14-17.02-3f7000fd")
 
     implementation(libs.kotlin.logging)
 
