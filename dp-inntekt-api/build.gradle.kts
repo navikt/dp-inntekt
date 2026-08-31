@@ -1,7 +1,7 @@
 plugins {
     id("common")
     application
-    id("com.expediagroup.graphql") version "8.8.1"
+    id("com.expediagroup.graphql") version "8.9.1"
     id("de.undercouch.download") version "5.7.0"
 }
 
