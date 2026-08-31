@@ -65,7 +65,7 @@ dependencies {
     implementation("no.nav.dagpenger:oauth2-klient:2025.11.27-14.20.4aa9aa3d3d14")
 
     testImplementation(kotlin("test"))
-    testImplementation("com.github.navikt.tbd-libs:naisful-test-app:2025.11.04-10.54-c831038e")
+    testImplementation("com.github.navikt.tbd-libs:naisful-test-app:2026.04.14-17.02-3f7000fd")
 
     testImplementation("no.nav.security:mock-oauth2-server:3.0.3")
     testImplementation("io.ktor:ktor-client-mock:${libs.versions.ktor.get()}")
