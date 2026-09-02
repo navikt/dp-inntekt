@@ -1,7 +1,7 @@
 plugins {
     id("common")
     application
-    id("com.expediagroup.graphql") version "8.8.1"
+    id("com.expediagroup.graphql") version "8.9.1"
     id("de.undercouch.download") version "5.7.0"
 }
 
@@ -16,15 +16,14 @@ application {
     mainClass.set("no.nav.dagpenger.inntekt.ApplicationKt")
 }
 
-val expediaGraphqlVersion = "8.9.1"
-val moshiVersion = "1.14.0"
-
+val expediaGraphqlVersion = "10.2.2"
+val tbdLibs = "20260827.1253"
 dependencies {
 
     implementation(project(":dp-inntekt-kontrakter"))
 
     // ktor server
-    implementation("com.github.navikt.tbd-libs:naisful-app:2025.11.04-10.54-c831038e")
+    implementation("com.github.navikt.tbd-libs:naisful-app:$tbdLibs")
     implementation("io.ktor:ktor-server-default-headers:${libs.versions.ktor.get()}")
     implementation(libs.ktor.server.auth)
     implementation(libs.ktor.server.auth.jwt)
@@ -44,9 +43,9 @@ dependencies {
     implementation(libs.bundles.jackson)
 
     // kafka
-    implementation("com.github.navikt.tbd-libs:kafka:2025.11.04-10.54-c831038e")
+    implementation("com.github.navikt.tbd-libs:kafka:$tbdLibs")
     // kafka testing
-    testImplementation("com.github.navikt.tbd-libs:kafka-test:2025.11.04-10.54-c831038e")
+    testImplementation("com.github.navikt.tbd-libs:kafka-test:$tbdLibs")
 
     implementation(libs.kotlin.logging)
 
@@ -62,10 +61,10 @@ dependencies {
     implementation("no.bekk.bekkopen:nocommons:0.17.0")
 
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
-    implementation("no.nav.dagpenger:oauth2-klient:2025.11.27-14.20.4aa9aa3d3d14")
+    implementation("no.nav.dagpenger:oauth2-klient:2025.12.19-08.15.2e150cd55270")
 
     testImplementation(kotlin("test"))
-    testImplementation("com.github.navikt.tbd-libs:naisful-test-app:2025.11.04-10.54-c831038e")
+    testImplementation("com.github.navikt.tbd-libs:naisful-test-app:$tbdLibs")
 
     testImplementation("no.nav.security:mock-oauth2-server:6.0.2")
     testImplementation("io.ktor:ktor-client-mock:${libs.versions.ktor.get()}")

@@ -1,6 +1,5 @@
 package no.nav.dagpenger.inntekt.db
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import de.huxhorn.sulky.ulid.ULID
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.prometheus.metrics.core.metrics.Summary
@@ -16,6 +15,7 @@ import no.nav.dagpenger.inntekt.v1.SpesifisertInntekt
 import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
+import tools.jackson.module.kotlin.readValue
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZonedDateTime
@@ -42,7 +42,7 @@ internal class PostgresInntektStore(
         val statement =
             """
             SELECT redigert_av, begrunnelse
-                FROM inntekt_V1_manuelt_redigert
+                FROM inntekt_v1_manuelt_redigert
             WHERE inntekt_id = ?
             """.trimMargin()
         try {
@@ -64,12 +64,12 @@ internal class PostgresInntektStore(
             @Language("sql")
             val statement: String =
                 """
-                SELECT inntektId
-                    FROM inntekt_V1_person_mapping
-                WHERE aktørId = ? 
+                SELECT inntektid
+                    FROM inntekt_v1_person_mapping
+                WHERE aktørid = ? 
                 AND (fnr = ? OR fnr IS NULL)
-                AND kontekstId = ? 
-                AND kontekstType = ?::kontekstTypeNavn
+                AND kontekstid = ? 
+                AND konteksttype = ?::konteksttypenavn
                 AND beregningsdato = ? 
                 ORDER BY timestamp DESC LIMIT 1
                 """.trimMargin()
@@ -95,7 +95,7 @@ internal class PostgresInntektStore(
 
     override fun getInntektPersonMapping(inntektId: String): InntektPersonMapping {
         @Language("sql")
-        val statement = "SELECT * FROM inntekt_V1_person_mapping WHERE inntektId = :inntektId".trimMargin()
+        val statement = "SELECT * FROM inntekt_v1_person_mapping WHERE inntektid = :inntektId".trimMargin()
 
         return sessionOf(dataSource).use { session ->
             session.run(
@@ -120,10 +120,10 @@ internal class PostgresInntektStore(
     override fun getBeregningsdato(inntektId: InntektId): LocalDate {
         @Language("sql")
         val statement =
-            """SELECT coalesce(
-               (SELECT beregningsdato FROM inntekt_V1_person_mapping WHERE inntektId = :inntektId),
-               (SELECT beregningsdato FROM temp_inntekt_V1_person_mapping WHERE inntektId = :inntektId)
-           ) as beregningsdato
+            """SELECT COALESCE(
+               (SELECT beregningsdato FROM inntekt_v1_person_mapping WHERE inntektid = :inntektId),
+               (SELECT beregningsdato FROM temp_inntekt_v1_person_mapping WHERE inntektid = :inntektId)
+           ) AS beregningsdato
             """.trimMargin()
 
         return sessionOf(dataSource).use { session ->
@@ -161,9 +161,9 @@ internal class PostgresInntektStore(
         val statement =
             """ 
             SELECT inntekt.id, inntekt.inntekt, inntekt.manuelt_redigert, inntekt.timestamp, mapping.beregningsdato 
-            from inntekt_V1 inntekt 
-            inner join inntekt_V1_person_mapping mapping on inntekt.id = mapping.inntektid 
-            where inntekt.id = ?
+            FROM inntekt_v1 inntekt 
+            INNER JOIN inntekt_v1_person_mapping mapping ON inntekt.id = mapping.inntektid 
+            WHERE inntekt.id = ?
             
             """.trimIndent()
 
@@ -191,10 +191,10 @@ internal class PostgresInntektStore(
         @Language("sql")
         val statement =
             """ 
-            SELECT inntekt.id, inntekt.inntekt, inntekt.manuelt_redigert, inntekt.timestamp, mapping.fnr, mapping.beregningsdato, mapping.periodeFraOgMed, mapping.periodeTilOgMed, manuelt_redigert.begrunnelse
-            FROM inntekt_V1 inntekt
-            INNER JOIN inntekt_V1_person_mapping mapping ON inntekt.id = mapping.inntektid
-            LEFT JOIN inntekt_V1_manuelt_redigert manuelt_redigert ON inntekt.id = manuelt_redigert.inntekt_id
+            SELECT inntekt.id, inntekt.inntekt, inntekt.manuelt_redigert, inntekt.timestamp, mapping.fnr, mapping.beregningsdato, mapping.periodefraogmed, mapping.periodetilogmed, manuelt_redigert.begrunnelse
+            FROM inntekt_v1 inntekt
+            INNER JOIN inntekt_v1_person_mapping mapping ON inntekt.id = mapping.inntektid
+            LEFT JOIN inntekt_v1_manuelt_redigert manuelt_redigert ON inntekt.id = manuelt_redigert.inntekt_id
             WHERE inntekt.id = ?
             """.trimIndent()
 
@@ -322,7 +322,7 @@ internal class PostgresInntektStore(
         return try {
             sessionOf(dataSource).use { session -> session.run(queryOf(""" SELECT 1""").asExecute) }.let { HealthStatus.UP }
         } catch (p: PSQLException) {
-            LOGGER.error("Failed health check", p)
+            LOGGER.error(p) { "Failed health check" }
             return HealthStatus.DOWN
         }
     }
