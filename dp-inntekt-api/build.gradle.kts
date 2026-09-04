@@ -56,7 +56,7 @@ dependencies {
 
     implementation(libs.bundles.postgres)
     implementation(libs.konfig)
-    implementation("org.slf4j:slf4j-api:2.0.18")
+    implementation("org.slf4j:slf4j-api:2.0.19")
 
     implementation("no.bekk.bekkopen:nocommons:0.17.0")
 
