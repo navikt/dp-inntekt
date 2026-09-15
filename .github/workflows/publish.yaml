@@ -27,7 +27,7 @@ jobs:
           # Eksluder test dependencies
           DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: compileClasspath|runtimeClasspath
         with:
-          gradle-version: wrapper
+          gradle-version: 9.7.1
           dependency-graph: generate-and-submit
       - name: Test dp-inntekt-kontrakter
         run: ./gradlew clean --configuration-cache :dp-inntekt-kontrakter:test
