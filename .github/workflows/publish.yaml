@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 26.0.2+10
       - uses: gradle/actions/wrapper-validation@v6.3.0
       - uses: gradle/actions/setup-gradle@v6.3.0
         env:
@@ -61,7 +61,7 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: 21.x
+          java-version: 26.0.2+10
           cache: 'gradle'
       - name: publish
         run: ./gradlew -Pversion="$(echo ${{ needs.release.outputs.tag }})" :dp-inntekt-kontrakter:publish
