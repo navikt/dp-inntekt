@@ -21,7 +21,10 @@ fun mapToSpesifisertInntekt(
         inntektId = InntektId(storedInntekt.inntektId.id),
         ident =
             Aktør(
-                AktørType.valueOf(storedInntekt.inntekt.ident.aktoerType.toString()),
+                AktørType.valueOf(
+                    storedInntekt.inntekt.ident.aktoerType
+                        .toString(),
+                ),
                 storedInntekt.inntekt.ident.identifikator,
             ),
         avvik = mapAvvik(storedInntekt.inntekt.arbeidsInntektMaaned),
@@ -32,7 +35,8 @@ fun mapToSpesifisertInntekt(
     )
 
 private fun mapAvvik(list: List<ArbeidsInntektMaaned>?) =
-    list?.flatMap { it.avvikListe ?: emptyList() }
+    list
+        ?.flatMap { it.avvikListe ?: emptyList() }
         ?.map {
             Avvik(
                 ident = aktoerToAktør(it.ident),

@@ -88,8 +88,8 @@ internal class KafkaSubsumsjonBruktDataConsumer(
         }
     }
 
-    override fun status(): HealthStatus {
-        return if (running.get()) {
+    override fun status(): HealthStatus =
+        if (running.get()) {
             HealthStatus.UP
         } else {
             val currentGrace = grace
@@ -99,7 +99,6 @@ internal class KafkaSubsumsjonBruktDataConsumer(
                 HealthStatus.UP
             }
         }
-    }
 
     fun stop() {
         logger.info { "Stopping ${kafkaConsumer.groupMetadata().groupId()} consumer" }

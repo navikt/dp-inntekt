@@ -24,10 +24,9 @@ fun toPosteringsType(posteringsTypeGrunnlag: PosteringsTypeGrunnlag): Posterings
 private fun shouldTryGenericMappingWithoutForhold(posteringsTypeGrunnlag: PosteringsTypeGrunnlag) =
     !posteringsTypeMapping.contains(posteringsTypeGrunnlag) && posteringsTypeGrunnlag.forhold != null
 
-fun toPosteringsTypeGrunnlag(posteringsType: PosteringsType): PosteringsTypeGrunnlag {
-    return posteringsTypeMapping.inverse[posteringsType]
+fun toPosteringsTypeGrunnlag(posteringsType: PosteringsType): PosteringsTypeGrunnlag =
+    posteringsTypeMapping.inverse[posteringsType]
         ?: throw PosteringsTypeMappingException("No posteringsTypeGrunnlag found for posteringsType=$posteringsType")
-}
 
 @Suppress("ktlint:standard:max-line-length")
 private val posteringsTypeMapping =
@@ -450,4 +449,6 @@ private val posteringsTypeMapping =
         ) to PosteringsType.L_ANNET_KONKURS,
     )
 
-class PosteringsTypeMappingException(message: String) : RuntimeException(message)
+class PosteringsTypeMappingException(
+    message: String,
+) : RuntimeException(message)

@@ -29,7 +29,9 @@ import kotlin.test.assertEquals
 
 private val storedInntekt =
     StoredInntekt(
-        inntektId = no.nav.dagpenger.inntekt.db.InntektId("01DGCVFS44PT6B6ZGEYH2WXVMA"),
+        inntektId =
+            no.nav.dagpenger.inntekt.db
+                .InntektId("01DGCVFS44PT6B6ZGEYH2WXVMA"),
         inntekt =
             InntektkomponentResponse(
                 listOf(

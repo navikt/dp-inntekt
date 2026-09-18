@@ -9,7 +9,9 @@ import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.util.Base64
 
-class JwtStub(private val issuer: String = "test issuer") {
+class JwtStub(
+    private val issuer: String = "test issuer",
+) {
     private val privateKey: RSAPrivateKey
     private val publicKey: RSAPublicKey
 
@@ -25,25 +27,32 @@ class JwtStub(private val issuer: String = "test issuer") {
     fun createTokenFor(subject: String): String {
         val algorithm = Algorithm.RSA256(publicKey, privateKey)
 
-        return JWT.create()
+        return JWT
+            .create()
             .withIssuer(issuer)
             .withSubject(subject)
             .sign(algorithm)
     }
 
-    fun stubbedJwkProvider(): StubbedJwkProvider {
-        return StubbedJwkProvider(publicKey)
-    }
+    fun stubbedJwkProvider(): StubbedJwkProvider = StubbedJwkProvider(publicKey)
 
-    class StubbedJwkProvider(private val publicKey: RSAPublicKey) : JwkProvider {
-        override fun get(keyId: String?): Jwk {
-            return Jwk(
-                keyId, "RSA", "RS256", "sig", listOf(), null, null, null,
+    class StubbedJwkProvider(
+        private val publicKey: RSAPublicKey,
+    ) : JwkProvider {
+        override fun get(keyId: String?): Jwk =
+            Jwk(
+                keyId,
+                "RSA",
+                "RS256",
+                "sig",
+                listOf(),
+                null,
+                null,
+                null,
                 mapOf(
                     "e" to String(Base64.getEncoder().encode(publicKey.publicExponent.toByteArray())),
                     "n" to String(Base64.getEncoder().encode(publicKey.modulus.toByteArray())),
                 ),
             )
-        }
     }
 }

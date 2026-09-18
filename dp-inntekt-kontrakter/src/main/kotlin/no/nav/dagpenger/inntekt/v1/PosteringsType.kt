@@ -1,6 +1,8 @@
 package no.nav.dagpenger.inntekt.v1
 
-enum class PosteringsType(val beskrivelse: String) {
+enum class PosteringsType(
+    val beskrivelse: String,
+) {
     L_AKSJER_GRUNNFONDSBEVIS_TIL_UNDERKURS("Aksjer/grunnfondsbevis til underkurs"),
     L_ANNET("Annen arbeidsinntekt"),
     L_ANNET_H("Hyre - Annet"),

@@ -7,12 +7,16 @@ import javax.sql.DataSource
 
 const val INNTEKT_SLETTET = "inntekt_slettet"
 private val deleteCounter =
-    Counter.builder()
+    Counter
+        .builder()
         .name(INNTEKT_SLETTET)
         .help("Antall inntektsett slettet fra databasen")
         .register()
 
-class Vaktmester(private val dataSource: DataSource, private val lifeSpanInDays: Int = 180) {
+class Vaktmester(
+    private val dataSource: DataSource,
+    private val lifeSpanInDays: Int = 180,
+) {
     fun rydd() {
         val rowCount =
             sessionOf(dataSource).use { session ->

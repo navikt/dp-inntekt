@@ -125,7 +125,8 @@ internal class PdlGraphQLRepositoryTest {
             response: ResponseDefinitionBuilder,
         ) {
             this.addStubMapping(
-                WireMock.post(WireMock.urlEqualTo("/graphql"))
+                WireMock
+                    .post(WireMock.urlEqualTo("/graphql"))
                     .withHeader(HttpHeaders.CONTENT_TYPE, WireMock.equalTo("application/json"))
                     .withHeader(HttpHeaders.ACCEPT, WireMock.equalTo("application/json"))
                     .withHeader(HttpHeaders.AUTHORIZATION, WireMock.equalTo("Bearer $TOKEN"))

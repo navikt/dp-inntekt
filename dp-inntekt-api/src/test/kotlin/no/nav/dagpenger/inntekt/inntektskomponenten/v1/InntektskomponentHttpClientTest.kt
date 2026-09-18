@@ -49,7 +49,8 @@ internal class InntektskomponentHttpClientTest {
     fun `fetch uklassifisert inntekt on 200 ok and measure latency metrics`() {
         val body =
             InntektskomponentHttpClientTest::class.java
-                .getResource("/test-data/example-inntekt-payload.json")?.readText()
+                .getResource("/test-data/example-inntekt-payload.json")
+                ?.readText()
 
         stubFor(
             post(urlEqualTo("/v1/hentinntektliste"))
@@ -86,7 +87,8 @@ internal class InntektskomponentHttpClientTest {
     fun `fetch uklassifisert inntekt with spesielleinntjeningsforhold 200 ok`() {
         val body =
             InntektskomponentHttpClientTest::class.java
-                .getResource("/test-data/example-inntekt-spesielleinntjeningsforhold.json").readText()
+                .getResource("/test-data/example-inntekt-spesielleinntjeningsforhold.json")
+                .readText()
 
         stubFor(
             post(urlEqualTo("/v1/hentinntektliste"))
@@ -119,7 +121,14 @@ internal class InntektskomponentHttpClientTest {
         assertEquals("8888888888", hentInntektListeResponse.ident.identifikator)
         assertEquals(
             SpesielleInntjeningsforhold.HYRE_TIL_MANNSKAP_PAA_FISKE_SMAAHVALFANGST_OG_SELFANGSTFARTOEY,
-            hentInntektListeResponse.arbeidsInntektMaaned?.first()?.arbeidsInntektInformasjon?.inntektListe?.first()?.tilleggsinformasjon?.tilleggsinformasjonDetaljer?.spesielleInntjeningsforhold,
+            hentInntektListeResponse.arbeidsInntektMaaned
+                ?.first()
+                ?.arbeidsInntektInformasjon
+                ?.inntektListe
+                ?.first()
+                ?.tilleggsinformasjon
+                ?.tilleggsinformasjonDetaljer
+                ?.spesielleInntjeningsforhold,
         )
     }
 

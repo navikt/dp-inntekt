@@ -4,14 +4,18 @@ import no.nav.dagpenger.inntekt.v1.InntektKlasse
 import no.nav.dagpenger.inntekt.v1.Postering
 import no.nav.dagpenger.inntekt.v1.PosteringsType
 
-internal data class KlassifisertPostering(val postering: Postering, val inntektKlasse: InntektKlasse)
+internal data class KlassifisertPostering(
+    val postering: Postering,
+    val inntektKlasse: InntektKlasse,
+)
 
-internal fun klassifiserPosteringer(posteringer: List<Postering>): List<KlassifisertPostering> {
-    return posteringer.map { KlassifisertPostering(it, klassifiserPosteringsType(it.posteringsType)) }
-}
+internal fun klassifiserPosteringer(posteringer: List<Postering>): List<KlassifisertPostering> =
+    posteringer.map {
+        KlassifisertPostering(it, klassifiserPosteringsType(it.posteringsType))
+    }
 
-private fun klassifiserPosteringsType(posteringsType: PosteringsType): InntektKlasse {
-    return when {
+private fun klassifiserPosteringsType(posteringsType: PosteringsType): InntektKlasse =
+    when {
         isArbeidsInntekt(posteringsType) -> InntektKlasse.ARBEIDSINNTEKT
         isFangstFiske(posteringsType) -> InntektKlasse.FANGST_FISKE
         isDagpenger(posteringsType) -> InntektKlasse.DAGPENGER
@@ -24,7 +28,6 @@ private fun klassifiserPosteringsType(posteringsType: PosteringsType): InntektKl
         isPleiepenger(posteringsType) -> InntektKlasse.PLEIEPENGER
         else -> throw KlassifiseringsException("Unknown inntektklasse for $posteringsType")
     }
-}
 
 private fun isArbeidsInntekt(posteringsType: PosteringsType): Boolean {
     val arbeidsPosteringsTyper =
@@ -201,4 +204,6 @@ private fun isTiltakslønn(posteringsType: PosteringsType): Boolean {
     return tiltakslønnPosteringsTyper.contains(posteringsType)
 }
 
-class KlassifiseringsException(message: String) : RuntimeException(message)
+class KlassifiseringsException(
+    message: String,
+) : RuntimeException(message)

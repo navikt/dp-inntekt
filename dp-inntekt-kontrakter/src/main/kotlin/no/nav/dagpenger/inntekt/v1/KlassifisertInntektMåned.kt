@@ -10,11 +10,12 @@ data class KlassifisertInntektMåned(
 )
 
 fun Collection<KlassifisertInntektMåned>.sumInntekt(inntektsKlasserToSum: List<InntektKlasse>) =
-    this.flatMap { klassifisertInntektMåned ->
-        klassifisertInntektMåned.klassifiserteInntekter
-            .filter { it.inntektKlasse in inntektsKlasserToSum }
-            .map { it.beløp }
-    }.fold(BigDecimal.ZERO, BigDecimal::add)
+    this
+        .flatMap { klassifisertInntektMåned ->
+            klassifisertInntektMåned.klassifiserteInntekter
+                .filter { it.inntektKlasse in inntektsKlasserToSum }
+                .map { it.beløp }
+        }.fold(BigDecimal.ZERO, BigDecimal::add)
 
 typealias InntektsPerioder = Triple<List<KlassifisertInntektMåned>, List<KlassifisertInntektMåned>, List<KlassifisertInntektMåned>>
 
