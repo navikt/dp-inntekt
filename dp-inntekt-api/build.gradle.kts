@@ -61,7 +61,7 @@ dependencies {
     implementation("no.bekk.bekkopen:nocommons:0.17.0")
 
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
-    implementation("no.nav.dagpenger:oauth2-klient:2025.12.19-08.15.2e150cd55270")
+    implementation("no.nav.dagpenger:oauth2-klient:2026.09.17-06.22.ccf7ed62c283")
 
     testImplementation(kotlin("test"))
     testImplementation("com.github.navikt.tbd-libs:naisful-test-app:$tbdLibs")
