@@ -17,7 +17,7 @@ application {
 }
 
 val expediaGraphqlVersion = "10.2.2"
-val tbdLibs = "20260827.1253"
+val tbdLibs = "20260917.2152"
 dependencies {
 
     implementation(project(":dp-inntekt-kontrakter"))
@@ -31,8 +31,8 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus:1.17.1")
 
     implementation("io.prometheus:client_java:1.8.0")
-    implementation("io.prometheus:prometheus-metrics-core:1.8.0")
-    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.8.0")
+    implementation("io.prometheus:prometheus-metrics-core:1.9.0")
+    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.9.0")
 
     implementation("com.expediagroup:graphql-kotlin-client:$expediaGraphqlVersion")
     implementation("com.expediagroup:graphql-kotlin-ktor-client:$expediaGraphqlVersion")
@@ -56,7 +56,7 @@ dependencies {
 
     implementation(libs.bundles.postgres)
     implementation(libs.konfig)
-    implementation("org.slf4j:slf4j-api:2.0.18")
+    implementation("org.slf4j:slf4j-api:2.0.19")
 
     implementation("no.bekk.bekkopen:nocommons:0.17.0")
 
