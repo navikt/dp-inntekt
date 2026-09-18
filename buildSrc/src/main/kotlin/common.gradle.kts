@@ -22,6 +22,7 @@ kotlin {
 }
 
 tasks.test {
+    dependsOn("ktlintCheck")
     useJUnitPlatform()
     testLogging {
         showExceptions = true
