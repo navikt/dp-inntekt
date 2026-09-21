@@ -6,18 +6,24 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
+import io.ktor.http.content.TextContent
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
+import no.dagpenger.stpeter.plugin.TilgangAvvistException
 import no.nav.dagpenger.inntekt.Problem
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.TEST_OAUTH_USER
 import no.nav.dagpenger.inntekt.api.v1.TestApplication.autentisert
@@ -59,6 +65,7 @@ import no.nav.dagpenger.inntekt.serder.inntektObjectMapper
 import org.junit.jupiter.api.Test
 import tools.jackson.module.kotlin.readValue
 import java.math.BigDecimal
+import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDate.now
 import java.time.LocalDateTime
@@ -242,6 +249,110 @@ internal class UklassifisertInntektRouteTest {
                 inntektObjectMapper.readValue<StoredInntekt>(response.bodyAsText())
             assertEquals(storedInntekt.inntektId, inntektId)
         }
+
+    @Test
+    fun `Get request for uklassifisert inntekt should return 404 when ident is unknown`() {
+        val enhetsregisterClientMock = mockk<EnhetsregisterClient>(relaxed = true)
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
+            enhetsregisterClient = enhetsregisterClientMock,
+            vedTilgangTilPerson = { _, _, _ ->
+                throw TilgangAvvistException(
+                    title = "Fant ikke NAV-ident",
+                    status = HttpStatusCode.NotFound,
+                    type = URI("urn:dp:error:stpeter:not-found"),
+                    detail = "Ukjent NAV-ident",
+                    instance = URI("urn:dp:inntekt:uklassifisert"),
+                )
+            },
+        ) {
+            every {
+                inntektStoreMock.getStoredInntektMedMetadata(inntektId)
+            } returns
+                StoredInntektMedMetadata(
+                    inntektId = inntektId,
+                    inntekt = storedInntekt.inntekt,
+                    manueltRedigert = false,
+                    timestamp = LocalDateTime.now(),
+                    fødselsnummer = fødselsnummer,
+                    beregningsdato = now(),
+                    storedInntektPeriode =
+                        StoredInntektPeriode(
+                            fraOgMed = YearMonth.of(2023, 1),
+                            tilOgMed = YearMonth.of(2025, 5),
+                        ),
+                )
+
+            val response =
+                it.autentisert(
+                    httpMethod = HttpMethod.Get,
+                    endepunkt = "$uklassifisertInntekt/${inntektId.id}",
+                )
+
+            response.status shouldBe HttpStatusCode.NotFound
+            val problem = inntektObjectMapper.readValue<Problem>(response.bodyAsText())
+            problem.status shouldBe 404
+            problem.title shouldBe "Fant ikke NAV-ident"
+            problem.type.toString() shouldBe "urn:dp:error:stpeter:not-found"
+            problem.detail shouldBe "Ukjent NAV-ident"
+            coVerify(exactly = 0) { personOppslagMock.hentPerson(any()) }
+            coVerify(exactly = 0) { enhetsregisterClientMock.hentEnhet(any()) }
+        }
+    }
+
+    @Test
+    fun `Get request for uklassifisert inntekt should return 403 when tilgang is denied`() {
+        val enhetsregisterClientMock = mockk<EnhetsregisterClient>(relaxed = true)
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
+            enhetsregisterClient = enhetsregisterClientMock,
+            vedTilgangTilPerson = { _, _, _ ->
+                throw TilgangAvvistException(
+                    title = "Ingen tilgang",
+                    status = HttpStatusCode.Forbidden,
+                    type = URI("urn:dp:error:stpeter:forbidden"),
+                    detail = "Saksbehandler har ikke tilgang",
+                    instance = URI("urn:dp:inntekt:uklassifisert"),
+                )
+            },
+        ) {
+            every {
+                inntektStoreMock.getStoredInntektMedMetadata(inntektId)
+            } returns
+                StoredInntektMedMetadata(
+                    inntektId = inntektId,
+                    inntekt = storedInntekt.inntekt,
+                    manueltRedigert = false,
+                    timestamp = LocalDateTime.now(),
+                    fødselsnummer = fødselsnummer,
+                    beregningsdato = now(),
+                    storedInntektPeriode =
+                        StoredInntektPeriode(
+                            fraOgMed = YearMonth.of(2023, 1),
+                            tilOgMed = YearMonth.of(2025, 5),
+                        ),
+                )
+
+            val response =
+                it.autentisert(
+                    httpMethod = HttpMethod.Get,
+                    endepunkt = "$uklassifisertInntekt/${inntektId.id}",
+                )
+
+            response.status shouldBe HttpStatusCode.Forbidden
+            val problem = inntektObjectMapper.readValue<Problem>(response.bodyAsText())
+            problem.status shouldBe 403
+            problem.title shouldBe "Ingen tilgang"
+            problem.type.toString() shouldBe "urn:dp:error:stpeter:forbidden"
+            problem.detail shouldBe "Saksbehandler har ikke tilgang"
+            coVerify(exactly = 0) { personOppslagMock.hentPerson(any()) }
+            coVerify(exactly = 0) { enhetsregisterClientMock.hentEnhet(any()) }
+        }
+    }
 
     @Test
     fun `Get request for uncached uklassifisert inntekt should return 200 ok`() =
@@ -474,6 +585,11 @@ internal class UklassifisertInntektRouteTest {
             inntektStore = inntektStoreMock,
             personOppslag = personOppslagMock,
             enhetsregisterClient = enhetsregisterClientMock,
+            vedTilgangTilPerson = { ident, token, block ->
+                ident shouldBe fødselsnummer
+                token shouldBe this@UklassifisertInntektRouteTest.token
+                block()
+            },
         ) {
             val bodyFraEr =
                 FullVirksomhetsInformasjon::class.java
@@ -526,7 +642,13 @@ internal class UklassifisertInntektRouteTest {
         mockInntektApi(
             inntektskomponentClient = inntektskomponentClientMock,
             inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
             dpBehandlingKlient = dpBehandlingKlient,
+            vedTilgangTilPerson = { ident, token, block ->
+                ident shouldBe fødselsnummer
+                token shouldBe this@UklassifisertInntektRouteTest.token
+                block()
+            },
         ) {
             val body =
                 UklassifisertInntektRouteTest::class.java
@@ -577,6 +699,138 @@ internal class UklassifisertInntektRouteTest {
         }
 
     @Test
+    fun `Post request for uklassifisert inntekt should fail closed when stpeter throws technical error`() =
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            dpBehandlingKlient = dpBehandlingKlient,
+            vedTilgangTilPerson = { _, _, _ ->
+                throw TilgangAvvistException(
+                    title = "En ukjent feil oppstod ved evaluering av tilgang",
+                    status = HttpStatusCode.Forbidden,
+                    type = URI("urn:error:forbidden"),
+                    detail = "Uventet svar fra stpeter: status=500, body=boom",
+                    instance = URI("urn:dp:stpeter:api:v1:person"),
+                )
+            },
+        ) {
+            val body =
+                UklassifisertInntektRouteTest::class.java
+                    .getResource("/test-data/expected-uklassifisert-post-body.json")
+                    ?.readText()
+
+            every { inntektStoreMock.getInntektPersonMapping(any()) } returns
+                InntektPersonMapping(
+                    inntektId = inntektId,
+                    aktørId = "123456789",
+                    fnr = fødselsnummer,
+                    kontekstId = "kontekstId",
+                    beregningsdato = now(),
+                    timestamp = LocalDateTime.now(),
+                    kontekstType = "kontekstType",
+                )
+
+            val response =
+                it.autentisert(
+                    httpMethod = HttpMethod.Post,
+                    endepunkt = "$uklassifisertInntekt/${inntektId.id}?behandlingId=${UUID.randomUUID()}&opplysningId=${UUID.randomUUID()}",
+                    body = body!!,
+                )
+
+            response.status shouldBe HttpStatusCode.BadGateway
+            val problem = inntektObjectMapper.readValue<Problem>(response.bodyAsText())
+            problem.status shouldBe 502
+            problem.title shouldBe "En teknisk feil oppstod ved evaluering av tilgang"
+            problem.type.toString() shouldBe "urn:error:forbidden"
+            problem.detail shouldBe "Kunne ikke evaluere tilgang mot stpeter. Prøv igjen senere."
+            verify(exactly = 0) { inntektStoreMock.storeInntekt(any(), any()) }
+            verify(exactly = 0) { dpBehandlingKlient.rekjørBehandling(any(), any(), any(), any()) }
+        }
+
+    @Test
+    fun `Post request for uklassifisert inntekt should return 403 when tilgang is denied`() =
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            dpBehandlingKlient = dpBehandlingKlient,
+            vedTilgangTilPerson = { _, _, _ ->
+                throw TilgangAvvistException(
+                    title = "Ingen tilgang",
+                    status = HttpStatusCode.Forbidden,
+                    type = URI("urn:dp:error:stpeter:forbidden"),
+                    detail = "Saksbehandler har ikke tilgang",
+                    instance = URI("urn:dp:inntekt:uklassifisert"),
+                )
+            },
+        ) {
+            val body =
+                UklassifisertInntektRouteTest::class.java
+                    .getResource("/test-data/expected-uklassifisert-post-body.json")
+                    ?.readText()
+
+            every { inntektStoreMock.getInntektPersonMapping(any()) } returns
+                InntektPersonMapping(
+                    inntektId = inntektId,
+                    aktørId = "123456789",
+                    fnr = fødselsnummer,
+                    kontekstId = "kontekstId",
+                    beregningsdato = now(),
+                    timestamp = LocalDateTime.now(),
+                    kontekstType = "kontekstType",
+                )
+
+            val response =
+                it.autentisert(
+                    httpMethod = HttpMethod.Post,
+                    endepunkt = "$uklassifisertInntekt/${inntektId.id}?behandlingId=${UUID.randomUUID()}&opplysningId=${UUID.randomUUID()}",
+                    body = body!!,
+                )
+
+            response.status shouldBe HttpStatusCode.Forbidden
+            val problem = inntektObjectMapper.readValue<Problem>(response.bodyAsText())
+            problem.status shouldBe 403
+            problem.title shouldBe "Ingen tilgang"
+            problem.type.toString() shouldBe "urn:dp:error:stpeter:forbidden"
+            problem.detail shouldBe "Saksbehandler har ikke tilgang"
+            verify(exactly = 0) { inntektStoreMock.storeInntekt(any(), any()) }
+            verify(exactly = 0) { dpBehandlingKlient.rekjørBehandling(any(), any(), any(), any()) }
+        }
+
+    @Test
+    fun `Get request for uklassifisert inntekt uten Authorization-header skal returnere 401`() =
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            personOppslag = personOppslagMock,
+        ) {
+            val response =
+                it.client.get("$uklassifisertInntekt/${inntektId.id}")
+
+            response.status shouldBe HttpStatusCode.Unauthorized
+        }
+
+    @Test
+    fun `Post request for uklassifisert inntekt uten Authorization-header skal returnere 401`() =
+        mockInntektApi(
+            inntektskomponentClient = inntektskomponentClientMock,
+            inntektStore = inntektStoreMock,
+            dpBehandlingKlient = dpBehandlingKlient,
+        ) {
+            val body =
+                UklassifisertInntektRouteTest::class.java
+                    .getResource("/test-data/expected-uklassifisert-post-body.json")
+                    ?.readText()
+
+            val response =
+                it.client.post("$uklassifisertInntekt/${inntektId.id}?erArena=true") {
+                    setBody(TextContent(body!!, ContentType.Application.Json))
+                }
+
+            response.status shouldBe HttpStatusCode.Unauthorized
+            verify(exactly = 0) { inntektStoreMock.storeInntekt(any(), any()) }
+        }
+
+    @Test
     fun `Post request for uklassifisrt inntekt med inntektId gir 400 Bad Request uten behandlingId og opplysningId når erArena er false`() =
         mockInntektApi(
             inntektskomponentClient = inntektskomponentClientMock,
@@ -604,6 +858,11 @@ internal class UklassifisertInntektRouteTest {
             inntektskomponentClient = inntektskomponentClientMock,
             inntektStore = inntektStoreMock,
             dpBehandlingKlient = dpBehandlingKlient,
+            vedTilgangTilPerson = { ident, token, block ->
+                ident shouldBe fødselsnummer
+                token shouldBe this@UklassifisertInntektRouteTest.token
+                block()
+            },
         ) {
             val body =
                 UklassifisertInntektRouteTest::class.java

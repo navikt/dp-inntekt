@@ -22,6 +22,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.delay
 import no.nav.dagpenger.inntekt.BehandlingsInntektsGetter
 import no.nav.dagpenger.inntekt.Config
+import no.nav.dagpenger.inntekt.VedTilgangTilPerson
 import no.nav.dagpenger.inntekt.db.InntektStore
 import no.nav.dagpenger.inntekt.dpbehandling.DpBehandlingKlient
 import no.nav.dagpenger.inntekt.inntektApi
@@ -67,6 +68,9 @@ internal object TestApplication {
         personOppslag: PersonOppslag = mockk(),
         enhetsregisterClient: EnhetsregisterClient = mockk(relaxed = true),
         dpBehandlingKlient: DpBehandlingKlient = mockk(relaxed = true),
+        vedTilgangTilPerson: VedTilgangTilPerson = { _, _, block ->
+            block()
+        },
         block: suspend (TestContext) -> Unit,
     ) {
         withMockAuthServerAndTestApplication({
@@ -78,6 +82,7 @@ internal object TestApplication {
                 personOppslag = personOppslag,
                 enhetsregisterClient = enhetsregisterClient,
                 dpBehandlingKlient = dpBehandlingKlient,
+                vedTilgangTilPerson = vedTilgangTilPerson,
             )
         }) {
             block(this)

@@ -30,3 +30,7 @@ inntektskomponenten:
 pdl:
   url: https://pdl-api.prod-fss-pub.nais.io/graphql
   scope: api://prod-fss.pdl.pdl-api/.default
+
+stpeter:
+  url: http://dp-stpeter
+  scope: api://prod-gcp.teamdagpenger.dp-stpeter/.default
