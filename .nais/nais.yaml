@@ -61,6 +61,7 @@ spec:
     outbound:
       rules:
         - application: dp-behandling
+        - application: dp-stpeter
         - application: logging
           namespace: nais-system
       external:
@@ -98,6 +99,10 @@ spec:
       value: "{{inntektskomponenten.url}}"
     - name: INNTEKTSKOMPONENTEN_API_SCOPE
       value: "{{inntektskomponenten.scope}}"
+    - name: STPETER_URL
+      value: "{{stpeter.url}}"
+    - name: STPETER_SCOPE
+      value: "{{stpeter.scope}}"
   kafka:
     pool: {{kafka_pool}}
   gcp:

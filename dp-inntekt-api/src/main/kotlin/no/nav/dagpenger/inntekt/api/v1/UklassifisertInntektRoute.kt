@@ -3,6 +3,7 @@ package no.nav.dagpenger.inntekt.api.v1
 import com.auth0.jwt.exceptions.JWTDecodeException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.oshai.kotlinlogging.withLoggingContext
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.authenticate
@@ -18,6 +19,8 @@ import io.ktor.server.routing.route
 import io.prometheus.metrics.core.metrics.Counter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import no.nav.dagpenger.inntekt.UgyldigAuthorizationHeaderException
+import no.nav.dagpenger.inntekt.VedTilgangTilPerson
 import no.nav.dagpenger.inntekt.api.v1.models.FullVirksomhetsInformasjon
 import no.nav.dagpenger.inntekt.api.v1.models.InntekterDto
 import no.nav.dagpenger.inntekt.api.v1.models.mapToStoredInntekt
@@ -81,6 +84,7 @@ fun Route.uklassifisertInntekt(
     personOppslag: PersonOppslag,
     enhetsregisterClient: EnhetsregisterClient,
     dpBehandlingKlient: DpBehandlingKlient,
+    vedTilgangTilPerson: VedTilgangTilPerson,
     coroutineContext: CoroutineContext = Dispatchers.IO,
 ) {
     authenticate("azure") {
@@ -153,32 +157,33 @@ fun Route.uklassifisertInntekt(
             get {
                 withContext(coroutineContext) {
                     val inntektId = InntektId(call.parameters["inntektId"]!!)
-                    inntektStore
-                        .getStoredInntektMedMetadata(inntektId)
-                        .let { storedInntektMedMetadata ->
-                            val person = personOppslag.hentPerson(storedInntektMedMetadata.fødselsnummer)
-                            val inntektsmottaker =
-                                Inntektsmottaker(storedInntektMedMetadata.fødselsnummer, person.sammensattNavn())
-                            val organisasjoner =
-                                hentOrganisasjoner(
-                                    enhetsregisterClient,
-                                    storedInntektMedMetadata.inntekt.arbeidsInntektMaaned
-                                        ?.flatMap { it.arbeidsInntektInformasjon?.inntektListe.orEmpty() }
-                                        ?.filter { inntekt ->
-                                            inntekt.virksomhet?.aktoerType == AktoerType.ORGANISASJON &&
-                                                (inntekt.opptjeningsland == "NO" || inntekt.opptjeningsland == null)
-                                        }?.mapNotNull { it.virksomhet?.identifikator }
-                                        ?.toTypedArray()
-                                        ?.toList() ?: emptyList(),
-                                )
+                    val storedInntektMedMetadata = inntektStore.getStoredInntektMedMetadata(inntektId)
+                    val token = call.bearerToken()
+
+                    vedTilgangTilPerson(storedInntektMedMetadata.fødselsnummer, token) {
+                        val person = personOppslag.hentPerson(storedInntektMedMetadata.fødselsnummer)
+                        val inntektsmottaker =
+                            Inntektsmottaker(storedInntektMedMetadata.fødselsnummer, person.sammensattNavn())
+                        val organisasjoner =
+                            hentOrganisasjoner(
+                                enhetsregisterClient,
+                                storedInntektMedMetadata.inntekt.arbeidsInntektMaaned
+                                    ?.flatMap { it.arbeidsInntektInformasjon?.inntektListe.orEmpty() }
+                                    ?.filter { inntekt ->
+                                        inntekt.virksomhet?.aktoerType == AktoerType.ORGANISASJON &&
+                                            (inntekt.opptjeningsland == "NO" || inntekt.opptjeningsland == null)
+                                    }?.mapNotNull { it.virksomhet?.identifikator }
+                                    ?.toTypedArray()
+                                    ?.toList() ?: emptyList(),
+                            )
+                        val frontendInntekt =
                             storedInntektMedMetadata.inntekt.mapToFrontend(
                                 person = inntektsmottaker,
                                 organisasjoner = organisasjoner,
                                 storedInntektMedMetadata,
                             )
-                        }.let {
-                            call.respond(HttpStatusCode.OK, it)
-                        }
+                        call.respond(HttpStatusCode.OK, frontendInntekt)
+                    }
                 }
             }
             post {
@@ -189,7 +194,6 @@ fun Route.uklassifisertInntekt(
                     // Historisk query-paramnavn fra dp-inntekt-frontend.
                     val opplysningTypeId = call.parameters["opplysningId"]
                     val erArena = call.parameters["erArena"]?.toBoolean() ?: false
-                    val inntekterDto = call.receive<InntekterDto>()
                     val brukerKommerFraDpSak = !erArena
 
                     if (brukerKommerFraDpSak) {
@@ -198,62 +202,64 @@ fun Route.uklassifisertInntekt(
                         ) { "behandlingId og opplysningId må være satt når erArena er false" }
                     }
 
-                    inntekterDto
-                        .mapToStoredInntekt(
-                            inntektId = inntektId,
-                        ).let {
-                            logger.info { "Lagrer endret inntekt for $inntektId, erArena=$erArena" }
+                    val inntektPersonMapping = inntektStore.getInntektPersonMapping(inntektId)
+                    val ident =
+                        inntektPersonMapping.fnr
+                            ?: personOppslag.hentPerson(inntektPersonMapping.aktørId).fødselsnummer
+                    val token = call.bearerToken()
 
-                            val inntektPersonMapping = inntektStore.getInntektPersonMapping(inntektId)
-                            val storedInntekt =
-                                inntektStore.storeInntekt(
-                                    StoreInntektCommand(
-                                        inntektparametre =
-                                            Inntektparametre(
-                                                aktørId = inntektPersonMapping.aktørId,
-                                                fødselsnummer = it.inntekt.ident.identifikator,
-                                                regelkontekst =
-                                                    RegelKontekst(
-                                                        inntektPersonMapping.kontekstId,
-                                                        inntektPersonMapping.kontekstType,
-                                                    ),
-                                                beregningsdato = inntektPersonMapping.beregningsdato,
-                                            ).apply {
-                                                this.opptjeningsperiode.førsteMåned = inntekterDto.periode.fraOgMed
-                                                this.opptjeningsperiode.sisteAvsluttendeKalenderMåned =
-                                                    inntekterDto.periode.tilOgMed
-                                            },
-                                        inntekt = it.inntekt,
-                                        manueltRedigert =
-                                            ManueltRedigert.from(
-                                                bool = true,
-                                                redigertAv = call.getSubject(),
-                                                begrunnelse = inntekterDto.begrunnelse,
-                                            ),
-                                    ),
-                                )
+                    vedTilgangTilPerson(ident, token) {
+                        val inntekterDto = call.receive<InntekterDto>()
+                        inntekterDto
+                            .mapToStoredInntekt(
+                                inntektId = inntektId,
+                            ).let {
+                                logger.info { "Lagrer endret inntekt for $inntektId, erArena=$erArena" }
 
-                            if (brukerKommerFraDpSak) {
-                                val token =
-                                    call.request.headers["Authorization"]?.removePrefix("Bearer ")
-                                        ?: throw IllegalArgumentException("Fant ikke token i request header")
+                                val storedInntekt =
+                                    inntektStore.storeInntekt(
+                                        StoreInntektCommand(
+                                            inntektparametre =
+                                                Inntektparametre(
+                                                    aktørId = inntektPersonMapping.aktørId,
+                                                    fødselsnummer = it.inntekt.ident.identifikator,
+                                                    regelkontekst =
+                                                        RegelKontekst(
+                                                            inntektPersonMapping.kontekstId,
+                                                            inntektPersonMapping.kontekstType,
+                                                        ),
+                                                    beregningsdato = inntektPersonMapping.beregningsdato,
+                                                ).apply {
+                                                    this.opptjeningsperiode.førsteMåned = inntekterDto.periode.fraOgMed
+                                                    this.opptjeningsperiode.sisteAvsluttendeKalenderMåned =
+                                                        inntekterDto.periode.tilOgMed
+                                                },
+                                            inntekt = it.inntekt,
+                                            manueltRedigert =
+                                                ManueltRedigert.from(
+                                                    bool = true,
+                                                    redigertAv = call.getSubject(),
+                                                    begrunnelse = inntekterDto.begrunnelse,
+                                                ),
+                                        ),
+                                    )
 
-                                dpBehandlingKlient.rekjørBehandling(
-                                    behandlingId = UUID.fromString(behandlingId!!),
-                                    opplysningTypeId = OpplysningTypeId(opplysningTypeId!!),
-                                    ident =
-                                        inntektPersonMapping.fnr
-                                            ?: personOppslag.hentPerson(inntektPersonMapping.aktørId).fødselsnummer,
-                                    token = token,
-                                )
+                                if (brukerKommerFraDpSak) {
+                                    dpBehandlingKlient.rekjørBehandling(
+                                        behandlingId = UUID.fromString(behandlingId!!),
+                                        opplysningTypeId = OpplysningTypeId(opplysningTypeId!!),
+                                        ident = ident,
+                                        token = token,
+                                    )
+                                }
+
+                                storedInntekt
+                            }.let {
+                                call.respond(HttpStatusCode.OK, it.inntektId.id)
+                            }.also {
+                                inntektKorrigeringCounter.inc()
                             }
-
-                            storedInntekt
-                        }.let {
-                            call.respond(HttpStatusCode.OK, it.inntektId.id)
-                        }.also {
-                            inntektKorrigeringCounter.inc()
-                        }
+                    }
                 }
             }
         }
@@ -449,6 +455,13 @@ private inline fun ApplicationCall.withInntektRequest(
         block(inntektRequest)
     }
 }
+
+private fun ApplicationCall.bearerToken(): String =
+    request.headers[HttpHeaders.Authorization]
+        ?.takeIf { it.startsWith("Bearer ") }
+        ?.removePrefix("Bearer ")
+        ?.takeIf { it.isNotBlank() }
+        ?: throw UgyldigAuthorizationHeaderException("Mangler gyldig Authorization-header med Bearer-token")
 
 data class InntektRequest(
     val aktørId: String,

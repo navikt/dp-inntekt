@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import no.dagpenger.stpeter.plugin.StPeterPlugin
 import no.nav.dagpenger.inntekt.Config.inntektApiConfig
 import no.nav.dagpenger.inntekt.db.PostgresDataSourceBuilder
 import no.nav.dagpenger.inntekt.db.PostgresInntektStore
@@ -72,6 +73,7 @@ fun main() {
                 dpBehandlingBaseUrl = config.dpBehandling.url,
                 httpKlient = httpClient(),
             )
+        val stPeterPlugin = StPeterPlugin()
         val cachedInntektsGetter = BehandlingsInntektsGetter(inntektskomponentHttpClient, postgresInntektStore)
         // Marks inntekt as used
         val subsumsjonBruktDataConsumer =
@@ -122,6 +124,7 @@ fun main() {
                 personOppslag = pdlPersonOppslag,
                 enhetsregisterClient = enhetsregisterClient,
                 dpBehandlingKlient = dpBehandlingKlient,
+                vedTilgangTilPerson = stPeterPlugin::vedTilgangTilPerson,
             )
         }.start(wait = true)
 

@@ -29,6 +29,7 @@ internal fun Application.inntektApi(
     personOppslag: PersonOppslag,
     enhetsregisterClient: EnhetsregisterClient,
     dpBehandlingKlient: DpBehandlingKlient,
+    vedTilgangTilPerson: VedTilgangTilPerson,
 ) {
     install(DefaultHeaders)
     install(Authentication) {
@@ -46,6 +47,7 @@ internal fun Application.inntektApi(
                     personOppslag,
                     enhetsregisterClient,
                     dpBehandlingKlient,
+                    vedTilgangTilPerson = vedTilgangTilPerson,
                 )
             }
             opptjeningsperiodeApi(inntektStore)

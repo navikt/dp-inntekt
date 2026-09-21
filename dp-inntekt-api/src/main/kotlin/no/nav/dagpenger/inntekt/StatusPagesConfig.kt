@@ -8,6 +8,7 @@ import io.ktor.http.isSuccess
 import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.plugins.statuspages.StatusPagesConfig
 import io.ktor.server.response.respond
+import no.dagpenger.stpeter.plugin.TilgangAvvistException
 import no.nav.dagpenger.inntekt.db.IllegalInntektIdException
 import no.nav.dagpenger.inntekt.db.InntektNotFoundException
 import no.nav.dagpenger.inntekt.inntektskomponenten.v1.InntektskomponentenHttpClientException
@@ -135,5 +136,50 @@ fun StatusPagesConfig.statusPagesConfig() {
                 status = statusCode.value,
             )
         call.respond(statusCode, error)
+    }
+    exception<TilgangAvvistException> { call, cause ->
+        // cause.detail/cause.instance kan inneholde persondetaljer (f.eks. begrunnelse fra
+        // tilgangsmaskinen) eller rå upstream-respons — logges kun til sikkerLogg, ikke LOGGER.
+        LOGGER.warn { "Tilgang avvist av stpeter (status=${cause.status.value})" }
+        sikkerLogg.warn(cause) { "Tilgang avvist av stpeter" }
+        val erTekniskFeil = cause.status == HttpStatusCode.Forbidden && cause.type == URI("urn:error:forbidden")
+        val statusCode =
+            when {
+                cause.status == HttpStatusCode.NotFound -> HttpStatusCode.NotFound
+                erTekniskFeil -> HttpStatusCode.BadGateway
+                cause.status == HttpStatusCode.Forbidden -> HttpStatusCode.Forbidden
+                else -> HttpStatusCode.InternalServerError
+            }
+        val problem =
+            if (erTekniskFeil) {
+                // Ikke lekk rå upstream-detaljer (cause.detail/cause.instance) i responsen ved
+                // en uventet/teknisk feil fra stpeter-plugin.
+                Problem(
+                    type = cause.type,
+                    title = "En teknisk feil oppstod ved evaluering av tilgang",
+                    status = statusCode.value,
+                    detail = "Kunne ikke evaluere tilgang mot stpeter. Prøv igjen senere.",
+                )
+            } else {
+                Problem(
+                    type = cause.type,
+                    title = cause.title,
+                    status = statusCode.value,
+                    detail = cause.detail,
+                    instance = cause.instance,
+                )
+            }
+        call.respond(statusCode, problem)
+    }
+    exception<UgyldigAuthorizationHeaderException> { call, cause ->
+        LOGGER.warn(cause) { "Ugyldig Authorization-header" }
+        val error =
+            Problem(
+                type = URI("urn:dp:error:inntekt:auth"),
+                title = "Ikke innlogget",
+                status = HttpStatusCode.Unauthorized.value,
+                detail = cause.message,
+            )
+        call.respond(HttpStatusCode.Unauthorized, error)
     }
 }

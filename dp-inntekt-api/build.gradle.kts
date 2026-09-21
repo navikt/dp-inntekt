@@ -9,6 +9,12 @@ repositories {
     mavenCentral()
     maven("https://packages.confluent.io/maven/")
     maven("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
+    maven("https://maven.pkg.github.com/navikt/dp-stpeter") {
+        credentials {
+            username = providers.gradleProperty("githubUser").orNull
+            password = providers.gradleProperty("githubPassword").orNull
+        }
+    }
 }
 
 application {
@@ -18,6 +24,8 @@ application {
 
 val expediaGraphqlVersion = "10.2.2"
 val tbdLibs = "20261029.1843"
+val stPeterPluginVersion = "2026.10.30-19.06.30a4d7e3b4f1"
+
 dependencies {
 
     implementation(project(":dp-inntekt-kontrakter"))
@@ -62,6 +70,7 @@ dependencies {
 
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
     implementation("no.nav.dagpenger:oauth2-klient:2025.12.19-08.15.2e150cd55270")
+    implementation("no.nav.dagpenger:stpeter-plugin:$stPeterPluginVersion")
 
     testImplementation(kotlin("test"))
     testImplementation("com.github.navikt.tbd-libs:naisful-test-app:$tbdLibs")
