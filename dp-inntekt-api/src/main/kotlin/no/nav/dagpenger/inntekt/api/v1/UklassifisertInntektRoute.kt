@@ -184,6 +184,7 @@ fun Route.uklassifisertInntekt(
             post {
                 withContext(coroutineContext) {
                     val inntektId = call.parameters["inntektId"]!!
+                    logger.info { "Mottat forespørsel om å lagre endret inntekt for $inntektId" }
                     val behandlingId = call.parameters["behandlingId"]
                     // Historisk query-paramnavn fra dp-inntekt-frontend.
                     val opplysningTypeId = call.parameters["opplysningId"]
