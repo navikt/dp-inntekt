@@ -5,7 +5,7 @@ consumer_group: dp-inntekt-api-consumer
 
 replicas_max: 4
 resources_cpu_limit: 1000m
-resources_cpu_request: 100m
+resources_cpu_request: 167m
 resources_memory_limit: 512Mi
 
 external_hosts:
