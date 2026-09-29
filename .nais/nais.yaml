@@ -87,7 +87,7 @@ spec:
     - {{ingress}}
   env:
     - name: JDK_JAVA_OPTIONS
-      value: -XX:+UseParallelGC -XX:ActiveProcessorCount=4
+      value: -XX:+UseParallelGC -XX:ActiveProcessorCount={{active_processor_count}}
     - name: CONSUMER_GROUP
       value: "{{consumer_group}}"
     - name: PDL_API_URL

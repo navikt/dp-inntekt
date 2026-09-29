@@ -41,8 +41,7 @@ internal object PostgresDataSourceBuilder {
                 getOrElse(DB_JDBC_URL_KEY, DB_URL_KEY).ensurePrefix("jdbc:postgresql://").stripCredentials()
             username = getOrThrow(DB_USERNAME_KEY)
             password = getOrThrow(DB_PASSWORD_KEY)
-            // Default 10
-            maximumPoolSize = 10
+            maximumPoolSize = 3
             // Default 30 sekund
             connectionTimeout = 10.seconds.inWholeMilliseconds
             // Default 10 minutter

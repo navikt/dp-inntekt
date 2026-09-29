@@ -7,6 +7,7 @@ replicas_max: 6
 resources_cpu_limit: false
 resources_cpu_request: 30m
 resources_memory_limit: 768Mi
+active_processor_count: 4
 
 external_hosts:
   - pdl-api.prod-fss-pub.nais.io

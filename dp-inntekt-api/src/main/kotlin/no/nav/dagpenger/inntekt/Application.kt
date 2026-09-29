@@ -80,19 +80,13 @@ fun main() {
                 config.inntektBruktDataTopic,
                 postgresInntektStore,
             )
-        val helsesjekker =
-            listOf(
-                postgresInntektStore,
-                subsumsjonBruktDataConsumer,
-            )
-
         naisApp(
             port = config.application.httpPort,
             meterRegistry = meterRegistry,
             objectMapper = inntektObjectMapper,
             applicationLogger = LoggerFactory.getLogger("ApplicationLogger"),
             callLogger = LoggerFactory.getLogger("CallLogger"),
-            aliveCheck = aliveCeck(helsesjekker),
+            aliveCheck = aliveCheck(subsumsjonBruktDataConsumer),
             readyCheck = readyCheck(postgresInntektStore),
             statusPagesConfig = { statusPagesConfig() },
         ) {
@@ -143,17 +137,11 @@ fun main() {
 
 private fun readyCheck(postgresInntektStore: PostgresInntektStore): () -> Boolean = { postgresInntektStore.status() == HealthStatus.UP }
 
-private fun aliveCeck(helsesjekker: List<HealthCheck>): () -> Boolean =
+internal fun aliveCheck(helsesjekk: HealthCheck): () -> Boolean =
     {
-        helsesjekker.all { it.status() == HealthStatus.UP }.also { isAlive ->
+        (helsesjekk.status() == HealthStatus.UP).also { isAlive ->
             if (!isAlive) {
-                LOGGER.warn {
-                    "En eller flere helsesjekker er nede! Helsejekker status: ${
-                        helsesjekker.joinToString { hc ->
-                            "${hc::class.simpleName}=${hc.status()}"
-                        }
-                    }"
-                }
+                LOGGER.warn { "Helsesjekk er nede: ${helsesjekk::class.simpleName}" }
             }
         }
     }

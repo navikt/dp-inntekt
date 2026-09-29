@@ -16,6 +16,7 @@ import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
 import tools.jackson.module.kotlin.readValue
+import java.sql.SQLException
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZonedDateTime
@@ -318,12 +319,11 @@ internal class PostgresInntektStore(
         }
     }
 
-    override fun status(): HealthStatus {
-        return try {
+    override fun status(): HealthStatus =
+        try {
             sessionOf(dataSource).use { session -> session.run(queryOf(""" SELECT 1""").asExecute) }.let { HealthStatus.UP }
-        } catch (p: PSQLException) {
+        } catch (p: SQLException) {
             LOGGER.error(p) { "Failed health check" }
-            return HealthStatus.DOWN
+            HealthStatus.DOWN
         }
-    }
 }

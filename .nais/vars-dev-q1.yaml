@@ -4,9 +4,10 @@ app: dp-inntekt-api-q1
 consumer_group: dp-inntekt-api-consumer-q1
 
 replicas_max: 2
-resources_cpu_limit: 1000m
+resources_cpu_limit: false
 resources_cpu_request: 100m
 resources_memory_limit: 512Mi
+active_processor_count: 2
 
 
 external_hosts:

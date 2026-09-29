@@ -28,6 +28,13 @@ import kotlin.test.assertTrue
 
 internal class PostgresTest {
     @Test
+    fun `skal begrense antall databasetilkoblinger per pod`() {
+        withCleanDb {
+            PostgresDataSourceBuilder.dataSource.maximumPoolSize shouldBe 3
+        }
+    }
+
+    @Test
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = PostgresDataSourceBuilder.runMigration()
