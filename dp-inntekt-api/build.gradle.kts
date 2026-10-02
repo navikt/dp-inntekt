@@ -17,7 +17,7 @@ application {
 }
 
 val expediaGraphqlVersion = "10.2.2"
-val tbdLibs = "20260917.2152"
+val tbdLibs = "20261002.1227"
 dependencies {
 
     implementation(project(":dp-inntekt-kontrakter"))
