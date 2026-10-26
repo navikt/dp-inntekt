@@ -66,7 +66,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("com.github.navikt.tbd-libs:naisful-test-app:$tbdLibs")
 
-    testImplementation("no.nav.security:mock-oauth2-server:6.1.2")
+    testImplementation("no.nav.security:mock-oauth2-server:6.1.3")
     testImplementation("io.ktor:ktor-client-mock:${libs.versions.ktor.get()}")
 
     testImplementation("org.wiremock:wiremock-standalone:3.13.2")
