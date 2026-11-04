@@ -124,7 +124,9 @@ fun main() {
                 personOppslag = pdlPersonOppslag,
                 enhetsregisterClient = enhetsregisterClient,
                 dpBehandlingKlient = dpBehandlingKlient,
-                vedTilgangTilPerson = stPeterPlugin::vedTilgangTilPerson,
+                vedTilgangTilPerson = { ident, token, block ->
+                    stPeterPlugin.vedTilgangTilPerson(ident, token, vedTilgangBlock = block)
+                },
             )
         }.start(wait = true)
 
