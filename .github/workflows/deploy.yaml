@@ -43,7 +43,7 @@ jobs:
         with:
           files: "**/build/test-results/test/TEST-*.xml"
 
-      - uses: nais/docker-build-push@v0
+      - uses: nais/docker-build-push@v1
         name: docker-build-push
         id: docker-build-push
         with:
